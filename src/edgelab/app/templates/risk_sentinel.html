@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Risk Sentinel{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Risk Sentinel</h2>
+    <p class="muted">Safety posture is deterministic and has veto authority.</p>
+  </section>
+
+  <div class="grid">
+    <div class="panel"><span class="status status-stop">Disabled</span><h3>Live trading</h3><p>No live trading is enabled.</p></div>
+    <div class="panel"><span class="status status-stop">Disabled</span><h3>Paper execution</h3><p>Paper execution is not enabled in this phase.</p></div>
+    <div class="panel"><span class="status status-safe">Clear</span><h3>Broker credentials</h3><p>No broker credentials are stored or requested.</p></div>
+    <div class="panel"><span class="status status-safe">Local</span><h3>External APIs</h3><p>No external APIs are used by this local shell.</p></div>
+  </div>
+
+  <section class="section">
+    <table>
+      <tbody>
+        <tr><th>Maximum drawdown assumption</th><td>15%</td></tr>
+        <tr><th>Initial model portfolio assumption</th><td>$50,000</td></tr>
+        <tr><th>Risk engine authority</th><td>Risk rules can veto any strategy signal.</td></tr>
+        <tr><th>Model authority</th><td>LLM/model output cannot override deterministic risk rules.</td></tr>
+        <tr><th>No-action posture</th><td>Cash/no-action is a valid research conclusion.</td></tr>
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

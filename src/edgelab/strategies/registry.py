@@ -40,9 +40,7 @@ class StrategyRegistry:
         """Return strategies matching an asset class."""
 
         return [
-            strategy
-            for strategy in self.list_strategies()
-            if strategy.asset_class == asset_class
+            strategy for strategy in self.list_strategies() if strategy.asset_class == asset_class
         ]
 
     def filter_by_horizon(self, horizon: TradingHorizon) -> list[StrategySpec]:

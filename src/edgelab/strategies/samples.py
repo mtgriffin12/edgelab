@@ -31,8 +31,7 @@ SAMPLE_STRATEGIES: tuple[StrategySpec, ...] = (
         name="Relative Strength Pullback",
         description="Long-only pullback candidate in stocks or ETFs with persistent strength.",
         thesis=(
-            "Leaders that pull back in orderly fashion may resume trend when broad risk "
-            "is stable."
+            "Leaders that pull back in orderly fashion may resume trend when broad risk is stable."
         ),
         asset_class=AssetClass.US_EQUITIES_AND_ETFS,
         direction=StrategyDirection.LONG_ONLY,

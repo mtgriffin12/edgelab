@@ -1,6 +1,11 @@
 """Minimal FastAPI app for EdgeLab."""
 
-from fastapi import FastAPI, HTTPException, Response
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from edgelab.backtesting.engine import BacktestEngine
 from edgelab.backtesting.schema import BacktestRequest
@@ -14,6 +19,9 @@ strategy_registry = StrategyRegistry.with_samples()
 market_data_provider = LocalFixtureMarketDataProvider()
 sentiment_provider = LocalFixtureSentimentProvider()
 backtest_engine = BacktestEngine()
+APP_DIR = Path(__file__).resolve().parent
+templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
+app.mount("/static", StaticFiles(directory=str(APP_DIR / "static")), name="static")
 
 
 @app.get("/")
@@ -22,7 +30,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 4 backtesting engine foundation",
+        "phase": "Phase 5A local UX shell",
         "status": "research-only",
     }
 
@@ -168,6 +176,142 @@ def run_backtest(request: BacktestRequest) -> dict[str, object]:
     """Run a local fixture-backed research backtest."""
 
     return _run_backtest_request(request)
+
+
+@app.get("/ui", response_class=HTMLResponse)
+def read_ui_home(request: Request) -> Response:
+    """Render the local research cockpit."""
+
+    strategies = strategy_registry.list_strategies()
+    market_symbols = market_data_provider.list_available_symbols()
+    sentiment_symbols = sentiment_provider.list_available_symbols()
+    sample_backtest = _run_backtest_request(
+        BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "strategies": strategies,
+            "market_symbols": market_symbols,
+            "sentiment_symbols": sentiment_symbols,
+            "sample_backtest": sample_backtest,
+        },
+    )
+
+
+@app.get("/ui/lab-bench", response_class=HTMLResponse)
+def read_ui_lab_bench(request: Request) -> Response:
+    """Render the read-only strategy inventory."""
+
+    return templates.TemplateResponse(
+        request=request,
+        name="lab_bench.html",
+        context={"strategies": strategy_registry.list_strategies()},
+    )
+
+
+@app.get("/ui/strategies/{strategy_id}", response_class=HTMLResponse)
+def read_ui_strategy_detail(request: Request, strategy_id: str) -> Response:
+    """Render a strategy card as readable local HTML."""
+
+    strategy = strategy_registry.get(strategy_id)
+    if strategy is None:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="strategy_detail.html",
+        context={
+            "strategy": strategy,
+            "card": strategy_to_markdown_card(strategy),
+        },
+    )
+
+
+@app.get("/ui/evidence-board", response_class=HTMLResponse)
+def read_ui_evidence_board(request: Request) -> Response:
+    """Render fixture-backed backtest evidence."""
+
+    sample_backtest = _run_backtest_request(
+        BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
+    )
+    unsupported_backtest = _run_backtest_request(
+        BacktestRequest(strategy_id="earnings-drift-with-confirmation", symbol="SPY")
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="evidence_board.html",
+        context={"backtests": [sample_backtest, unsupported_backtest]},
+    )
+
+
+@app.get("/ui/sentiment-lens", response_class=HTMLResponse)
+def read_ui_sentiment_lens(request: Request) -> Response:
+    """Render descriptive sentiment fixture snapshots."""
+
+    snapshots = [
+        sentiment_provider.create_snapshot(symbol).model_dump(mode="json")
+        for symbol in sentiment_provider.list_available_symbols()
+    ]
+    return templates.TemplateResponse(
+        request=request,
+        name="sentiment_lens.html",
+        context={"snapshots": snapshots},
+    )
+
+
+@app.get("/ui/risk-sentinel", response_class=HTMLResponse)
+def read_ui_risk_sentinel(request: Request) -> Response:
+    """Render deterministic safety posture."""
+
+    return templates.TemplateResponse(request=request, name="risk_sentinel.html", context={})
+
+
+@app.get("/ui/journal", response_class=HTMLResponse)
+def read_ui_journal(request: Request) -> Response:
+    """Render a simple audit-style phase journal."""
+
+    entries = [
+        "Phase 0 scaffold created",
+        "Phase 1 strategy specification engine",
+        "Phase 2 market data fixtures",
+        "Phase 3 sentiment fixtures",
+        "Phase 4 backtesting foundation",
+        "Phase 5A local UX shell",
+    ]
+    return templates.TemplateResponse(
+        request=request,
+        name="journal.html",
+        context={"entries": entries},
+    )
+
+
+@app.get("/ui/reports", response_class=HTMLResponse)
+def read_ui_reports(request: Request) -> Response:
+    """Render text/table summaries of current local fixtures."""
+
+    strategies = strategy_registry.list_strategies()
+    market_summaries = [
+        market_data_provider.summarize_symbol(symbol).model_dump(mode="json")
+        for symbol in market_data_provider.list_available_symbols()
+    ]
+    sentiment_summaries = [
+        sentiment_provider.summarize_symbol(symbol).model_dump(mode="json")
+        for symbol in sentiment_provider.list_available_symbols()
+    ]
+    sample_backtest = _run_backtest_request(
+        BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="reports.html",
+        context={
+            "strategies": strategies,
+            "market_summaries": market_summaries,
+            "sentiment_summaries": sentiment_summaries,
+            "sample_backtest": sample_backtest,
+        },
+    )
 
 
 def _run_backtest_request(request: BacktestRequest) -> dict[str, object]:

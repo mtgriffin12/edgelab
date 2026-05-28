@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Sentiment Lens{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Sentiment Lens</h2>
+    <p class="muted">Timestamped sentiment context from synthetic fixtures. Descriptive context only.</p>
+  </section>
+
+  <section class="warning">
+    Sentiment snapshots are not trade advice. They describe fixture-backed context only and do not
+    create recommendations.
+  </section>
+
+  <section class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Weighted Score</th>
+          <th>Decayed Score</th>
+          <th>Dominant Event</th>
+          <th>Avg Confidence</th>
+          <th>Label</th>
+          <th>Context</th>
+          <th>Divergence Flags</th>
+          <th>Quality Issues</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for snapshot in snapshots %}
+          <tr>
+            <td>{{ snapshot.symbol }}</td>
+            <td>{{ "%.4f"|format(snapshot.weighted_sentiment_score) }}</td>
+            <td>{{ "%.4f"|format(snapshot.decayed_sentiment_score) }}</td>
+            <td>{{ snapshot.dominant_event_type or "n/a" }}</td>
+            <td>
+              {{ "%.2f"|format(snapshot.average_confidence) if snapshot.average_confidence is not none else "n/a" }}
+            </td>
+            <td>{{ snapshot.sentiment_label }}</td>
+            <td>{{ snapshot.trade_bias_context }}</td>
+            <td>{{ snapshot.divergence_flags|join(", ") }}</td>
+            <td>{{ snapshot.quality_issue_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

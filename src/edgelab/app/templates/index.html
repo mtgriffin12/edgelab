@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}EdgeLab Cockpit{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Research Cockpit</h2>
+    <p class="muted">Conclusion first, evidence second, audit trail always.</p>
+  </section>
+
+  <section class="facts" aria-label="Current state">
+    <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 5A</strong></div>
+    <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
+    <div class="fact"><span>Sample backtest</span><strong>{{ sample_backtest.conclusion }}</strong></div>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    all data is synthetic fixture data, results are research evidence only, and no trade
+    recommendations are produced.
+  </section>
+
+  <section class="section">
+    <h3>Available Modules</h3>
+    <div class="grid">
+      <div class="summary-card">
+        <h4>Lab Bench</h4>
+        <p>Strategy specs, eligibility, and readable cards.</p>
+        <a href="/ui/lab-bench">Open Lab Bench</a>
+      </div>
+      <div class="summary-card">
+        <h4>Evidence Board</h4>
+        <p>Fixture-backed backtest evidence and limitations.</p>
+        <a href="/ui/evidence-board">Open Evidence Board</a>
+      </div>
+      <div class="summary-card">
+        <h4>Sentiment Lens</h4>
+        <p>Timestamped synthetic sentiment context by symbol.</p>
+        <a href="/ui/sentiment-lens">Open Sentiment Lens</a>
+      </div>
+      <div class="summary-card">
+        <h4>Risk Sentinel</h4>
+        <p>Deterministic safety posture and veto principles.</p>
+        <a href="/ui/risk-sentinel">Open Risk Sentinel</a>
+      </div>
+      <div class="summary-card">
+        <h4>Journal</h4>
+        <p>Audit-style project phase record.</p>
+        <a href="/ui/journal">Open Journal</a>
+      </div>
+      <div class="summary-card">
+        <h4>Reports</h4>
+        <p>Text and table summaries of current fixtures.</p>
+        <a href="/ui/reports">Open Reports</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab Knows Right Now</h3>
+    <table>
+      <tbody>
+        <tr>
+          <th>Sample strategies available</th>
+          <td>{{ strategies|length }}</td>
+        </tr>
+        <tr>
+          <th>Fixture market symbols available</th>
+          <td>{{ market_symbols|join(", ") }}</td>
+        </tr>
+        <tr>
+          <th>Fixture sentiment symbols available</th>
+          <td>{{ sentiment_symbols|join(", ") }}</td>
+        </tr>
+        <tr>
+          <th>Sample backtest available</th>
+          <td>{{ sample_backtest.strategy_id }} on {{ sample_backtest.symbol }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

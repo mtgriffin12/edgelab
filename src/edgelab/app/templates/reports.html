@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Reports</h2>
+    <p class="muted">Text/table summaries only. Exports and richer reporting are future work.</p>
+  </section>
+
+  <section class="section">
+    <h3>Strategy Inventory Summary</h3>
+    <table>
+      <tbody>
+        <tr><th>Total strategies</th><td>{{ strategies|length }}</td></tr>
+        <tr><th>Paper eligible</th><td>{{ strategies|selectattr("eligible_for_paper_trading")|list|length }}</td></tr>
+        <tr><th>Live eligible</th><td>{{ strategies|selectattr("eligible_for_live_trading")|list|length }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Market Data Fixture Summary</h3>
+    <table>
+      <thead>
+        <tr><th>Symbol</th><th>Rows</th><th>Start</th><th>End</th><th>Min Close</th><th>Max Close</th><th>Quality Issues</th></tr>
+      </thead>
+      <tbody>
+        {% for summary in market_summaries %}
+          <tr>
+            <td>{{ summary.symbol }}</td>
+            <td>{{ summary.row_count }}</td>
+            <td>{{ summary.start_timestamp }}</td>
+            <td>{{ summary.end_timestamp }}</td>
+            <td>{{ summary.min_close }}</td>
+            <td>{{ summary.max_close }}</td>
+            <td>{{ summary.quality_issue_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Sentiment Fixture Summary</h3>
+    <table>
+      <thead>
+        <tr><th>Symbol</th><th>Events</th><th>Avg Score</th><th>Avg Confidence</th><th>Quality Issues</th></tr>
+      </thead>
+      <tbody>
+        {% for summary in sentiment_summaries %}
+          <tr>
+            <td>{{ summary.symbol }}</td>
+            <td>{{ summary.event_count }}</td>
+            <td>{{ summary.average_sentiment_score }}</td>
+            <td>{{ summary.average_confidence }}</td>
+            <td>{{ summary.quality_issue_count }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Sample Backtest Summary</h3>
+    <table>
+      <tbody>
+        <tr><th>Strategy</th><td>{{ sample_backtest.strategy_id }}</td></tr>
+        <tr><th>Symbol</th><td>{{ sample_backtest.symbol }}</td></tr>
+        <tr><th>Conclusion</th><td>{{ sample_backtest.conclusion }}</td></tr>
+        <tr><th>Final equity</th><td>${{ "%.2f"|format(sample_backtest.final_equity) }}</td></tr>
+        <tr><th>Total return %</th><td>{{ "%.4f"|format(sample_backtest.total_return_pct) }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="warning section">
+    Current limitations: synthetic fixtures only, placeholder backtest behavior, no charts, no
+    persistence, no authentication, no broker connections, and no live execution.
+  </section>
+{% endblock %}

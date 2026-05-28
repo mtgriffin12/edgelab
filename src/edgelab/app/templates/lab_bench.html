@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Lab Bench{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Lab Bench</h2>
+    <p class="muted">Strategy cards first. Eligibility is shown before any evidence is implied.</p>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Strategy ID</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Asset Class</th>
+        <th>Horizon</th>
+        <th>Backtesting</th>
+        <th>Paper</th>
+        <th>Live</th>
+        <th>Why it exists</th>
+        <th>Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for strategy in strategies %}
+        <tr>
+          <td><code>{{ strategy.strategy_id }}</code></td>
+          <td>{{ strategy.name }}</td>
+          <td>{{ strategy.status.value }}</td>
+          <td>{{ strategy.asset_class.value }}</td>
+          <td>{{ strategy.horizon.value }}</td>
+          <td>{{ strategy.eligible_for_backtesting }}</td>
+          <td>{{ strategy.eligible_for_paper_trading }}</td>
+          <td>{{ strategy.eligible_for_live_trading }}</td>
+          <td>{{ strategy.thesis[:140] }}{% if strategy.thesis|length > 140 %}...{% endif %}</td>
+          <td><a href="/ui/strategies/{{ strategy.strategy_id }}">Open card</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

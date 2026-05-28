@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 4 backtesting engine foundation**.
+Current phase: **Phase 5A local UX shell**.
 
 No live trading functionality exists.
 
@@ -40,14 +40,21 @@ source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
-## Run the API
+## Run the Local UI and API
 
 ```bash
-uvicorn edgelab.app.main:app --reload
+PYTHONPATH=src .venv/bin/uvicorn edgelab.app.main:app --reload
 ```
 
 Then visit:
 
+- `http://127.0.0.1:8000/ui`
+- `http://127.0.0.1:8000/ui/lab-bench`
+- `http://127.0.0.1:8000/ui/evidence-board`
+- `http://127.0.0.1:8000/ui/sentiment-lens`
+- `http://127.0.0.1:8000/ui/risk-sentinel`
+- `http://127.0.0.1:8000/ui/journal`
+- `http://127.0.0.1:8000/ui/reports`
 - `http://127.0.0.1:8000/`
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/strategies`
@@ -67,6 +74,10 @@ Then visit:
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
 endpoints use local fixtures and produce research evidence only.
+
+The `/ui` routes provide a local browser research cockpit. They are server-rendered, text/table
+first, fixture-backed, and read-only. They do not include charts, authentication, broker
+connections, external API calls, or trade action buttons.
 
 To run a local fixture-backed backtest:
 

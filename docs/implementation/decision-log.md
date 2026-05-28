@@ -67,3 +67,7 @@ Phase 3 implements local fixture-based sentiment intelligence before real news, 
 ## DEC-017: Phase 4 Local Fixture Backtesting
 
 Phase 4 implements a local fixture-based backtesting engine before real data providers or broker integrations.
+
+## DEC-018: Phase 5A Local Research Cockpit
+
+Phase 5A implements a local text/table research cockpit before charts, cloud deployment, authentication, or live integrations.

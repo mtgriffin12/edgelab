@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Journal{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Journal</h2>
+    <p class="muted">A simple audit-style summary of what the local system can inspect today.</p>
+  </section>
+
+  <section class="panel">
+    <ul class="list-clean">
+      {% for entry in entries %}
+        <li>{{ entry }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

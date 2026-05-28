@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ strategy.name }}{% endblock %}
+{% block content %}
+  <p><a href="/ui/lab-bench">Back to Lab Bench</a></p>
+  <section class="page-header">
+    <h2>{{ strategy.name }}</h2>
+    <p class="muted">
+      Eligibility:
+      research={{ strategy.eligible_for_research }},
+      backtesting={{ strategy.eligible_for_backtesting }},
+      paper={{ strategy.eligible_for_paper_trading }},
+      live={{ strategy.eligible_for_live_trading }}
+    </p>
+  </section>
+
+  <pre class="markdown-card">{{ card }}</pre>
+{% endblock %}

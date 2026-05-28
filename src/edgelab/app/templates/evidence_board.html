@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Evidence Board{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Evidence Board</h2>
+    <p class="muted">Backtest output is research evidence only, not proof and not permission.</p>
+  </section>
+
+  <section class="warning">
+    Limitations: placeholder signal behavior only, synthetic fixture data only, not strategy proof,
+    and not paper-trading eligible.
+  </section>
+
+  <section class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Symbol</th>
+          <th>Status</th>
+          <th>Initial Capital</th>
+          <th>Final Equity</th>
+          <th>Total Return %</th>
+          <th>Max Drawdown %</th>
+          <th>Trades</th>
+          <th>Win Rate %</th>
+          <th>Profit Factor</th>
+          <th>Conclusion</th>
+          <th>Quality Issues</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in backtests %}
+          <tr>
+            <td><code>{{ result.strategy_id }}</code></td>
+            <td>{{ result.symbol }}</td>
+            <td>{{ result.status }}</td>
+            <td>${{ "%.2f"|format(result.initial_capital) }}</td>
+            <td>${{ "%.2f"|format(result.final_equity) }}</td>
+            <td>{{ "%.4f"|format(result.total_return_pct) }}</td>
+            <td>{{ "%.4f"|format(result.max_drawdown_pct) }}</td>
+            <td>{{ result.trade_count }}</td>
+            <td>{{ "%.2f"|format(result.win_rate_pct) }}</td>
+            <td>{{ result.profit_factor if result.profit_factor is not none else "n/a" }}</td>
+            <td>{{ result.conclusion }}</td>
+            <td>
+              {% if result.quality_issues %}
+                <ul class="list-clean">
+                  {% for issue in result.quality_issues %}
+                    <li>{{ issue.code }}: {{ issue.message }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                none
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}
