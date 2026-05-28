@@ -1,0 +1,4 @@
+event_id,symbol,timestamp,source_type,source_name,event_type,headline_or_summary,sentiment_score,sentiment_label,relevance_score,novelty_score,confidence_score,source_weight,mention_count,mention_velocity_zscore,url_reference,ingested_at
+spy-sent-001,SPY,2024-01-02T14:30:00Z,macro_market,synthetic_fixture,macro_pressure,Synthetic macro pressure context weighs on broad risk appetite,-0.45,bearish,0.90,0.70,0.82,0.80,12,-0.40,,2024-01-02T14:35:00Z
+spy-sent-002,SPY,2024-01-03T14:30:00Z,price_volume_implied,synthetic_fixture,price_volume_confirmation,Synthetic price and volume action confirms stabilization,0.35,bullish,0.78,0.55,0.76,0.70,8,0.20,,2024-01-03T14:35:00Z
+spy-sent-003,SPY,2024-01-04T14:30:00Z,financial_news,synthetic_fixture,sector_rotation,Synthetic sector rotation note shows defensive tone,-0.20,neutral,0.64,0.45,0.70,0.65,5,-0.10,,2024-01-04T14:35:00Z

@@ -1,0 +1,4 @@
+event_id,symbol,timestamp,source_type,source_name,event_type,headline_or_summary,sentiment_score,sentiment_label,relevance_score,novelty_score,confidence_score,source_weight,mention_count,mention_velocity_zscore,url_reference,ingested_at
+qqq-sent-001,QQQ,2024-01-02T14:30:00Z,financial_news,synthetic_fixture,product_launch,Synthetic mega-cap product cycle headline supports growth sentiment,0.55,bullish,0.84,0.72,0.78,0.80,15,0.60,,2024-01-02T14:35:00Z
+qqq-sent-002,QQQ,2024-01-03T14:30:00Z,price_volume_implied,synthetic_fixture,price_volume_divergence,Synthetic price and volume context diverges from positive headlines,-0.40,bearish,0.80,0.66,0.74,0.72,9,-0.35,,2024-01-03T14:35:00Z
+qqq-sent-003,QQQ,2024-01-04T14:30:00Z,social,synthetic_fixture,social_mania,Synthetic social attention accelerates without broad confirmation,0.72,bullish,0.62,0.86,0.58,0.45,42,2.70,,2024-01-04T14:35:00Z

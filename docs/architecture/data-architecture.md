@@ -34,3 +34,12 @@ symbol/timestamp/interval rows, unsorted timestamps, and empty datasets.
 
 Real market-data integrations remain future work. Provider adapters should be introduced only after
 the local models and quality rules are stable.
+
+## Phase 3 Sentiment Fixture Approach
+
+Phase 3 extends the fixture pattern to sentiment data. Sentiment fixtures are local, synthetic CSV
+files used to validate timestamped event schemas, source weighting, recency decay, quality checks,
+and read-only API inspection.
+
+Sentiment remains data, not discretionary model opinion. Real news, social, or sentiment providers
+remain future work after the local taxonomy and validation rules are stable.

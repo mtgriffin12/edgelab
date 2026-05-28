@@ -44,3 +44,21 @@ Sentiment is a first-class signal layer. It is not discretionary model intuition
 - Financing/dilution.
 - Debt/liquidity issue.
 - Dividend/buyback.
+
+## Phase 3 Fixture Approach
+
+Phase 3 uses local synthetic CSV fixtures as the only sentiment source. No real news, social,
+broker, or sentiment provider integrations are included.
+
+Sentiment events are normalized as timestamped data with source type, event type, headline or
+summary, sentiment score, relevance, novelty, confidence, source weight, mention metadata, and
+ingestion time. These fields support inspection and future point-in-time testing without relying on
+model opinion.
+
+The fixture provider supports source-weighted summaries, deterministic recency decay, ticker-level
+snapshots, and structured quality issues. Snapshot context is descriptive only: it may describe
+bullish, bearish, mixed, neutral, crowding-risk, or insufficient-data context, but it must not create
+trade instructions.
+
+Phase 3 does not join sentiment to market data. Divergence flags are derived from sentiment fixture
+events only; richer market-data joins are future work.

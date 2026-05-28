@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 2 market data ingestion foundation**.
+Current phase: **Phase 3 sentiment intelligence foundation**.
 
 No live trading functionality exists.
 
@@ -57,9 +57,14 @@ Then visit:
 - `http://127.0.0.1:8000/market-data/SPY/bars`
 - `http://127.0.0.1:8000/market-data/SPY/summary`
 - `http://127.0.0.1:8000/market-data/SPY/quality`
+- `http://127.0.0.1:8000/sentiment/symbols`
+- `http://127.0.0.1:8000/sentiment/SPY/events`
+- `http://127.0.0.1:8000/sentiment/SPY/summary`
+- `http://127.0.0.1:8000/sentiment/SPY/snapshot`
+- `http://127.0.0.1:8000/sentiment/SPY/quality`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
-endpoints are read-only and use synthetic local CSV fixtures only.
+and sentiment endpoints are read-only and use synthetic local CSV fixtures only.
 
 ## Run Tests
 

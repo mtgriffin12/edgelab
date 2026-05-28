@@ -59,3 +59,7 @@ Phase 1 implements structured strategy specification and registry before market 
 ## DEC-015: Phase 2 Local Fixture Market Data
 
 Phase 2 implements local fixture-based market-data ingestion before real provider integrations.
+
+## DEC-016: Phase 3 Local Fixture Sentiment Intelligence
+
+Phase 3 implements local fixture-based sentiment intelligence before real news, social, or sentiment provider integrations.

@@ -1,0 +1,4 @@
+event_id,symbol,timestamp,source_type,source_name,event_type,headline_or_summary,sentiment_score,sentiment_label,relevance_score,novelty_score,confidence_score,source_weight,mention_count,mention_velocity_zscore,url_reference,ingested_at
+aapl-sent-001,AAPL,2024-01-02T14:30:00Z,financial_news,synthetic_fixture,analyst_downgrade,Synthetic analyst concern lowers near-term sentiment,-0.50,bearish,0.88,0.70,0.82,0.78,18,0.40,,2024-01-02T14:35:00Z
+aapl-sent-002,AAPL,2024-01-03T14:30:00Z,price_volume_implied,synthetic_fixture,price_volume_confirmation,Synthetic price and volume action remains constructive,0.42,bullish,0.76,0.55,0.72,0.70,11,0.25,,2024-01-03T14:35:00Z
+aapl-sent-003,AAPL,2024-01-04T14:30:00Z,analyst_institutional,synthetic_fixture,price_target_cut,Synthetic target cut reinforces mixed institutional context,-0.35,bearish,0.82,0.62,0.79,0.76,7,0.10,,2024-01-04T14:35:00Z

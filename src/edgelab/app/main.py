@@ -3,12 +3,14 @@
 from fastapi import FastAPI, HTTPException, Response
 
 from edgelab.data.market_data import LocalFixtureMarketDataProvider
+from edgelab.data.sentiment import LocalFixtureSentimentProvider
 from edgelab.strategies.cards import strategy_to_markdown_card
 from edgelab.strategies.registry import StrategyRegistry
 
 app = FastAPI(title="EdgeLab", version="0.1.0")
 strategy_registry = StrategyRegistry.with_samples()
 market_data_provider = LocalFixtureMarketDataProvider()
+sentiment_provider = LocalFixtureSentimentProvider()
 
 
 @app.get("/")
@@ -17,7 +19,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 2 market data ingestion foundation",
+        "phase": "Phase 3 sentiment intelligence foundation",
         "status": "research-only",
     }
 
@@ -93,4 +95,58 @@ def read_market_data_quality(symbol: str) -> dict[str, object]:
     return {
         "symbol": data.symbol,
         "quality_issues": [issue.model_dump(mode="json") for issue in data.quality_issues],
+    }
+
+
+@app.get("/sentiment/symbols")
+def list_sentiment_symbols() -> dict[str, list[str]]:
+    """Return symbols available in local synthetic sentiment fixtures."""
+
+    return {"symbols": sentiment_provider.list_available_symbols()}
+
+
+@app.get("/sentiment/{symbol}/events")
+def read_sentiment_events(symbol: str) -> dict[str, object]:
+    """Return local synthetic sentiment events for a symbol."""
+
+    events, issues = sentiment_provider.load_events(symbol)
+    if not events and any(issue.code == "missing_symbol" for issue in issues):
+        raise HTTPException(status_code=404, detail="Sentiment fixture not found")
+    return {
+        "symbol": symbol.strip().upper(),
+        "events": [event.model_dump(mode="json") for event in events],
+        "quality_issues": [issue.model_dump(mode="json") for issue in issues],
+    }
+
+
+@app.get("/sentiment/{symbol}/summary")
+def read_sentiment_summary(symbol: str) -> dict[str, object]:
+    """Return a local synthetic sentiment summary for a symbol."""
+
+    events, issues = sentiment_provider.load_events(symbol)
+    if not events and any(issue.code == "missing_symbol" for issue in issues):
+        raise HTTPException(status_code=404, detail="Sentiment fixture not found")
+    return sentiment_provider.summarize_symbol(symbol).model_dump(mode="json")
+
+
+@app.get("/sentiment/{symbol}/snapshot")
+def read_sentiment_snapshot(symbol: str) -> dict[str, object]:
+    """Return a descriptive local synthetic sentiment snapshot for a symbol."""
+
+    events, issues = sentiment_provider.load_events(symbol)
+    if not events and any(issue.code == "missing_symbol" for issue in issues):
+        raise HTTPException(status_code=404, detail="Sentiment fixture not found")
+    return sentiment_provider.create_snapshot(symbol).model_dump(mode="json")
+
+
+@app.get("/sentiment/{symbol}/quality")
+def read_sentiment_quality(symbol: str) -> dict[str, object]:
+    """Return quality issues for a local synthetic sentiment fixture symbol."""
+
+    events, issues = sentiment_provider.load_events(symbol)
+    if not events and any(issue.code == "missing_symbol" for issue in issues):
+        raise HTTPException(status_code=404, detail="Sentiment fixture not found")
+    return {
+        "symbol": symbol.strip().upper(),
+        "quality_issues": [issue.model_dump(mode="json") for issue in issues],
     }
