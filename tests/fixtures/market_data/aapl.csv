@@ -1,0 +1,6 @@
+symbol,timestamp,interval,open,high,low,close,volume,adjusted_close,source
+AAPL,2024-01-02T00:00:00Z,1d,187.20,188.45,183.90,185.65,68000000,185.65,synthetic_fixture
+AAPL,2024-01-03T00:00:00Z,1d,185.65,186.30,181.80,183.10,70500000,183.10,synthetic_fixture
+AAPL,2024-01-04T00:00:00Z,1d,183.10,184.95,181.50,184.40,62000000,184.40,synthetic_fixture
+AAPL,2024-01-05T00:00:00Z,1d,184.40,187.00,183.75,186.85,59000000,186.85,synthetic_fixture
+AAPL,2024-01-08T00:00:00Z,1d,186.85,189.20,185.90,188.70,64200000,188.70,synthetic_fixture

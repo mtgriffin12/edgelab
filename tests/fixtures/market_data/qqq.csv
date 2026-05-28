@@ -1,0 +1,6 @@
+symbol,timestamp,interval,open,high,low,close,volume,adjusted_close,source
+QQQ,2024-01-02T00:00:00Z,1d,405.00,410.50,402.80,408.40,52000000,408.40,synthetic_fixture
+QQQ,2024-01-03T00:00:00Z,1d,408.40,409.20,401.50,403.10,56000000,403.10,synthetic_fixture
+QQQ,2024-01-04T00:00:00Z,1d,403.10,411.00,402.20,409.80,54500000,409.80,synthetic_fixture
+QQQ,2024-01-05T00:00:00Z,1d,409.80,414.60,408.90,413.70,58100000,413.70,synthetic_fixture
+QQQ,2024-01-08T00:00:00Z,1d,413.70,417.00,412.40,416.25,49700000,416.25,synthetic_fixture

@@ -1,0 +1,6 @@
+symbol,timestamp,interval,open,high,low,close,volume,adjusted_close,source
+SPY,2024-01-02T00:00:00Z,1d,470.00,475.00,468.50,472.25,72000000,472.25,synthetic_fixture
+SPY,2024-01-03T00:00:00Z,1d,472.25,474.10,469.80,470.50,69000000,470.50,synthetic_fixture
+SPY,2024-01-04T00:00:00Z,1d,470.50,476.00,470.00,475.20,73500000,475.20,synthetic_fixture
+SPY,2024-01-05T00:00:00Z,1d,475.20,478.40,473.90,477.80,78000000,477.80,synthetic_fixture
+SPY,2024-01-08T00:00:00Z,1d,477.80,481.00,476.70,480.30,70200000,480.30,synthetic_fixture

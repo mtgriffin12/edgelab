@@ -55,3 +55,7 @@ No live trading functionality in Phase 0.
 ## DEC-014: Phase 1 Strategy Foundation
 
 Phase 1 implements structured strategy specification and registry before market data, backtesting, sentiment ingestion, paper trading, or live execution.
+
+## DEC-015: Phase 2 Local Fixture Market Data
+
+Phase 2 implements local fixture-based market-data ingestion before real provider integrations.
