@@ -51,3 +51,7 @@ Use Alpaca paper trading later as the first paper-trading integration.
 ## DEC-013: Phase 0 Trading Boundary
 
 No live trading functionality in Phase 0.
+
+## DEC-014: Phase 1 Strategy Foundation
+
+Phase 1 implements structured strategy specification and registry before market data, backtesting, sentiment ingestion, paper trading, or live execution.

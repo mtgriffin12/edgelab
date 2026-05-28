@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 0 scaffold**.
+Current phase: **Phase 1 strategy specification engine**.
 
 No live trading functionality exists.
 
@@ -50,6 +50,11 @@ Then visit:
 
 - `http://127.0.0.1:8000/`
 - `http://127.0.0.1:8000/health`
+- `http://127.0.0.1:8000/strategies`
+- `http://127.0.0.1:8000/strategies/relative-strength-pullback`
+- `http://127.0.0.1:8000/strategies/relative-strength-pullback/card`
+
+The strategy endpoints are read-only and use an in-memory sample registry.
 
 ## Run Tests
 

@@ -19,4 +19,4 @@ def test_root_endpoint_returns_phase_metadata() -> None:
 
     assert response.status_code == 200
     assert response.json()["app"] == "EdgeLab"
-    assert response.json()["phase"] == "Phase 0 scaffold"
+    assert response.json()["phase"] == "Phase 1 strategy specification engine"
