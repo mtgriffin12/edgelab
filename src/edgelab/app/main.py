@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI, HTTPException, Response
 
+from edgelab.backtesting.engine import BacktestEngine
+from edgelab.backtesting.schema import BacktestRequest
 from edgelab.data.market_data import LocalFixtureMarketDataProvider
 from edgelab.data.sentiment import LocalFixtureSentimentProvider
 from edgelab.strategies.cards import strategy_to_markdown_card
@@ -11,6 +13,7 @@ app = FastAPI(title="EdgeLab", version="0.1.0")
 strategy_registry = StrategyRegistry.with_samples()
 market_data_provider = LocalFixtureMarketDataProvider()
 sentiment_provider = LocalFixtureSentimentProvider()
+backtest_engine = BacktestEngine()
 
 
 @app.get("/")
@@ -19,7 +22,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 3 sentiment intelligence foundation",
+        "phase": "Phase 4 backtesting engine foundation",
         "status": "research-only",
     }
 
@@ -150,3 +153,31 @@ def read_sentiment_quality(symbol: str) -> dict[str, object]:
         "symbol": symbol.strip().upper(),
         "quality_issues": [issue.model_dump(mode="json") for issue in issues],
     }
+
+
+@app.get("/backtests/sample")
+def read_sample_backtest() -> dict[str, object]:
+    """Return a read-only sample backtest using local fixtures."""
+
+    request = BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
+    return _run_backtest_request(request)
+
+
+@app.post("/backtests/run")
+def run_backtest(request: BacktestRequest) -> dict[str, object]:
+    """Run a local fixture-backed research backtest."""
+
+    return _run_backtest_request(request)
+
+
+def _run_backtest_request(request: BacktestRequest) -> dict[str, object]:
+    strategy = strategy_registry.get(request.strategy_id)
+    if strategy is None:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+
+    data = market_data_provider.load_bars(request.symbol)
+    if not data.bars and any(issue.code == "missing_symbol" for issue in data.quality_issues):
+        raise HTTPException(status_code=404, detail="Market data fixture not found")
+
+    result = backtest_engine.run(strategy, data.bars, request)
+    return result.model_dump(mode="json")

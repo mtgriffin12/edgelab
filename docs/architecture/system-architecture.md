@@ -22,6 +22,11 @@ Stores and exposes timestamped sentiment events. Sentiment is structured data, n
 
 Evaluates strategies against historical data while preserving point-in-time behavior and avoiding look-ahead bias.
 
+Phase 4 starts with a local fixture-based engine that supports one simple placeholder signal for
+research evidence generation. It records simulated fills, closed simulated positions, equity curve
+points, assumptions, metrics, and quality issues. Unsupported strategies are flagged explicitly
+rather than silently approximated.
+
 ## Robustness / Walk-Forward Tester
 
 Tests whether strategy behavior survives out-of-sample periods, regime changes, and parameter sensitivity.

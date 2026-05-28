@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 3 sentiment intelligence foundation**.
+Current phase: **Phase 4 backtesting engine foundation**.
 
 No live trading functionality exists.
 
@@ -62,9 +62,19 @@ Then visit:
 - `http://127.0.0.1:8000/sentiment/SPY/summary`
 - `http://127.0.0.1:8000/sentiment/SPY/snapshot`
 - `http://127.0.0.1:8000/sentiment/SPY/quality`
+- `http://127.0.0.1:8000/backtests/sample`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
-and sentiment endpoints are read-only and use synthetic local CSV fixtures only.
+and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
+endpoints use local fixtures and produce research evidence only.
+
+To run a local fixture-backed backtest:
+
+```bash
+curl -X POST http://127.0.0.1:8000/backtests/run \
+  -H "Content-Type: application/json" \
+  -d '{"strategy_id":"relative-strength-pullback","symbol":"SPY"}'
+```
 
 ## Run Tests
 

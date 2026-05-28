@@ -63,3 +63,7 @@ Phase 2 implements local fixture-based market-data ingestion before real provide
 ## DEC-016: Phase 3 Local Fixture Sentiment Intelligence
 
 Phase 3 implements local fixture-based sentiment intelligence before real news, social, or sentiment provider integrations.
+
+## DEC-017: Phase 4 Local Fixture Backtesting
+
+Phase 4 implements a local fixture-based backtesting engine before real data providers or broker integrations.
