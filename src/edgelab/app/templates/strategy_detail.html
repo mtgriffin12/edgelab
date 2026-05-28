@@ -5,11 +5,19 @@
   <section class="page-header">
     <h2>{{ strategy.name }}</h2>
     <p class="muted">
-      Eligibility:
-      research={{ strategy.eligible_for_research }},
-      backtesting={{ strategy.eligible_for_backtesting }},
-      paper={{ strategy.eligible_for_paper_trading }},
-      live={{ strategy.eligible_for_live_trading }}
+      Readiness:
+      research={{ yes_no(strategy.eligible_for_research) }},
+      historical tests={{ yes_no(strategy.eligible_for_backtesting) }},
+      paper simulation={{ yes_no(strategy.eligible_for_paper_trading) }},
+      real money={{ yes_no(strategy.eligible_for_live_trading) }}
+    </p>
+  </section>
+
+  <section class="panel">
+    <h3>Plain-English read</h3>
+    <p>
+      This card explains why the idea exists, what evidence it needs, and what could break it.
+      It does not grant permission to use paper simulation or real money.
     </p>
   </section>
 

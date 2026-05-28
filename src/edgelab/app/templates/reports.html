@@ -6,22 +6,30 @@
     <p class="muted">Text/table summaries only. Exports and richer reporting are future work.</p>
   </section>
 
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      These summaries are a quick inventory of what the local app can inspect today. They use sample
+      data built into the app and should be read as a development report, not as market evidence.
+    </p>
+  </section>
+
   <section class="section">
     <h3>Strategy Inventory Summary</h3>
     <table>
       <tbody>
         <tr><th>Total strategies</th><td>{{ strategies|length }}</td></tr>
-        <tr><th>Paper eligible</th><td>{{ strategies|selectattr("eligible_for_paper_trading")|list|length }}</td></tr>
-        <tr><th>Live eligible</th><td>{{ strategies|selectattr("eligible_for_live_trading")|list|length }}</td></tr>
+        <tr><th>Allowed to use paper simulation</th><td>{{ strategies|selectattr("eligible_for_paper_trading")|list|length }}</td></tr>
+        <tr><th>Allowed to use real money</th><td>{{ strategies|selectattr("eligible_for_live_trading")|list|length }}</td></tr>
       </tbody>
     </table>
   </section>
 
   <section class="section">
-    <h3>Market Data Fixture Summary</h3>
+    <h3>Built-In Market Sample Summary</h3>
     <table>
       <thead>
-        <tr><th>Symbol</th><th>Rows</th><th>Start</th><th>End</th><th>Min Close</th><th>Max Close</th><th>Quality Issues</th></tr>
+        <tr><th>Symbol</th><th>Rows</th><th>Start</th><th>End</th><th>Lowest Close</th><th>Highest Close</th><th>{{ plain_label("quality_issues") }}</th></tr>
       </thead>
       <tbody>
         {% for summary in market_summaries %}
@@ -40,10 +48,10 @@
   </section>
 
   <section class="section">
-    <h3>Sentiment Fixture Summary</h3>
+    <h3>Market Mood Sample Summary</h3>
     <table>
       <thead>
-        <tr><th>Symbol</th><th>Events</th><th>Avg Score</th><th>Avg Confidence</th><th>Quality Issues</th></tr>
+        <tr><th>Symbol</th><th>Events</th><th>Average Mood</th><th>Average Confidence</th><th>{{ plain_label("quality_issues") }}</th></tr>
       </thead>
       <tbody>
         {% for summary in sentiment_summaries %}
@@ -60,14 +68,14 @@
   </section>
 
   <section class="section">
-    <h3>Sample Backtest Summary</h3>
+    <h3>Sample Historical Test Summary</h3>
     <table>
       <tbody>
         <tr><th>Strategy</th><td>{{ sample_backtest.strategy_id }}</td></tr>
         <tr><th>Symbol</th><td>{{ sample_backtest.symbol }}</td></tr>
-        <tr><th>Conclusion</th><td>{{ sample_backtest.conclusion }}</td></tr>
-        <tr><th>Final equity</th><td>${{ "%.2f"|format(sample_backtest.final_equity) }}</td></tr>
-        <tr><th>Total return %</th><td>{{ "%.4f"|format(sample_backtest.total_return_pct) }}</td></tr>
+        <tr><th>Current read</th><td>{{ plain_label(sample_backtest.conclusion) }}</td></tr>
+        <tr><th>Ending amount</th><td>${{ "%.2f"|format(sample_backtest.final_equity) }}</td></tr>
+        <tr><th>{{ plain_label("total_return_pct") }}</th><td>{{ "%.4f"|format(sample_backtest.total_return_pct) }}</td></tr>
       </tbody>
     </table>
   </section>

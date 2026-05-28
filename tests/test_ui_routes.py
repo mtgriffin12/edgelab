@@ -11,7 +11,7 @@ def test_ui_home_returns_research_cockpit() -> None:
     assert response.status_code == 200
     assert "Research Cockpit" in response.text
     assert "No live trading enabled" in response.text
-    assert "synthetic fixture data" in response.text
+    assert "Synthetic Sample Data" in response.text
 
 
 def test_lab_bench_returns_strategy_names() -> None:
@@ -20,6 +20,8 @@ def test_lab_bench_returns_strategy_names() -> None:
     assert response.status_code == 200
     assert "Relative Strength Pullback" in response.text
     assert "Earnings Drift With Confirmation" in response.text
+    assert "Allowed to Use Real Money" in response.text
+    assert ">No<" in response.text
 
 
 def test_strategy_detail_returns_strategy_card_content() -> None:
@@ -35,25 +37,37 @@ def test_evidence_board_returns_research_limitations() -> None:
     response = client.get("/ui/evidence-board")
 
     assert response.status_code == 200
+    assert "Historical Test" in response.text
+    assert "This is a historical test using sample data built into the app" in response.text
+    assert "It is not proof the strategy" in response.text
+    assert "it is not a recommendation" in response.text
     assert "research evidence only" in response.text
     assert "placeholder signal behavior only" in response.text
-    assert "not paper-trading eligible" in response.text
+    assert "not allowed to use paper simulation" in response.text
+    assert "Worst Drop" in response.text
+    assert "Gain/Loss Ratio" in response.text
 
 
 def test_sentiment_lens_returns_fixture_context() -> None:
     response = client.get("/ui/sentiment-lens")
 
     assert response.status_code == 200
-    assert "synthetic fixtures" in response.text
+    assert "Market Mood Lens" in response.text
+    assert "Market mood is context, not a signal to act" in response.text
+    assert "synthetic sample data built" in response.text
+    assert "not reading live news yet" in response.text
     assert "Descriptive context only" in response.text
-    assert "trade_bias_context" in response.text or "Context" in response.text
+    assert "Mixed-Signal Warnings" in response.text
 
 
 def test_risk_sentinel_returns_no_live_trading_language() -> None:
     response = client.get("/ui/risk-sentinel")
 
     assert response.status_code == 200
-    assert "No live trading is enabled" in response.text
+    assert "The system is blocked from real-money use" in response.text
+    assert "No real-money use is enabled" in response.text
+    assert "Safety rules are designed to stop weak ideas" in response.text
+    assert "Doing nothing is an acceptable outcome" in response.text
     assert "Cash/no-action is a valid research conclusion" in response.text
 
 
@@ -61,7 +75,7 @@ def test_journal_returns_phase_summary() -> None:
     response = client.get("/ui/journal")
 
     assert response.status_code == 200
-    assert "Phase 5A local UX shell" in response.text
+    assert "Phase 5B plain-English UX language" in response.text
 
 
 def test_reports_returns_summaries() -> None:
@@ -69,8 +83,17 @@ def test_reports_returns_summaries() -> None:
 
     assert response.status_code == 200
     assert "Strategy Inventory Summary" in response.text
-    assert "Market Data Fixture Summary" in response.text
-    assert "Sample Backtest Summary" in response.text
+    assert "Built-In Market Sample Summary" in response.text
+    assert "Sample Historical Test Summary" in response.text
+
+
+def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
+    response = client.get("/ui/risk-sentinel")
+
+    assert response.status_code == 200
+    assert "<button" not in response.text.lower()
+    assert "Allowed to Use Real Money" in response.text
+    assert "No real-money use is enabled" in response.text
 
 
 def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:

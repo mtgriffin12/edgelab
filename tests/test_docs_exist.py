@@ -5,6 +5,7 @@ REQUIRED_DOCS = [
     "README.md",
     "docs/product/trading-research-agent-brief.md",
     "docs/product/ux-principles.md",
+    "docs/product/plain-english-ux-language.md",
     "docs/product/operating-model.md",
     "docs/architecture/system-architecture.md",
     "docs/architecture/data-architecture.md",

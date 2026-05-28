@@ -1,14 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Sentiment Lens{% endblock %}
+{% block title %}Market Mood Lens{% endblock %}
 {% block content %}
   <section class="page-header">
-    <h2>Sentiment Lens</h2>
-    <p class="muted">Timestamped sentiment context from synthetic fixtures. Descriptive context only.</p>
+    <h2>Market Mood Lens</h2>
+    <p class="muted">Timestamped market mood context from synthetic samples. Descriptive context only.</p>
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      Market mood is context, not a signal to act. The current data is synthetic sample data built
+      into the app, and EdgeLab is not reading live news yet.
+    </p>
+    <p class="muted">
+      {{ plain_label("sentiment") }}: {{ explain("sentiment") }}
+      {{ why_it_matters("sentiment") }}
+    </p>
   </section>
 
   <section class="warning">
-    Sentiment snapshots are not trade advice. They describe fixture-backed context only and do not
-    create recommendations.
+    Market mood snapshots are not recommendations. They describe built-in sample context only.
   </section>
 
   <section class="section">
@@ -16,14 +27,14 @@
       <thead>
         <tr>
           <th>Symbol</th>
-          <th>Weighted Score</th>
-          <th>Decayed Score</th>
-          <th>Dominant Event</th>
+          <th>{{ plain_label("weighted_sentiment_score") }}</th>
+          <th>{{ plain_label("decayed_sentiment_score") }}</th>
+          <th>{{ plain_label("dominant_event_type") }}</th>
           <th>Avg Confidence</th>
           <th>Label</th>
           <th>Context</th>
-          <th>Divergence Flags</th>
-          <th>Quality Issues</th>
+          <th>{{ plain_label("divergence_flags") }}</th>
+          <th>{{ plain_label("quality_issues") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -44,5 +55,20 @@
         {% endfor %}
       </tbody>
     </table>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>{{ plain_label("weighted_sentiment_score") }}</h3>
+      <p>{{ explain("weighted_sentiment_score") }} {{ why_it_matters("weighted_sentiment_score") }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("decayed_sentiment_score") }}</h3>
+      <p>{{ explain("decayed_sentiment_score") }} {{ why_it_matters("decayed_sentiment_score") }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("divergence_flags") }}</h3>
+      <p>{{ explain("divergence_flags") }} {{ why_it_matters("divergence_flags") }}</p>
+    </div>
   </section>
 {% endblock %}

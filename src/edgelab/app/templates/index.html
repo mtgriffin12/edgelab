@@ -8,15 +8,15 @@
 
   <section class="facts" aria-label="Current state">
     <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
-    <div class="fact"><span>Current phase</span><strong>Phase 5A</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 5B</strong></div>
     <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
-    <div class="fact"><span>Sample backtest</span><strong>{{ sample_backtest.conclusion }}</strong></div>
+    <div class="fact"><span>Sample historical test</span><strong>{{ plain_label(sample_backtest.conclusion) }}</strong></div>
   </section>
 
   <section class="warning section">
     <strong>Current conclusion:</strong>
-    all data is synthetic fixture data, results are research evidence only, and no trade
-    recommendations are produced.
+    all data is {{ plain_label("synthetic_data") }} built into the app, results are research
+    evidence only, and no action recommendations are produced.
   </section>
 
   <section class="section">
@@ -29,12 +29,12 @@
       </div>
       <div class="summary-card">
         <h4>Evidence Board</h4>
-        <p>Fixture-backed backtest evidence and limitations.</p>
+        <p>Historical test evidence from sample data and its limits.</p>
         <a href="/ui/evidence-board">Open Evidence Board</a>
       </div>
       <div class="summary-card">
         <h4>Sentiment Lens</h4>
-        <p>Timestamped synthetic sentiment context by symbol.</p>
+        <p>Timestamped market mood context by symbol.</p>
         <a href="/ui/sentiment-lens">Open Sentiment Lens</a>
       </div>
       <div class="summary-card">
@@ -64,15 +64,15 @@
           <td>{{ strategies|length }}</td>
         </tr>
         <tr>
-          <th>Fixture market symbols available</th>
+          <th>Built-in market sample symbols available</th>
           <td>{{ market_symbols|join(", ") }}</td>
         </tr>
         <tr>
-          <th>Fixture sentiment symbols available</th>
+          <th>Built-in market mood symbols available</th>
           <td>{{ sentiment_symbols|join(", ") }}</td>
         </tr>
         <tr>
-          <th>Sample backtest available</th>
+          <th>Sample historical test available</th>
           <td>{{ sample_backtest.strategy_id }} on {{ sample_backtest.symbol }}</td>
         </tr>
       </tbody>

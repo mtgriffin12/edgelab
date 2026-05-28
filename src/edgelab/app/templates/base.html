@@ -11,7 +11,7 @@
       <header class="topbar">
         <div class="brand">
           <h1>EdgeLab</h1>
-          <span class="mode">Research-only local cockpit</span>
+          <span class="mode">Plain-English research cockpit</span>
         </div>
         <nav aria-label="Primary">
           <a href="/ui">Cockpit</a>
@@ -26,8 +26,8 @@
       <main>
         {% block content %}{% endblock %}
         <p class="footer-note">
-          EdgeLab is local, fixture-backed, and research-only. It does not produce order instructions
-          or connect to brokers.
+          EdgeLab is local, uses {{ plain_label("fixture_data")|lower }}, and is research-only.
+          It does not produce order instructions or connect to brokers.
         </p>
       </main>
     </div>

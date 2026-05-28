@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from edgelab.app.plain_language import explain, plain_label, why_it_matters, yes_no
 from edgelab.backtesting.engine import BacktestEngine
 from edgelab.backtesting.schema import BacktestRequest
 from edgelab.data.market_data import LocalFixtureMarketDataProvider
@@ -21,6 +22,10 @@ sentiment_provider = LocalFixtureSentimentProvider()
 backtest_engine = BacktestEngine()
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
+templates.env.globals["plain_label"] = plain_label
+templates.env.globals["explain"] = explain
+templates.env.globals["why_it_matters"] = why_it_matters
+templates.env.globals["yes_no"] = yes_no
 app.mount("/static", StaticFiles(directory=str(APP_DIR / "static")), name="static")
 
 
@@ -30,7 +35,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 5A local UX shell",
+        "phase": "Phase 5B plain-English UX",
         "status": "research-only",
     }
 
@@ -278,6 +283,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 3 sentiment fixtures",
         "Phase 4 backtesting foundation",
         "Phase 5A local UX shell",
+        "Phase 5B plain-English UX language",
     ]
     return templates.TemplateResponse(
         request=request,

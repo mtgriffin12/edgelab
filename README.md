@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 5A local UX shell**.
+Current phase: **Phase 5B plain-English UX**.
 
 No live trading functionality exists.
 
@@ -78,6 +78,10 @@ endpoints use local fixtures and produce research evidence only.
 The `/ui` routes provide a local browser research cockpit. They are server-rendered, text/table
 first, fixture-backed, and read-only. They do not include charts, authentication, broker
 connections, external API calls, or trade action buttons.
+
+The UI uses a plain-English language layer so research conclusions appear before technical metric
+names. For example, backtests are introduced as historical tests, drawdown as worst drop, and
+sentiment as market mood.
 
 To run a local fixture-backed backtest:
 

@@ -6,9 +6,17 @@
     <p class="muted">Safety posture is deterministic and has veto authority.</p>
   </section>
 
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      The system is blocked from real-money use. Safety rules are designed to stop weak ideas from
+      advancing. Doing nothing is an acceptable outcome when the evidence is thin.
+    </p>
+  </section>
+
   <div class="grid">
-    <div class="panel"><span class="status status-stop">Disabled</span><h3>Live trading</h3><p>No live trading is enabled.</p></div>
-    <div class="panel"><span class="status status-stop">Disabled</span><h3>Paper execution</h3><p>Paper execution is not enabled in this phase.</p></div>
+    <div class="panel"><span class="status status-stop">Disabled</span><h3>{{ plain_label("eligible_for_live_trading") }}</h3><p>No real-money use is enabled.</p></div>
+    <div class="panel"><span class="status status-stop">Disabled</span><h3>{{ plain_label("eligible_for_paper_trading") }}</h3><p>Paper simulation is not enabled in this phase.</p></div>
     <div class="panel"><span class="status status-safe">Clear</span><h3>Broker credentials</h3><p>No broker credentials are stored or requested.</p></div>
     <div class="panel"><span class="status status-safe">Local</span><h3>External APIs</h3><p>No external APIs are used by this local shell.</p></div>
   </div>
@@ -16,7 +24,7 @@
   <section class="section">
     <table>
       <tbody>
-        <tr><th>Maximum drawdown assumption</th><td>15%</td></tr>
+        <tr><th>Worst drop limit assumption</th><td>15%</td></tr>
         <tr><th>Initial model portfolio assumption</th><td>$50,000</td></tr>
         <tr><th>Risk engine authority</th><td>Risk rules can veto any strategy signal.</td></tr>
         <tr><th>Model authority</th><td>LLM/model output cannot override deterministic risk rules.</td></tr>

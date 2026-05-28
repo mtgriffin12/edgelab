@@ -3,12 +3,24 @@
 {% block content %}
   <section class="page-header">
     <h2>Evidence Board</h2>
-    <p class="muted">Backtest output is research evidence only, not proof and not permission.</p>
+    <p class="muted">{{ plain_label("backtest") }} output is research evidence only, not proof and not permission.</p>
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      This is a historical test using sample data built into the app. It is not proof the strategy
+      works, and it is not a recommendation. It helps decide whether the idea deserves more testing.
+    </p>
+    <p class="muted">
+      {{ plain_label("fixture_data") }}: {{ explain("fixture_data") }}
+      {{ why_it_matters("fixture_data") }}
+    </p>
   </section>
 
   <section class="warning">
-    Limitations: placeholder signal behavior only, synthetic fixture data only, not strategy proof,
-    and not paper-trading eligible.
+    Limitations: placeholder signal behavior only, {{ plain_label("synthetic_data")|lower }} only,
+    not strategy proof, and not allowed to use paper simulation.
   </section>
 
   <section class="section">
@@ -18,15 +30,15 @@
           <th>Strategy</th>
           <th>Symbol</th>
           <th>Status</th>
-          <th>Initial Capital</th>
-          <th>Final Equity</th>
-          <th>Total Return %</th>
-          <th>Max Drawdown %</th>
-          <th>Trades</th>
-          <th>Win Rate %</th>
-          <th>Profit Factor</th>
-          <th>Conclusion</th>
-          <th>Quality Issues</th>
+          <th>Starting Amount</th>
+          <th>Ending Amount</th>
+          <th>{{ plain_label("total_return_pct") }}</th>
+          <th>{{ plain_label("max_drawdown_pct") }}</th>
+          <th>Completed Examples</th>
+          <th>{{ plain_label("win_rate_pct") }}</th>
+          <th>{{ plain_label("profit_factor") }}</th>
+          <th>Current Read</th>
+          <th>{{ plain_label("quality_issues") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -42,12 +54,12 @@
             <td>{{ result.trade_count }}</td>
             <td>{{ "%.2f"|format(result.win_rate_pct) }}</td>
             <td>{{ result.profit_factor if result.profit_factor is not none else "n/a" }}</td>
-            <td>{{ result.conclusion }}</td>
+            <td>{{ plain_label(result.conclusion) }}</td>
             <td>
               {% if result.quality_issues %}
                 <ul class="list-clean">
                   {% for issue in result.quality_issues %}
-                    <li>{{ issue.code }}: {{ issue.message }}</li>
+                    <li>{{ plain_label(issue.code) if issue.code == "unsupported_strategy" else issue.code }}: {{ issue.message }}</li>
                   {% endfor %}
                 </ul>
               {% else %}
@@ -58,5 +70,20 @@
         {% endfor %}
       </tbody>
     </table>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>{{ plain_label("max_drawdown_pct") }}</h3>
+      <p>{{ explain("max_drawdown_pct") }} {{ why_it_matters("max_drawdown_pct") }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("profit_factor") }}</h3>
+      <p>{{ explain("profit_factor") }} {{ why_it_matters("profit_factor") }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("quality_issues") }}</h3>
+      <p>{{ explain("quality_issues") }} {{ why_it_matters("quality_issues") }}</p>
+    </div>
   </section>
 {% endblock %}

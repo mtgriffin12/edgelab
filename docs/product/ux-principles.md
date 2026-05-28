@@ -46,3 +46,13 @@ The initial pages are:
 The shell does not add charts, trade buttons, authentication, cloud deployment, external APIs,
 broker integrations, or execution behavior. Unsupported strategies should remain visibly
 unsupported rather than appearing validated.
+
+## Phase 5B Plain-English UX
+
+Phase 5B adds a durable plain-English language layer for research results and safety state. The UI
+should use the doctrine in `docs/product/plain-english-ux-language.md`: conclusions before metrics,
+plain English before technical terms, direct warnings, and conservative real-money language.
+
+Metric labels should explain what the user needs to know before showing technical terminology. For
+example, use "Historical Test" before "backtest," "Worst Drop" before "drawdown," "Gain/Loss Ratio"
+before "profit factor," and "Market Mood" before "sentiment."

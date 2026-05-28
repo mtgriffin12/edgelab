@@ -71,3 +71,7 @@ Phase 4 implements a local fixture-based backtesting engine before real data pro
 ## DEC-018: Phase 5A Local Research Cockpit
 
 Phase 5A implements a local text/table research cockpit before charts, cloud deployment, authentication, or live integrations.
+
+## DEC-019: Phase 5B Plain-English UX Language
+
+Phase 5B adds a plain-English UX language layer before adding more analytical complexity.

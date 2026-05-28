@@ -3,7 +3,16 @@
 {% block content %}
   <section class="page-header">
     <h2>Lab Bench</h2>
-    <p class="muted">Strategy cards first. Eligibility is shown before any evidence is implied.</p>
+    <p class="muted">Strategy cards first. Readiness is shown before any evidence is implied.</p>
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      Each row is an idea, not an approval. The readiness columns answer whether an idea may use
+      historical tests, future paper simulation, or real money. In this phase, real-money use must
+      clearly remain <strong>No</strong>.
+    </p>
   </section>
 
   <table>
@@ -14,9 +23,9 @@
         <th>Status</th>
         <th>Asset Class</th>
         <th>Horizon</th>
-        <th>Backtesting</th>
-        <th>Paper</th>
-        <th>Live</th>
+        <th>{{ plain_label("eligible_for_backtesting") }}</th>
+        <th>{{ plain_label("eligible_for_paper_trading") }}</th>
+        <th>{{ plain_label("eligible_for_live_trading") }}</th>
         <th>Why it exists</th>
         <th>Detail</th>
       </tr>
@@ -29,9 +38,9 @@
           <td>{{ strategy.status.value }}</td>
           <td>{{ strategy.asset_class.value }}</td>
           <td>{{ strategy.horizon.value }}</td>
-          <td>{{ strategy.eligible_for_backtesting }}</td>
-          <td>{{ strategy.eligible_for_paper_trading }}</td>
-          <td>{{ strategy.eligible_for_live_trading }}</td>
+          <td>{{ yes_no(strategy.eligible_for_backtesting) }}</td>
+          <td>{{ yes_no(strategy.eligible_for_paper_trading) }}</td>
+          <td>{{ yes_no(strategy.eligible_for_live_trading) }}</td>
           <td>{{ strategy.thesis[:140] }}{% if strategy.thesis|length > 140 %}...{% endif %}</td>
           <td><a href="/ui/strategies/{{ strategy.strategy_id }}">Open card</a></td>
         </tr>

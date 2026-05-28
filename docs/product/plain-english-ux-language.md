@@ -1,0 +1,36 @@
+# Plain-English UX Language
+
+EdgeLab should explain conclusions before metrics.
+
+## Doctrine
+
+- Plain English first, technical terms second.
+- No brokerage or trading-terminal language unless it is necessary to explain a safety boundary.
+- Every metric should answer: "What does this mean?" and "Why should I care?"
+- Every warning should be direct, not legalistic.
+- The user should not need quant knowledge to understand whether evidence is strong or weak.
+- Real-money language must be especially clear and conservative.
+- Unsupported ideas should be described honestly instead of softened with vague confidence.
+- Sample data should be called sample data, not evidence of a real market opportunity.
+
+## Preferred Language
+
+- Use "Historical Test" before "backtest."
+- Use "Worst Drop" before "drawdown."
+- Use "Gain/Loss Ratio" before "profit factor."
+- Use "Market Mood" before "sentiment."
+- Use "Reasons to Be Careful" before "quality issues."
+- Use "Allowed to Use Real Money" before "live trading eligibility."
+- Explain fixture-backed data as "sample data built into the app."
+
+## Safety Language
+
+Real-money readiness should be stated plainly and conservatively. In the current phase, the answer
+must be "No." The UI should not imply that a strategy is actionable because a number looks good.
+
+Warnings should be short and direct:
+
+- "This is not proof the strategy works."
+- "This is not a recommendation."
+- "The app is not reading live news yet."
+- "Doing nothing is an acceptable outcome when evidence is thin."
