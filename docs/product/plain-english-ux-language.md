@@ -30,6 +30,10 @@ EdgeLab should explain conclusions before metrics.
 - Use "Simpler Comparison" before "baseline comparison."
 - Use "Cost Fragility" before "cost sensitivity."
 - Use "Sample Size" before "trade count" when explaining ranking confidence.
+- Use "Research Candidate" before "candidate."
+- Use "Research Watchlist" before "watchlist."
+- Use "What Supports It," "What Is Missing," and "What Would Change Our Mind" on candidate pages.
+- Use "Built-In Sample Universe" before "fixture universe."
 
 ## Safety Language
 
@@ -42,3 +46,4 @@ Warnings should be short and direct:
 - "This is not a recommendation."
 - "The app is not reading live news yet."
 - "Doing nothing is an acceptable outcome when evidence is thin."
+- "This symbol belongs on a research screen, not a real-money decision list."

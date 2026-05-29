@@ -83,3 +83,7 @@ Phase 5C implements a Strategy Discovery Lab that supports both known strategy f
 ## DEC-021: Phase 6 Strategy Metrics and Ranking Engine
 
 Phase 6 implements a local Strategy Metrics and Ranking Engine that ranks research evidence rather than producing trade recommendations.
+
+## DEC-022: Phase 7A Candidate Equity Screener
+
+Phase 7A implements a local Candidate Equity Screener that surfaces research-only equity candidates from fixture evidence, strategy matches, discovery ideas, and ranking scorecards without live quotes, provider integrations, or real-money permission.

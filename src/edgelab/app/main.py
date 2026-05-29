@@ -10,6 +10,8 @@ from fastapi.templating import Jinja2Templates
 from edgelab.app.plain_language import explain, plain_label, why_it_matters, yes_no
 from edgelab.backtesting.engine import BacktestEngine
 from edgelab.backtesting.schema import BacktestRequest
+from edgelab.candidates.cards import candidate_to_markdown_card
+from edgelab.candidates.screener import CandidateEquityScreener
 from edgelab.data.market_data import LocalFixtureMarketDataProvider
 from edgelab.data.sentiment import LocalFixtureSentimentProvider
 from edgelab.discovery.cards import discovery_to_markdown_card
@@ -35,6 +37,13 @@ ranking_engine = StrategyRankingEngine(
     market_data_provider=market_data_provider,
     backtest_engine=backtest_engine,
 )
+candidate_screener = CandidateEquityScreener(
+    market_data_provider=market_data_provider,
+    sentiment_provider=sentiment_provider,
+    strategy_registry=strategy_registry,
+    discovery_library=discovery_library,
+    ranking_engine=ranking_engine,
+)
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 templates.env.globals["plain_label"] = plain_label
@@ -50,7 +59,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 6 strategy ranking engine",
+        "phase": "Phase 7A candidate equity screener",
         "status": "research-only",
     }
 
@@ -303,6 +312,58 @@ def read_weak_ranking_candidates() -> list[dict[str, object]]:
     ]
 
 
+@app.get("/candidates/sample")
+def read_sample_candidates() -> dict[str, object]:
+    """Return a sample local research-only candidate screening result."""
+
+    return candidate_screener.screen().model_dump(mode="json")
+
+
+@app.get("/candidates/equities")
+def read_equity_candidates() -> list[dict[str, object]]:
+    """Return all local research-only equity candidates."""
+
+    return [
+        candidate.model_dump(mode="json") for candidate in candidate_screener.screen().candidates
+    ]
+
+
+@app.get("/candidates/equities/{candidate_id}")
+def read_equity_candidate(candidate_id: str) -> dict[str, object]:
+    """Return one local research-only equity candidate."""
+
+    candidate = candidate_screener.get_candidate(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    return candidate.model_dump(mode="json")
+
+
+@app.get("/candidates/equities/{candidate_id}/card", response_class=Response)
+def read_equity_candidate_card(candidate_id: str) -> Response:
+    """Return one local candidate as a Markdown card."""
+
+    candidate = candidate_screener.get_candidate(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    return Response(content=candidate_to_markdown_card(candidate), media_type="text/plain")
+
+
+@app.get("/candidates/symbols")
+def read_candidate_symbols() -> dict[str, list[str]]:
+    """Return the local fixture symbols used by the candidate screener."""
+
+    return {"symbols": candidate_screener.list_symbols()}
+
+
+@app.get("/candidates/research-watchlist")
+def read_candidate_research_watchlist() -> list[dict[str, object]]:
+    """Return local research watchlist candidates."""
+
+    return [
+        candidate.model_dump(mode="json") for candidate in candidate_screener.research_watchlist()
+    ]
+
+
 @app.get("/ui", response_class=HTMLResponse)
 def read_ui_home(request: Request) -> Response:
     """Render the local research cockpit."""
@@ -314,6 +375,7 @@ def read_ui_home(request: Request) -> Response:
         BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
     )
     sample_rankings = ranking_engine.rank()
+    sample_candidates = candidate_screener.screen()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -324,6 +386,7 @@ def read_ui_home(request: Request) -> Response:
             "sample_backtest": sample_backtest,
             "discovery_count": len(discovery_library.list_records()),
             "ranking_count": len(sample_rankings.scorecards),
+            "candidate_count": sample_candidates.candidate_count,
         },
     )
 
@@ -443,6 +506,35 @@ def read_ui_rankings(request: Request) -> Response:
     )
 
 
+@app.get("/ui/candidates", response_class=HTMLResponse)
+def read_ui_candidates(request: Request) -> Response:
+    """Render the local candidate equity screener page."""
+
+    result = candidate_screener.screen()
+    return templates.TemplateResponse(
+        request=request,
+        name="candidates.html",
+        context={"screening_result": result, "candidates": result.candidates},
+    )
+
+
+@app.get("/ui/candidates/{candidate_id}", response_class=HTMLResponse)
+def read_ui_candidate_detail(request: Request, candidate_id: str) -> Response:
+    """Render one local candidate card."""
+
+    candidate = candidate_screener.get_candidate(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="candidate_detail.html",
+        context={
+            "candidate": candidate,
+            "card": candidate_to_markdown_card(candidate),
+        },
+    )
+
+
 @app.get("/ui/rankings/{scorecard_id}", response_class=HTMLResponse)
 def read_ui_ranking_detail(request: Request, scorecard_id: str) -> Response:
     """Render one ranking scorecard."""
@@ -474,6 +566,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 5B plain-English UX language",
         "Phase 5C strategy discovery lab",
         "Phase 6 strategy ranking engine",
+        "Phase 7A candidate equity screener",
     ]
     return templates.TemplateResponse(
         request=request,
@@ -498,6 +591,7 @@ def read_ui_reports(request: Request) -> Response:
     sample_backtest = _run_backtest_request(
         BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
     )
+    sample_candidates = candidate_screener.screen()
     return templates.TemplateResponse(
         request=request,
         name="reports.html",
@@ -506,6 +600,7 @@ def read_ui_reports(request: Request) -> Response:
             "market_summaries": market_summaries,
             "sentiment_summaries": sentiment_summaries,
             "sample_backtest": sample_backtest,
+            "sample_candidates": sample_candidates,
         },
     )
 

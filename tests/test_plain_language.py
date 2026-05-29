@@ -47,6 +47,20 @@ def test_required_plain_language_terms_exist() -> None:
         "return_quality",
         "worst_drop_control",
         "consistency",
+        "candidate",
+        "research_candidate",
+        "watchlist_only",
+        "interesting_but_incomplete",
+        "blocked_by_risk",
+        "blocked_by_data_quality",
+        "research_watchlist",
+        "market_context",
+        "market_mood_context",
+        "what_supports_it",
+        "what_is_missing",
+        "what_would_change_our_mind",
+        "real_money_status",
+        "fixture_universe",
     }
 
     assert required_terms.issubset(PLAIN_LANGUAGE_TERMS)
@@ -71,6 +85,8 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("baseline_to_beat") == "Simpler Idea to Beat"
     assert plain_label("ranking") == "Research Ranking"
     assert plain_label("overall_score") == "Overall Research Score"
+    assert plain_label("candidate") == "Research Candidate"
+    assert plain_label("research_watchlist") == "Research Watchlist"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

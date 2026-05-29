@@ -306,6 +306,92 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="Whether the sample looked steady enough to keep studying.",
         why_it_matters="A few lucky events are not durable evidence.",
     ),
+    "candidate": PlainLanguageTerm(
+        technical_key="candidate",
+        plain_label="Research Candidate",
+        short_explanation="A symbol that may deserve more research based on local evidence.",
+        why_it_matters="It helps focus attention without becoming an action instruction.",
+    ),
+    "research_candidate": PlainLanguageTerm(
+        technical_key="research_candidate",
+        plain_label="Worth More Research",
+        short_explanation="Interesting enough to examine more deeply, but still unproven.",
+        why_it_matters="Research priority is not permission for real-money use.",
+    ),
+    "watchlist_only": PlainLanguageTerm(
+        technical_key="watchlist_only",
+        plain_label="Watchlist Only",
+        short_explanation="Keep visible for learning, but do not treat as strong evidence.",
+        why_it_matters="Some ideas are worth remembering even when confidence is low.",
+    ),
+    "interesting_but_incomplete": PlainLanguageTerm(
+        technical_key="interesting_but_incomplete",
+        plain_label="Interesting but Incomplete",
+        short_explanation="Some evidence points in a useful direction, but key proof is missing.",
+        why_it_matters="It prevents a partial story from sounding complete.",
+    ),
+    "blocked_by_risk": PlainLanguageTerm(
+        technical_key="blocked_by_risk",
+        plain_label="Blocked by Risk",
+        short_explanation="Safety concerns stop the idea from advancing.",
+        why_it_matters="Risk controls should be able to veto weak or unsafe evidence.",
+    ),
+    "blocked_by_data_quality": PlainLanguageTerm(
+        technical_key="blocked_by_data_quality",
+        plain_label="Blocked by Data Quality",
+        short_explanation="The data is too weak or flawed for useful interpretation.",
+        why_it_matters="Bad data can make a weak idea look better than it is.",
+    ),
+    "research_watchlist": PlainLanguageTerm(
+        technical_key="research_watchlist",
+        plain_label="Research Watchlist",
+        short_explanation="A short list of symbols to keep studying.",
+        why_it_matters="It keeps attention organized without implying action.",
+    ),
+    "market_context": PlainLanguageTerm(
+        technical_key="market_context",
+        plain_label="Market Context",
+        short_explanation="Local sample price and volume background for a symbol.",
+        why_it_matters="A candidate needs context before its evidence can be interpreted.",
+    ),
+    "market_mood_context": PlainLanguageTerm(
+        technical_key="market_mood_context",
+        plain_label="Market Mood Context",
+        short_explanation="Local sample sentiment background for a symbol.",
+        why_it_matters="Mood can explain conditions, but it is not a command to act.",
+    ),
+    "what_supports_it": PlainLanguageTerm(
+        technical_key="what_supports_it",
+        plain_label="What Supports It",
+        short_explanation="The local evidence that caused a symbol to appear.",
+        why_it_matters="Every candidate should explain why it exists.",
+    ),
+    "what_is_missing": PlainLanguageTerm(
+        technical_key="what_is_missing",
+        plain_label="What Is Missing",
+        short_explanation="The evidence gaps that keep the candidate from being trusted.",
+        why_it_matters="Missing evidence is often more important than the current score.",
+    ),
+    "what_would_change_our_mind": PlainLanguageTerm(
+        technical_key="what_would_change_our_mind",
+        plain_label="What Would Change Our Mind",
+        short_explanation="Conditions that would weaken or reject the candidate.",
+        why_it_matters="Good research defines how it can be wrong.",
+    ),
+    "real_money_status": PlainLanguageTerm(
+        technical_key="real_money_status",
+        plain_label="Real-Money Status",
+        short_explanation="Whether the candidate is allowed near real-money execution.",
+        why_it_matters="This must be explicit and conservative.",
+        caution="Phase 7A status is always Not allowed.",
+    ),
+    "fixture_universe": PlainLanguageTerm(
+        technical_key="fixture_universe",
+        plain_label="Built-In Sample Universe",
+        short_explanation="The small local set of sample symbols included with the app.",
+        why_it_matters="It makes the screener repeatable while real providers are absent.",
+        caution="The built-in sample universe is not live or complete market coverage.",
+    ),
 }
 
 

@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 6 strategy ranking engine**.
+Current phase: **Phase 7A candidate equity screener**.
 
 No live trading functionality exists.
 
@@ -51,6 +51,7 @@ Then visit:
 - `http://127.0.0.1:8000/ui`
 - `http://127.0.0.1:8000/ui/discovery-lab`
 - `http://127.0.0.1:8000/ui/rankings`
+- `http://127.0.0.1:8000/ui/candidates`
 - `http://127.0.0.1:8000/ui/lab-bench`
 - `http://127.0.0.1:8000/ui/evidence-board`
 - `http://127.0.0.1:8000/ui/sentiment-lens`
@@ -84,6 +85,12 @@ Then visit:
 - `http://127.0.0.1:8000/rankings/scorecards/strategy-relative-strength-pullback/card`
 - `http://127.0.0.1:8000/rankings/top-research-candidates`
 - `http://127.0.0.1:8000/rankings/weak-candidates`
+- `http://127.0.0.1:8000/candidates/sample`
+- `http://127.0.0.1:8000/candidates/equities`
+- `http://127.0.0.1:8000/candidates/equities/spy-research-candidate`
+- `http://127.0.0.1:8000/candidates/equities/spy-research-candidate/card`
+- `http://127.0.0.1:8000/candidates/symbols`
+- `http://127.0.0.1:8000/candidates/research-watchlist`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -105,6 +112,11 @@ The ranking endpoints and `/ui/rankings` page are read-only and local. They scor
 evidence from sample strategies, discovery records, fixture-backed backtests, and scaffolded
 metadata. Rankings help decide what deserves deeper testing; they do not produce recommendations
 or real-money permission.
+
+The candidate endpoints and `/ui/candidates` page are read-only and local. They screen the small
+built-in fixture universe for equities that may deserve more research by combining sample market
+data, sample market mood, strategy matches, discovery ideas, and ranking scorecards. Candidates
+are research triage only; they do not use live quotes and never approve real-money use.
 
 To run a local fixture-backed backtest:
 

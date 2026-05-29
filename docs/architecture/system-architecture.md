@@ -47,6 +47,13 @@ discovery records, and fixture-backed backtest results with conservative, plain-
 It ranks research evidence only and does not produce recommendations, external calls, paper
 promotion, or live-trading permission.
 
+## Candidate Equity Screener
+
+Surfaces local research candidates from the fixture universe by combining sample market data,
+sample sentiment context, sample strategy matches, discovery ideas, and ranking scorecards.
+Phase 7A is read-only, in-memory, and fixture-backed. It does not fetch live quotes, create
+recommendations, place orders, promote symbols, or claim that a candidate is proven.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ candidate.title }}{% endblock %}
+{% block content %}
+  <p><a href="/ui/candidates">Back to Candidate Screener</a></p>
+
+  <section class="page-header">
+    <h2>{{ candidate.title }}</h2>
+    <p class="muted">{{ candidate.plain_english_summary }}</p>
+  </section>
+
+  <section class="facts" aria-label="Candidate facts">
+    <div class="fact"><span>Symbol</span><strong>{{ candidate.symbol }}</strong></div>
+    <div class="fact"><span>Research Score</span><strong>{{ "%.1f"|format(candidate.candidate_score) }}/100</strong></div>
+    <div class="fact"><span>Evidence Strength</span><strong>{{ candidate.evidence_strength.value.replace("_", " ") }}</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>{{ candidate.real_money_status }}</strong></div>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>What supports it</h3>
+      <ul class="list-clean">
+        {% for reason in candidate.what_supports_it %}
+          <li>{{ reason.summary }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>What is missing</h3>
+      <ul class="list-clean">
+        {% for item in candidate.what_is_missing %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>What would change our mind</h3>
+      <ul class="list-clean">
+        {% for item in candidate.what_would_change_our_mind %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Market context</h3>
+      {% if candidate.market_snapshot %}
+        <p>Rows: {{ candidate.market_snapshot.row_count }}</p>
+        <p>Latest sample close: {{ candidate.market_snapshot.latest_close }}</p>
+        <p>Reasons to be careful: {{ candidate.market_snapshot.quality_issue_count }}</p>
+      {% else %}
+        <p>No local market sample is available.</p>
+      {% endif %}
+    </div>
+    <div class="summary-card">
+      <h3>Market mood context</h3>
+      {% if candidate.sentiment_snapshot %}
+        <p>Events: {{ candidate.sentiment_snapshot.event_count }}</p>
+        <p>Mood label: {{ candidate.sentiment_snapshot.sentiment_label }}</p>
+        <p>Context: {{ candidate.sentiment_snapshot.trade_bias_context }}</p>
+      {% else %}
+        <p>No local market mood sample is available.</p>
+      {% endif %}
+    </div>
+    <div class="summary-card">
+      <h3>Reasons to be careful</h3>
+      <ul class="list-clean">
+        {% for flag in candidate.risk_flags %}
+          <li>{{ flag.message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}

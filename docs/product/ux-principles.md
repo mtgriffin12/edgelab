@@ -69,3 +69,10 @@ The Strategy Rankings page should feel like research triage, not a leaderboard. 
 the bottom line before the score, show what helped and hurt, and make weak evidence easy to see.
 High return should not visually dominate warnings about worst drop, small sample size, unsupported
 logic, or missing baseline evidence.
+
+## Phase 7A Candidate Screener UX
+
+The Candidate Equity Screener should feel like a research intake desk, not a watchlist to act on.
+It should explain why a symbol appeared, what evidence is missing, what would change the system's
+mind, and why real-money use remains blocked. Candidate tables should make sample-data limits and
+reasons to be careful as visible as scores.

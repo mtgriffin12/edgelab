@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Candidate Screener{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Candidate Equity Screener</h2>
+    <p class="muted">
+      A local research watchlist built from sample symbols, strategy ideas, discovery records,
+      market mood context, and ranking scorecards.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    candidates are research triage only. They use built-in sample data, do not use live quotes,
+    and are not approved for real-money use.
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      EdgeLab is asking which symbols deserve more research, not what to do with them. A candidate
+      can be interesting because several local evidence layers point at it, but missing evidence
+      and risk flags stay visible before any confidence is allowed.
+    </p>
+  </section>
+
+  <section class="facts" aria-label="Candidate screening facts">
+    <div class="fact"><span>Fixture universe</span><strong>{{ screening_result.universe_size }}</strong></div>
+    <div class="fact"><span>Research candidates shown</span><strong>{{ screening_result.candidate_count }}</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>Not allowed</strong></div>
+  </section>
+
+  <section class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Candidate</th>
+          <th>Status</th>
+          <th>Evidence Strength</th>
+          <th>Research Score</th>
+          <th>What Supports It</th>
+          <th>What Is Missing</th>
+          <th>Real-Money Status</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for candidate in candidates %}
+          <tr>
+            <td>{{ candidate.symbol }}</td>
+            <td>{{ candidate.title }}</td>
+            <td>{{ candidate.status.value.replace("_", " ") }}</td>
+            <td>{{ candidate.evidence_strength.value.replace("_", " ") }}</td>
+            <td>{{ "%.1f"|format(candidate.candidate_score) }}/100</td>
+            <td>{{ candidate.what_supports_it[0].summary }}</td>
+            <td>{{ candidate.what_is_missing[0] }}</td>
+            <td>{{ candidate.real_money_status }}</td>
+            <td><a href="/ui/candidates/{{ candidate.candidate_id }}">Open candidate</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

@@ -107,6 +107,27 @@ def test_rankings_returns_research_scorecards() -> None:
     assert "Relative Strength Pullback" in response.text
 
 
+def test_candidates_returns_research_candidates() -> None:
+    response = client.get("/ui/candidates")
+
+    assert response.status_code == 200
+    assert "Candidate Equity Screener" in response.text
+    assert "research triage only" in response.text
+    assert "Real-Money Status" in response.text
+    assert "SPY Research Candidate" in response.text
+
+
+def test_candidate_detail_returns_plain_english_card() -> None:
+    response = client.get("/ui/candidates/spy-research-candidate")
+
+    assert response.status_code == 200
+    assert "Back to Candidate Screener" in response.text
+    assert "What supports it" in response.text
+    assert "What is missing" in response.text
+    assert "What would change our mind" in response.text
+    assert "Not allowed" in response.text
+
+
 def test_ranking_detail_returns_plain_english_scorecard() -> None:
     response = client.get("/ui/rankings/strategy-relative-strength-pullback")
 
@@ -158,6 +179,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/discovery-lab/broad-fear-company-calm-pullback",
         "/ui/rankings",
         "/ui/rankings/strategy-relative-strength-pullback",
+        "/ui/candidates",
+        "/ui/candidates/spy-research-candidate",
         "/ui/journal",
         "/ui/reports",
     ]
