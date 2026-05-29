@@ -170,6 +170,62 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         why_it_matters="It lets the app prove its workflow before real providers are added.",
         caution="Synthetic sample data should never be treated as market evidence.",
     ),
+    "strategy_discovery_lab": PlainLanguageTerm(
+        technical_key="strategy_discovery_lab",
+        plain_label="Strategy Discovery Lab",
+        short_explanation="A place to sort known ideas and new hypotheses before deeper testing.",
+        why_it_matters="It keeps creativity separate from evidence and prevents premature trust.",
+    ),
+    "known_strategy_library": PlainLanguageTerm(
+        technical_key="known_strategy_library",
+        plain_label="Known Strategy Library",
+        short_explanation=(
+            "Historically discussed strategy families that still need current evidence."
+        ),
+        why_it_matters="Known ideas are allowed, but they still need proof in the current context.",
+    ),
+    "edge_innovation_lab": PlainLanguageTerm(
+        technical_key="edge_innovation_lab",
+        plain_label="Edge Innovation Lab",
+        short_explanation="Adaptive and novel ideas that must beat simpler baselines.",
+        why_it_matters="New ideas can be useful, but novelty alone is not evidence.",
+    ),
+    "baseline_to_beat": PlainLanguageTerm(
+        technical_key="baseline_to_beat",
+        plain_label="Simpler Idea to Beat",
+        short_explanation="The simpler comparison that a more complex idea must improve on.",
+        why_it_matters=(
+            "Complex ideas should earn their complexity by beating simpler alternatives."
+        ),
+    ),
+    "current_regime_fit": PlainLanguageTerm(
+        technical_key="current_regime_fit",
+        plain_label="Environment Fit",
+        short_explanation=(
+            "A scaffolded read on whether conditions resemble the idea's preferred setup."
+        ),
+        why_it_matters="An idea can be reasonable but poorly timed for the current environment.",
+    ),
+    "overfitting_risk_score": PlainLanguageTerm(
+        technical_key="overfitting_risk_score",
+        plain_label="Curve-Fit Risk",
+        short_explanation=(
+            "How likely an idea is to look good only because it was over-shaped to data."
+        ),
+        why_it_matters="High curve-fit risk means the idea needs stricter testing.",
+    ),
+    "novelty_score": PlainLanguageTerm(
+        technical_key="novelty_score",
+        plain_label="Newness",
+        short_explanation="How different the idea is from familiar strategy families.",
+        why_it_matters="Newness can create hypotheses, but it does not make them good.",
+    ),
+    "complexity_score": PlainLanguageTerm(
+        technical_key="complexity_score",
+        plain_label="Complexity",
+        short_explanation="How many moving parts the idea depends on.",
+        why_it_matters="More moving parts usually require stronger evidence.",
+    ),
 }
 
 

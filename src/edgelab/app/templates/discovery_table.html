@@ -1,0 +1,31 @@
+<table>
+  <thead>
+    <tr>
+      <th>Idea</th>
+      <th>Type</th>
+      <th>Behavior It Studies</th>
+      <th>Why It Might Fit Now</th>
+      <th>{{ plain_label("baseline_to_beat") }}</th>
+      <th>{{ plain_label("current_regime_fit") }}</th>
+      <th>Status</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for record in records %}
+      <tr>
+        <td>{{ record.title }}</td>
+        <td>{{ record.provenance.value.replace("_", " ") }}</td>
+        <td>{{ record.market_behavior }}</td>
+        <td>{{ record.why_it_might_work_now }}</td>
+        <td>{{ record.baseline_to_beat.description }}</td>
+        <td>
+          {{ record.current_regime_fit.score }}/10 -
+          {{ record.current_regime_fit.label.value.replace("_", " ") }}
+        </td>
+        <td>{{ record.status.value.replace("_", " ") }}</td>
+        <td><a href="/ui/discovery-lab/{{ record.discovery_id }}">Open idea</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

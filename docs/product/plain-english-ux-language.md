@@ -22,6 +22,9 @@ EdgeLab should explain conclusions before metrics.
 - Use "Reasons to Be Careful" before "quality issues."
 - Use "Allowed to Use Real Money" before "live trading eligibility."
 - Explain fixture-backed data as "sample data built into the app."
+- Use "Simpler Idea It Must Beat" before "baseline."
+- Use "Environment Fit" before "current regime fit."
+- Use "Curve-Fit Risk" before "overfitting risk."
 
 ## Safety Language
 

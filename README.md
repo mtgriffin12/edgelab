@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 5B plain-English UX**.
+Current phase: **Phase 5C strategy discovery lab**.
 
 No live trading functionality exists.
 
@@ -49,6 +49,7 @@ PYTHONPATH=src .venv/bin/uvicorn edgelab.app.main:app --reload
 Then visit:
 
 - `http://127.0.0.1:8000/ui`
+- `http://127.0.0.1:8000/ui/discovery-lab`
 - `http://127.0.0.1:8000/ui/lab-bench`
 - `http://127.0.0.1:8000/ui/evidence-board`
 - `http://127.0.0.1:8000/ui/sentiment-lens`
@@ -70,6 +71,12 @@ Then visit:
 - `http://127.0.0.1:8000/sentiment/SPY/snapshot`
 - `http://127.0.0.1:8000/sentiment/SPY/quality`
 - `http://127.0.0.1:8000/backtests/sample`
+- `http://127.0.0.1:8000/discovery/ideas`
+- `http://127.0.0.1:8000/discovery/ideas/relative-strength-pullback`
+- `http://127.0.0.1:8000/discovery/ideas/relative-strength-pullback/card`
+- `http://127.0.0.1:8000/discovery/lanes`
+- `http://127.0.0.1:8000/discovery/genealogy/broad-fear-company-calm-pullback`
+- `http://127.0.0.1:8000/discovery/ledger`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -82,6 +89,10 @@ connections, external API calls, or trade action buttons.
 The UI uses a plain-English language layer so research conclusions appear before technical metric
 names. For example, backtests are introduced as historical tests, drawdown as worst drop, and
 sentiment as market mood.
+
+The discovery endpoints and `/ui/discovery-lab` page are read-only and in-memory. They separate
+known strategy families from adaptive or novel hypotheses, and every differentiated idea must name
+the simpler baseline it has to beat.
 
 To run a local fixture-backed backtest:
 

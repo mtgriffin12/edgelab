@@ -19,4 +19,4 @@ def test_root_endpoint_returns_phase_metadata() -> None:
 
     assert response.status_code == 200
     assert response.json()["app"] == "EdgeLab"
-    assert response.json()["phase"] == "Phase 5B plain-English UX"
+    assert response.json()["phase"] == "Phase 5C strategy discovery lab"

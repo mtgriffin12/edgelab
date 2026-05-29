@@ -56,3 +56,9 @@ plain English before technical terms, direct warnings, and conservative real-mon
 Metric labels should explain what the user needs to know before showing technical terminology. For
 example, use "Historical Test" before "backtest," "Worst Drop" before "drawdown," "Gain/Loss Ratio"
 before "profit factor," and "Market Mood" before "sentiment."
+
+## Phase 5C Discovery Lab UX
+
+The Strategy Discovery Lab should make idea status plain. Known ideas and novel ideas are both
+allowed, but neither should feel trusted without evidence. The page should show the simpler
+baseline each idea must beat and make it clear that no idea is ready for real money.

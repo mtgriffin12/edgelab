@@ -26,6 +26,14 @@ def test_required_plain_language_terms_exist() -> None:
         "insufficient_evidence",
         "fixture_data",
         "synthetic_data",
+        "strategy_discovery_lab",
+        "known_strategy_library",
+        "edge_innovation_lab",
+        "baseline_to_beat",
+        "current_regime_fit",
+        "overfitting_risk_score",
+        "novelty_score",
+        "complexity_score",
     }
 
     assert required_terms.issubset(PLAIN_LANGUAGE_TERMS)
@@ -46,6 +54,8 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("sentiment") == "Market Mood"
     assert plain_label("quality_issues") == "Reasons to Be Careful"
     assert plain_label("eligible_for_live_trading") == "Allowed to Use Real Money"
+    assert plain_label("strategy_discovery_lab") == "Strategy Discovery Lab"
+    assert plain_label("baseline_to_beat") == "Simpler Idea to Beat"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

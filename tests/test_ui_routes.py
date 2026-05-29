@@ -71,11 +71,37 @@ def test_risk_sentinel_returns_no_live_trading_language() -> None:
     assert "Cash/no-action is a valid research conclusion" in response.text
 
 
+def test_discovery_lab_returns_two_research_lanes() -> None:
+    response = client.get("/ui/discovery-lab")
+
+    assert response.status_code == 200
+    assert "Strategy Discovery Lab" in response.text
+    assert "Known Strategy Library" in response.text
+    assert "Edge Innovation Lab" in response.text
+    assert "durable edge" in response.text
+    assert "no idea is ready for real money" in response.text
+    assert "Relative Strength Pullback" in response.text
+    assert "Social Euphoria Without Price Confirmation" in response.text
+
+
+def test_discovery_detail_returns_plain_english_card() -> None:
+    response = client.get("/ui/discovery-lab/broad-fear-company-calm-pullback")
+
+    assert response.status_code == 200
+    assert "Back to Discovery Lab" in response.text
+    assert "Simpler Idea to Beat" in response.text
+    assert "Environment Fit" in response.text
+    assert "Curve-Fit Risk" in response.text
+    assert "What Simpler Idea It Must Beat" in response.text
+    assert "What Evidence Is Needed" in response.text
+
+
 def test_journal_returns_phase_summary() -> None:
     response = client.get("/ui/journal")
 
     assert response.status_code == 200
     assert "Phase 5B plain-English UX language" in response.text
+    assert "Phase 5C strategy discovery lab" in response.text
 
 
 def test_reports_returns_summaries() -> None:
@@ -104,6 +130,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/evidence-board",
         "/ui/sentiment-lens",
         "/ui/risk-sentinel",
+        "/ui/discovery-lab",
+        "/ui/discovery-lab/broad-fear-company-calm-pullback",
         "/ui/journal",
         "/ui/reports",
     ]

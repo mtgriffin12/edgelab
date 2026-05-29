@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Strategy Discovery Lab{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Strategy Discovery Lab</h2>
+    <p class="muted">
+      Known ideas are allowed. Novel ideas are allowed. Neither is trusted without evidence.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      EdgeLab is trying to find durable edge, not novelty for its own sake. Creativity creates
+      hypotheses. Testing destroys most of them. Only survivors become candidates for deeper
+      testing, and no idea is ready for real money.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>{{ plain_label("known_strategy_library") }}</h3>
+    <p class="muted">{{ explain("known_strategy_library") }}</p>
+    {% set records = known_records %}
+    {% include "discovery_table.html" %}
+  </section>
+
+  <section class="section">
+    <h3>{{ plain_label("edge_innovation_lab") }}</h3>
+    <p class="muted">{{ explain("edge_innovation_lab") }}</p>
+    {% set records = innovation_records %}
+    {% include "discovery_table.html" %}
+  </section>
+{% endblock %}

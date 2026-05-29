@@ -6,6 +6,13 @@ EdgeLab is organized as small, testable modules with clear boundaries.
 
 Creates candidate strategy ideas. It does not approve strategies and does not generate orders.
 
+## Strategy Discovery Lab
+
+Classifies known strategy families, adaptive variants, and novel hypotheses before they become
+formal strategy specs. Phase 5C stores local in-memory discovery records, baseline requirements,
+genealogy, current-regime-fit scaffolding, and experiment ledger entries. It is read-only and does
+not run external generation or promote ideas automatically.
+
 ## Strategy Specification Engine
 
 Turns ideas into structured strategy specifications with explicit universe, signal, entry, exit, sizing, risk, holding-period, and failure-condition fields.

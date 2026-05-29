@@ -75,3 +75,7 @@ Phase 5A implements a local text/table research cockpit before charts, cloud dep
 ## DEC-019: Phase 5B Plain-English UX Language
 
 Phase 5B adds a plain-English UX language layer before adding more analytical complexity.
+
+## DEC-020: Phase 5C Strategy Discovery Lab
+
+Phase 5C implements a Strategy Discovery Lab that supports both known strategy families and novel edge hypotheses, with baseline challenger rules and plain-English evidence requirements.

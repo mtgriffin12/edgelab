@@ -12,6 +12,11 @@ from edgelab.backtesting.engine import BacktestEngine
 from edgelab.backtesting.schema import BacktestRequest
 from edgelab.data.market_data import LocalFixtureMarketDataProvider
 from edgelab.data.sentiment import LocalFixtureSentimentProvider
+from edgelab.discovery.cards import discovery_to_markdown_card
+from edgelab.discovery.genealogy import StrategyGenealogy
+from edgelab.discovery.ledger import ExperimentLedger
+from edgelab.discovery.library import StrategyDiscoveryLibrary
+from edgelab.discovery.schema import DiscoveryLane
 from edgelab.strategies.cards import strategy_to_markdown_card
 from edgelab.strategies.registry import StrategyRegistry
 
@@ -20,6 +25,8 @@ strategy_registry = StrategyRegistry.with_samples()
 market_data_provider = LocalFixtureMarketDataProvider()
 sentiment_provider = LocalFixtureSentimentProvider()
 backtest_engine = BacktestEngine()
+discovery_library = StrategyDiscoveryLibrary.with_samples()
+experiment_ledger = ExperimentLedger.with_samples()
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 templates.env.globals["plain_label"] = plain_label
@@ -35,7 +42,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 5B plain-English UX",
+        "phase": "Phase 5C strategy discovery lab",
         "status": "research-only",
     }
 
@@ -183,6 +190,58 @@ def run_backtest(request: BacktestRequest) -> dict[str, object]:
     return _run_backtest_request(request)
 
 
+@app.get("/discovery/ideas")
+def list_discovery_ideas() -> list[dict[str, object]]:
+    """Return read-only local discovery records."""
+
+    return discovery_library.export_all()
+
+
+@app.get("/discovery/ideas/{discovery_id}")
+def read_discovery_idea(discovery_id: str) -> dict[str, object]:
+    """Return one local discovery record."""
+
+    record = discovery_library.get(discovery_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Discovery idea not found")
+    return record.model_dump(mode="json")
+
+
+@app.get("/discovery/ideas/{discovery_id}/card", response_class=Response)
+def read_discovery_card(discovery_id: str) -> Response:
+    """Return a plain-English Markdown discovery card."""
+
+    record = discovery_library.get(discovery_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Discovery idea not found")
+    return Response(content=discovery_to_markdown_card(record), media_type="text/plain")
+
+
+@app.get("/discovery/lanes")
+def read_discovery_lanes() -> dict[str, int]:
+    """Return discovery counts by lane."""
+
+    return discovery_library.lane_counts()
+
+
+@app.get("/discovery/genealogy/{discovery_id}")
+def read_discovery_genealogy(discovery_id: str) -> dict[str, object]:
+    """Return genealogy details for a discovery record."""
+
+    genealogy = StrategyGenealogy(discovery_library.list_records())
+    details = genealogy.genealogy_for(discovery_id)
+    if not details["found"]:
+        raise HTTPException(status_code=404, detail="Discovery idea not found")
+    return details
+
+
+@app.get("/discovery/ledger")
+def read_discovery_ledger() -> list[dict[str, object]]:
+    """Return scaffolded local experiment ledger entries."""
+
+    return experiment_ledger.export_all()
+
+
 @app.get("/ui", response_class=HTMLResponse)
 def read_ui_home(request: Request) -> Response:
     """Render the local research cockpit."""
@@ -201,6 +260,7 @@ def read_ui_home(request: Request) -> Response:
             "market_symbols": market_symbols,
             "sentiment_symbols": sentiment_symbols,
             "sample_backtest": sample_backtest,
+            "discovery_count": len(discovery_library.list_records()),
         },
     )
 
@@ -272,6 +332,42 @@ def read_ui_risk_sentinel(request: Request) -> Response:
     return templates.TemplateResponse(request=request, name="risk_sentinel.html", context={})
 
 
+@app.get("/ui/discovery-lab", response_class=HTMLResponse)
+def read_ui_discovery_lab(request: Request) -> Response:
+    """Render the local strategy discovery lab."""
+
+    known_records = discovery_library.filter_by_lane(DiscoveryLane.KNOWN_STRATEGY_LIBRARY)
+    innovation_records = discovery_library.filter_by_lane(DiscoveryLane.EDGE_INNOVATION_LAB)
+    return templates.TemplateResponse(
+        request=request,
+        name="discovery_lab.html",
+        context={
+            "known_records": known_records,
+            "innovation_records": innovation_records,
+            "lane_counts": discovery_library.lane_counts(),
+        },
+    )
+
+
+@app.get("/ui/discovery-lab/{discovery_id}", response_class=HTMLResponse)
+def read_ui_discovery_detail(request: Request, discovery_id: str) -> Response:
+    """Render one discovery record."""
+
+    record = discovery_library.get(discovery_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Discovery idea not found")
+    genealogy = StrategyGenealogy(discovery_library.list_records())
+    return templates.TemplateResponse(
+        request=request,
+        name="discovery_detail.html",
+        context={
+            "record": record,
+            "card": discovery_to_markdown_card(record),
+            "genealogy": genealogy.genealogy_for(discovery_id),
+        },
+    )
+
+
 @app.get("/ui/journal", response_class=HTMLResponse)
 def read_ui_journal(request: Request) -> Response:
     """Render a simple audit-style phase journal."""
@@ -284,6 +380,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 4 backtesting foundation",
         "Phase 5A local UX shell",
         "Phase 5B plain-English UX language",
+        "Phase 5C strategy discovery lab",
     ]
     return templates.TemplateResponse(
         request=request,

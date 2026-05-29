@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ record.title }}{% endblock %}
+{% block content %}
+  <p><a href="/ui/discovery-lab">Back to Discovery Lab</a></p>
+
+  <section class="page-header">
+    <h2>{{ record.title }}</h2>
+    <p class="muted">
+      {{ record.provenance.value.replace("_", " ") }} in
+      {{ record.lane.value.replace("_", " ") }}. Research status:
+      {{ record.status.value.replace("_", " ") }}.
+    </p>
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      This is an idea record, not a validated strategy. It explains the market behavior being
+      studied, the simpler idea it must beat, and the evidence that could disprove it.
+    </p>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>{{ plain_label("baseline_to_beat") }}</h3>
+      <p>{{ record.baseline_to_beat.description }}</p>
+      <p class="muted">{{ record.baseline_to_beat.must_beat }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("current_regime_fit") }}</h3>
+      <p>
+        {{ record.current_regime_fit.score }}/10 -
+        {{ record.current_regime_fit.label.value.replace("_", " ") }}
+      </p>
+      <p class="muted">{{ record.current_regime_fit.plain_english_reason }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>{{ plain_label("overfitting_risk_score") }}</h3>
+      <p>{{ record.overfitting_risk_score }}/10</p>
+      <p class="muted">{{ explain("overfitting_risk_score") }}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Genealogy</h3>
+    <table>
+      <thead>
+        <tr><th>Idea</th><th>Type</th><th>How it differs</th></tr>
+      </thead>
+      <tbody>
+        {% for node in genealogy.lineage %}
+          <tr>
+            <td>{{ node.title }}</td>
+            <td>{{ node.provenance }}</td>
+            <td>{{ node.plain_english_difference }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}
