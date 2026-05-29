@@ -96,12 +96,36 @@ def test_discovery_detail_returns_plain_english_card() -> None:
     assert "What Evidence Is Needed" in response.text
 
 
+def test_rankings_returns_research_scorecards() -> None:
+    response = client.get("/ui/rankings")
+
+    assert response.status_code == 200
+    assert "Strategy Rankings" in response.text
+    assert "research evidence only" in response.text
+    assert "Overall Research Score" in response.text
+    assert "Real-Money Status" in response.text
+    assert "Relative Strength Pullback" in response.text
+
+
+def test_ranking_detail_returns_plain_english_scorecard() -> None:
+    response = client.get("/ui/rankings/strategy-relative-strength-pullback")
+
+    assert response.status_code == 200
+    assert "Back to Rankings" in response.text
+    assert "Why it ranked this way" in response.text
+    assert "What helped" in response.text
+    assert "What hurt" in response.text
+    assert "Evidence still missing" in response.text
+    assert "Not allowed" in response.text
+
+
 def test_journal_returns_phase_summary() -> None:
     response = client.get("/ui/journal")
 
     assert response.status_code == 200
     assert "Phase 5B plain-English UX language" in response.text
     assert "Phase 5C strategy discovery lab" in response.text
+    assert "Phase 6 strategy ranking engine" in response.text
 
 
 def test_reports_returns_summaries() -> None:
@@ -132,6 +156,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/risk-sentinel",
         "/ui/discovery-lab",
         "/ui/discovery-lab/broad-fear-company-calm-pullback",
+        "/ui/rankings",
+        "/ui/rankings/strategy-relative-strength-pullback",
         "/ui/journal",
         "/ui/reports",
     ]

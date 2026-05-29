@@ -17,6 +17,8 @@ from edgelab.discovery.genealogy import StrategyGenealogy
 from edgelab.discovery.ledger import ExperimentLedger
 from edgelab.discovery.library import StrategyDiscoveryLibrary
 from edgelab.discovery.schema import DiscoveryLane
+from edgelab.ranking.cards import ranking_scorecard_to_markdown_card
+from edgelab.ranking.ranker import StrategyRankingEngine
 from edgelab.strategies.cards import strategy_to_markdown_card
 from edgelab.strategies.registry import StrategyRegistry
 
@@ -27,6 +29,12 @@ sentiment_provider = LocalFixtureSentimentProvider()
 backtest_engine = BacktestEngine()
 discovery_library = StrategyDiscoveryLibrary.with_samples()
 experiment_ledger = ExperimentLedger.with_samples()
+ranking_engine = StrategyRankingEngine(
+    strategy_registry=strategy_registry,
+    discovery_library=discovery_library,
+    market_data_provider=market_data_provider,
+    backtest_engine=backtest_engine,
+)
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 templates.env.globals["plain_label"] = plain_label
@@ -42,7 +50,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 5C strategy discovery lab",
+        "phase": "Phase 6 strategy ranking engine",
         "status": "research-only",
     }
 
@@ -242,6 +250,59 @@ def read_discovery_ledger() -> list[dict[str, object]]:
     return experiment_ledger.export_all()
 
 
+@app.get("/rankings/sample")
+def read_sample_rankings() -> dict[str, object]:
+    """Return a read-only local ranking result."""
+
+    return ranking_engine.rank().model_dump(mode="json")
+
+
+@app.get("/rankings/scorecards")
+def read_ranking_scorecards() -> list[dict[str, object]]:
+    """Return all generated local ranking scorecards."""
+
+    return [scorecard.model_dump(mode="json") for scorecard in ranking_engine.rank().scorecards]
+
+
+@app.get("/rankings/scorecards/{scorecard_id}")
+def read_ranking_scorecard(scorecard_id: str) -> dict[str, object]:
+    """Return one generated local ranking scorecard."""
+
+    scorecard = ranking_engine.get_scorecard(scorecard_id)
+    if scorecard is None:
+        raise HTTPException(status_code=404, detail="Ranking scorecard not found")
+    return scorecard.model_dump(mode="json")
+
+
+@app.get("/rankings/scorecards/{scorecard_id}/card", response_class=Response)
+def read_ranking_scorecard_card(scorecard_id: str) -> Response:
+    """Return one generated local ranking scorecard as Markdown."""
+
+    scorecard = ranking_engine.get_scorecard(scorecard_id)
+    if scorecard is None:
+        raise HTTPException(status_code=404, detail="Ranking scorecard not found")
+    return Response(content=ranking_scorecard_to_markdown_card(scorecard), media_type="text/plain")
+
+
+@app.get("/rankings/top-research-candidates")
+def read_top_research_candidates() -> list[dict[str, object]]:
+    """Return highest-ranking local research candidates."""
+
+    return [
+        scorecard.model_dump(mode="json")
+        for scorecard in ranking_engine.rank().top_research_candidates
+    ]
+
+
+@app.get("/rankings/weak-candidates")
+def read_weak_ranking_candidates() -> list[dict[str, object]]:
+    """Return weak, unsupported, rejected, or insufficient local candidates."""
+
+    return [
+        scorecard.model_dump(mode="json") for scorecard in ranking_engine.rank().weak_candidates
+    ]
+
+
 @app.get("/ui", response_class=HTMLResponse)
 def read_ui_home(request: Request) -> Response:
     """Render the local research cockpit."""
@@ -252,6 +313,7 @@ def read_ui_home(request: Request) -> Response:
     sample_backtest = _run_backtest_request(
         BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
     )
+    sample_rankings = ranking_engine.rank()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -261,6 +323,7 @@ def read_ui_home(request: Request) -> Response:
             "sentiment_symbols": sentiment_symbols,
             "sample_backtest": sample_backtest,
             "discovery_count": len(discovery_library.list_records()),
+            "ranking_count": len(sample_rankings.scorecards),
         },
     )
 
@@ -368,6 +431,35 @@ def read_ui_discovery_detail(request: Request, discovery_id: str) -> Response:
     )
 
 
+@app.get("/ui/rankings", response_class=HTMLResponse)
+def read_ui_rankings(request: Request) -> Response:
+    """Render the local strategy rankings page."""
+
+    result = ranking_engine.rank()
+    return templates.TemplateResponse(
+        request=request,
+        name="rankings.html",
+        context={"ranking_result": result, "scorecards": result.scorecards},
+    )
+
+
+@app.get("/ui/rankings/{scorecard_id}", response_class=HTMLResponse)
+def read_ui_ranking_detail(request: Request, scorecard_id: str) -> Response:
+    """Render one ranking scorecard."""
+
+    scorecard = ranking_engine.get_scorecard(scorecard_id)
+    if scorecard is None:
+        raise HTTPException(status_code=404, detail="Ranking scorecard not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="ranking_detail.html",
+        context={
+            "scorecard": scorecard,
+            "card": ranking_scorecard_to_markdown_card(scorecard),
+        },
+    )
+
+
 @app.get("/ui/journal", response_class=HTMLResponse)
 def read_ui_journal(request: Request) -> Response:
     """Render a simple audit-style phase journal."""
@@ -381,6 +473,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 5A local UX shell",
         "Phase 5B plain-English UX language",
         "Phase 5C strategy discovery lab",
+        "Phase 6 strategy ranking engine",
     ]
     return templates.TemplateResponse(
         request=request,

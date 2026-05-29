@@ -8,10 +8,11 @@
 
   <section class="facts" aria-label="Current state">
     <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
-    <div class="fact"><span>Current phase</span><strong>Phase 5C</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 6</strong></div>
     <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
     <div class="fact"><span>Sample historical test</span><strong>{{ plain_label(sample_backtest.conclusion) }}</strong></div>
     <div class="fact"><span>Discovery ideas tracked</span><strong>{{ discovery_count }}</strong></div>
+    <div class="fact"><span>Ranking scorecards</span><strong>{{ ranking_count }}</strong></div>
   </section>
 
   <section class="warning section">
@@ -27,6 +28,11 @@
         <h4>Discovery Lab</h4>
         <p>Known strategy families and new edge hypotheses, separated by evidence discipline.</p>
         <a href="/ui/discovery-lab">Open Discovery Lab</a>
+      </div>
+      <div class="summary-card">
+        <h4>Rankings</h4>
+        <p>Plain-English research triage for strategies, ideas, sample evidence, and caution.</p>
+        <a href="/ui/rankings">Open Rankings</a>
       </div>
       <div class="summary-card">
         <h4>Lab Bench</h4>
@@ -84,6 +90,10 @@
         <tr>
           <th>Discovery ideas available</th>
           <td>{{ discovery_count }}</td>
+        </tr>
+        <tr>
+          <th>Research ranking scorecards available</th>
+          <td>{{ ranking_count }}</td>
         </tr>
       </tbody>
     </table>

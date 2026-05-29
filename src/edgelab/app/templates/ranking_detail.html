@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ scorecard.title }} Ranking{% endblock %}
+{% block content %}
+  <p><a href="/ui/rankings">Back to Rankings</a></p>
+
+  <section class="page-header">
+    <h2>{{ scorecard.title }}</h2>
+    <p class="muted">{{ scorecard.plain_english_summary }}</p>
+  </section>
+
+  <section class="facts" aria-label="Ranking facts">
+    <div class="fact"><span>{{ plain_label("overall_score") }}</span><strong>{{ "%.1f"|format(scorecard.overall_score) }}/100</strong></div>
+    <div class="fact"><span>{{ plain_label("evidence_strength") }}</span><strong>{{ scorecard.evidence_strength.value.replace("_", " ") }}</strong></div>
+    <div class="fact"><span>Current conclusion</span><strong>{{ scorecard.conclusion.value.replace("_", " ") }}</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>{{ scorecard.real_money_status }}</strong></div>
+  </section>
+
+  <section class="panel section">
+    <h3>Why it ranked this way</h3>
+    <ul class="list-clean">
+      {% for reason in scorecard.why_it_ranked_this_way %}
+        <li>{{ reason }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>What helped</h3>
+      <ul class="list-clean">
+        {% for item in scorecard.what_helped %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>What hurt</h3>
+      <ul class="list-clean">
+        {% for item in scorecard.what_hurt %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>Evidence still missing</h3>
+      <ul class="list-clean">
+        {% for item in scorecard.evidence_gaps %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>{{ plain_label("baseline_comparison") }}</h3>
+    {% if scorecard.baseline_comparison %}
+      <p>{{ scorecard.baseline_comparison.improvement_summary }}</p>
+      <p class="muted">{{ scorecard.baseline_comparison.caution }}</p>
+    {% else %}
+      <p>No baseline comparison is available yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}

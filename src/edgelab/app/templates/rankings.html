@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Strategy Rankings{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Strategy Rankings</h2>
+    <p class="muted">
+      Research evidence ranked in plain English. This helps choose what deserves deeper testing.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    rankings are research evidence only. They do not allow real-money use and do not produce
+    action recommendations.
+  </section>
+
+  <section class="panel">
+    <h3>What this means</h3>
+    <p>
+      EdgeLab rewards durable evidence, smaller worst drops, useful sample size, and baseline
+      discipline. Total return alone is not enough. Weak or unsupported ideas stay visible so they
+      can be improved, rejected, or tested more carefully later.
+    </p>
+  </section>
+
+  <section class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Idea</th>
+          <th>Source</th>
+          <th>{{ plain_label("evidence_strength") }}</th>
+          <th>Current Conclusion</th>
+          <th>{{ plain_label("overall_score") }}</th>
+          <th>What Helped</th>
+          <th>What Hurt</th>
+          <th>Real-Money Status</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scorecard in scorecards %}
+          <tr>
+            <td>{{ scorecard.title }}</td>
+            <td>
+              {% if scorecard.strategy_id and scorecard.discovery_id %}
+                strategy and discovery idea
+              {% elif scorecard.strategy_id %}
+                strategy
+              {% else %}
+                discovery idea
+              {% endif %}
+            </td>
+            <td>{{ scorecard.evidence_strength.value.replace("_", " ") }}</td>
+            <td>{{ scorecard.conclusion.value.replace("_", " ") }}</td>
+            <td>{{ "%.1f"|format(scorecard.overall_score) }}/100</td>
+            <td>{{ scorecard.what_helped[0] if scorecard.what_helped else "None yet." }}</td>
+            <td>{{ scorecard.what_hurt[0] if scorecard.what_hurt else "Sample limits remain." }}</td>
+            <td>{{ scorecard.real_money_status }}</td>
+            <td><a href="/ui/rankings/{{ scorecard.scorecard_id }}">Open scorecard</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

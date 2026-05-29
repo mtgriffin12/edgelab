@@ -79,3 +79,7 @@ Phase 5B adds a plain-English UX language layer before adding more analytical co
 ## DEC-020: Phase 5C Strategy Discovery Lab
 
 Phase 5C implements a Strategy Discovery Lab that supports both known strategy families and novel edge hypotheses, with baseline challenger rules and plain-English evidence requirements.
+
+## DEC-021: Phase 6 Strategy Metrics and Ranking Engine
+
+Phase 6 implements a local Strategy Metrics and Ranking Engine that ranks research evidence rather than producing trade recommendations.

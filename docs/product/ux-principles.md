@@ -62,3 +62,10 @@ before "profit factor," and "Market Mood" before "sentiment."
 The Strategy Discovery Lab should make idea status plain. Known ideas and novel ideas are both
 allowed, but neither should feel trusted without evidence. The page should show the simpler
 baseline each idea must beat and make it clear that no idea is ready for real money.
+
+## Phase 6 Ranking UX
+
+The Strategy Rankings page should feel like research triage, not a leaderboard. It should explain
+the bottom line before the score, show what helped and hurt, and make weak evidence easy to see.
+High return should not visually dominate warnings about worst drop, small sample size, unsupported
+logic, or missing baseline evidence.

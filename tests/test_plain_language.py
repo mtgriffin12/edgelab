@@ -34,6 +34,19 @@ def test_required_plain_language_terms_exist() -> None:
         "overfitting_risk_score",
         "novelty_score",
         "complexity_score",
+        "ranking",
+        "evidence_strength",
+        "overall_score",
+        "baseline_comparison",
+        "top_research_candidate",
+        "weak_candidate",
+        "promising_research_candidate",
+        "overfitting_risk",
+        "cost_sensitivity",
+        "sample_size",
+        "return_quality",
+        "worst_drop_control",
+        "consistency",
     }
 
     assert required_terms.issubset(PLAIN_LANGUAGE_TERMS)
@@ -56,6 +69,8 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("eligible_for_live_trading") == "Allowed to Use Real Money"
     assert plain_label("strategy_discovery_lab") == "Strategy Discovery Lab"
     assert plain_label("baseline_to_beat") == "Simpler Idea to Beat"
+    assert plain_label("ranking") == "Research Ranking"
+    assert plain_label("overall_score") == "Overall Research Score"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

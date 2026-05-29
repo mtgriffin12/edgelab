@@ -12,6 +12,7 @@ REQUIRED_DOCS = [
     "docs/architecture/cloud-readiness.md",
     "docs/domain/strategy-research-principles.md",
     "docs/domain/strategy-discovery-lab.md",
+    "docs/domain/strategy-ranking-engine.md",
     "docs/domain/sentiment-intelligence-layer.md",
     "docs/domain/backtesting-principles.md",
     "docs/risk/risk-governance.md",

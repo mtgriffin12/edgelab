@@ -42,6 +42,11 @@ Tests whether strategy behavior survives out-of-sample periods, regime changes, 
 
 Ranks strategies using risk-adjusted evidence, robustness, drawdown behavior, and operational suitability.
 
+Phase 6 implements a local Strategy Metrics and Ranking Engine. It compares sample strategy specs,
+discovery records, and fixture-backed backtest results with conservative, plain-English scorecards.
+It ranks research evidence only and does not produce recommendations, external calls, paper
+promotion, or live-trading permission.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

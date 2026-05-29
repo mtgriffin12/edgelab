@@ -226,6 +226,86 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="How many moving parts the idea depends on.",
         why_it_matters="More moving parts usually require stronger evidence.",
     ),
+    "ranking": PlainLanguageTerm(
+        technical_key="ranking",
+        plain_label="Research Ranking",
+        short_explanation="A conservative ordering of ideas by evidence quality.",
+        why_it_matters="It helps decide what deserves deeper testing next.",
+    ),
+    "evidence_strength": PlainLanguageTerm(
+        technical_key="evidence_strength",
+        plain_label="Evidence Strength",
+        short_explanation="How much confidence the current research evidence deserves.",
+        why_it_matters=(
+            "Weak evidence should slow an idea down, even when numbers look interesting."
+        ),
+    ),
+    "overall_score": PlainLanguageTerm(
+        technical_key="overall_score",
+        plain_label="Overall Research Score",
+        short_explanation="A 0-100 score that blends return, risk, sample size, and caution.",
+        why_it_matters="It prevents one shiny metric from deciding the ranking alone.",
+    ),
+    "baseline_comparison": PlainLanguageTerm(
+        technical_key="baseline_comparison",
+        plain_label="Simpler Comparison",
+        short_explanation="The simpler idea that a more complex idea must improve on.",
+        why_it_matters="Complexity should only survive when it adds evidence.",
+    ),
+    "top_research_candidate": PlainLanguageTerm(
+        technical_key="top_research_candidate",
+        plain_label="Top Research Candidate",
+        short_explanation="An idea that may deserve more testing before anything else.",
+        why_it_matters="This is about research priority, not action.",
+    ),
+    "weak_candidate": PlainLanguageTerm(
+        technical_key="weak_candidate",
+        plain_label="Weak Candidate",
+        short_explanation="An idea with thin, fragile, unsupported, or insufficient evidence.",
+        why_it_matters="Weak ideas should stay visible so they can be improved or rejected.",
+    ),
+    "promising_research_candidate": PlainLanguageTerm(
+        technical_key="promising_research_candidate",
+        plain_label="Promising Research Candidate",
+        short_explanation="An idea that looks worth deeper testing, not real-money use.",
+        why_it_matters="Promising still means unproven.",
+    ),
+    "overfitting_risk": PlainLanguageTerm(
+        technical_key="overfitting_risk",
+        plain_label="Curve-Fit Risk",
+        short_explanation="The risk that an idea only looks good because it was shaped to samples.",
+        why_it_matters="High curve-fit risk needs stricter testing.",
+    ),
+    "cost_sensitivity": PlainLanguageTerm(
+        technical_key="cost_sensitivity",
+        plain_label="Cost Fragility",
+        short_explanation="How much fees or price friction could weaken the idea.",
+        why_it_matters="Small edges can disappear after costs.",
+    ),
+    "sample_size": PlainLanguageTerm(
+        technical_key="sample_size",
+        plain_label="Sample Size",
+        short_explanation="How many completed examples support the result.",
+        why_it_matters="A tiny sample can make weak evidence look stronger than it is.",
+    ),
+    "return_quality": PlainLanguageTerm(
+        technical_key="return_quality",
+        plain_label="Return Quality",
+        short_explanation="Whether the result improved without relying on one flashy number.",
+        why_it_matters="Return must be judged alongside risk and evidence quality.",
+    ),
+    "worst_drop_control": PlainLanguageTerm(
+        technical_key="worst_drop_control",
+        plain_label="Worst Drop Control",
+        short_explanation="How well the idea avoided painful sample declines.",
+        why_it_matters="Large drops can make good-looking returns fragile.",
+    ),
+    "consistency": PlainLanguageTerm(
+        technical_key="consistency",
+        plain_label="Consistency",
+        short_explanation="Whether the sample looked steady enough to keep studying.",
+        why_it_matters="A few lucky events are not durable evidence.",
+    ),
 }
 
 

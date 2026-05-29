@@ -25,6 +25,11 @@ EdgeLab should explain conclusions before metrics.
 - Use "Simpler Idea It Must Beat" before "baseline."
 - Use "Environment Fit" before "current regime fit."
 - Use "Curve-Fit Risk" before "overfitting risk."
+- Use "Research Ranking" before "ranking."
+- Use "Overall Research Score" before "overall score."
+- Use "Simpler Comparison" before "baseline comparison."
+- Use "Cost Fragility" before "cost sensitivity."
+- Use "Sample Size" before "trade count" when explaining ranking confidence.
 
 ## Safety Language
 

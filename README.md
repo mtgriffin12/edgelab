@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 5C strategy discovery lab**.
+Current phase: **Phase 6 strategy ranking engine**.
 
 No live trading functionality exists.
 
@@ -50,6 +50,7 @@ Then visit:
 
 - `http://127.0.0.1:8000/ui`
 - `http://127.0.0.1:8000/ui/discovery-lab`
+- `http://127.0.0.1:8000/ui/rankings`
 - `http://127.0.0.1:8000/ui/lab-bench`
 - `http://127.0.0.1:8000/ui/evidence-board`
 - `http://127.0.0.1:8000/ui/sentiment-lens`
@@ -77,6 +78,12 @@ Then visit:
 - `http://127.0.0.1:8000/discovery/lanes`
 - `http://127.0.0.1:8000/discovery/genealogy/broad-fear-company-calm-pullback`
 - `http://127.0.0.1:8000/discovery/ledger`
+- `http://127.0.0.1:8000/rankings/sample`
+- `http://127.0.0.1:8000/rankings/scorecards`
+- `http://127.0.0.1:8000/rankings/scorecards/strategy-relative-strength-pullback`
+- `http://127.0.0.1:8000/rankings/scorecards/strategy-relative-strength-pullback/card`
+- `http://127.0.0.1:8000/rankings/top-research-candidates`
+- `http://127.0.0.1:8000/rankings/weak-candidates`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -93,6 +100,11 @@ sentiment as market mood.
 The discovery endpoints and `/ui/discovery-lab` page are read-only and in-memory. They separate
 known strategy families from adaptive or novel hypotheses, and every differentiated idea must name
 the simpler baseline it has to beat.
+
+The ranking endpoints and `/ui/rankings` page are read-only and local. They score research
+evidence from sample strategies, discovery records, fixture-backed backtests, and scaffolded
+metadata. Rankings help decide what deserves deeper testing; they do not produce recommendations
+or real-money permission.
 
 To run a local fixture-backed backtest:
 
