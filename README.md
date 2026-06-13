@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7A candidate equity screener**.
+Current phase: **Phase 7B model portfolio engine**.
 
 No live trading functionality exists.
 
@@ -52,6 +52,7 @@ Then visit:
 - `http://127.0.0.1:8000/ui/discovery-lab`
 - `http://127.0.0.1:8000/ui/rankings`
 - `http://127.0.0.1:8000/ui/candidates`
+- `http://127.0.0.1:8000/ui/portfolios`
 - `http://127.0.0.1:8000/ui/lab-bench`
 - `http://127.0.0.1:8000/ui/evidence-board`
 - `http://127.0.0.1:8000/ui/sentiment-lens`
@@ -91,6 +92,12 @@ Then visit:
 - `http://127.0.0.1:8000/candidates/equities/spy-research-candidate/card`
 - `http://127.0.0.1:8000/candidates/symbols`
 - `http://127.0.0.1:8000/candidates/research-watchlist`
+- `http://127.0.0.1:8000/portfolios/sample`
+- `http://127.0.0.1:8000/portfolios/model`
+- `http://127.0.0.1:8000/portfolios/model/core-research-portfolio`
+- `http://127.0.0.1:8000/portfolios/model/core-research-portfolio/card`
+- `http://127.0.0.1:8000/portfolios/styles`
+- `http://127.0.0.1:8000/portfolios/model/core-research-portfolio/monitoring`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -117,6 +124,12 @@ The candidate endpoints and `/ui/candidates` page are read-only and local. They 
 built-in fixture universe for equities that may deserve more research by combining sample market
 data, sample market mood, strategy matches, discovery ideas, and ranking scorecards. Candidates
 are research triage only; they do not use live quotes and never approve real-money use.
+
+The portfolio endpoints and `/ui/portfolios` page are read-only and local. The UI calls them
+Pretend Portfolio Tests: practice portfolios built from sample data so EdgeLab can learn how it
+might group ideas later. They are not recommendations, do not use live quotes, do not connect to
+brokers, and never approve paper or real-money use. Cash is shown as intentional when evidence is
+not strong enough.
 
 To run a local fixture-backed backtest:
 

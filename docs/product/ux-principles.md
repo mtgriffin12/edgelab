@@ -8,13 +8,15 @@ EdgeLab should not look or behave like a traditional trading platform.
 - Evidence before action.
 - Strategy cards, not noisy watchlists.
 - Research pipeline, not price-chasing.
-- Plain-English explanations paired with structured metrics.
+- Plain-English explanations before structured metrics.
 - Text and tables first.
 - No charts in Phase 0.
 - Progressive disclosure: show the conclusion first, then evidence, then audit trail.
 - Every strategy should have a "why it exists," "why it might fail," and "what evidence supports it."
 - Cash/no-trade should be treated as a valid system recommendation.
 - The interface should make restraint feel intelligent, not inactive.
+- Decision intelligence matters more than traditional finance dashboards.
+- Any user-facing page that a college student with no investing experience cannot understand has failed.
 
 ## Initial UX Surfaces
 
@@ -76,3 +78,16 @@ The Candidate Equity Screener should feel like a research intake desk, not a wat
 It should explain why a symbol appeared, what evidence is missing, what would change the system's
 mind, and why real-money use remains blocked. Candidate tables should make sample-data limits and
 reasons to be careful as visible as scores.
+
+## Phase 7B Model Portfolio UX
+
+The portfolio UI should say "Pretend Portfolio Tests" before model portfolio. It should feel like
+decision intelligence practice, not a portfolio-theory dashboard. Every portfolio page should show
+the bottom line, what EdgeLab is testing, what EdgeLab would do in research mode, why each holding
+appears, why cash is included, what is missing, what would change EdgeLab's mind, the next review
+item, and real-money status before technical details.
+
+Technical terms such as allocation, equity exposure, benchmark, target weight, target value,
+constraint, evidence strength, and diversification belong in an Evidence details section, where
+they must be translated into beginner language. Cash should feel like intentional restraint, and
+every page should make clear that practice portfolios are not recommendations.

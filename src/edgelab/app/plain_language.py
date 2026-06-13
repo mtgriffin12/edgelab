@@ -381,9 +381,9 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
     "real_money_status": PlainLanguageTerm(
         technical_key="real_money_status",
         plain_label="Real-Money Status",
-        short_explanation="Whether the candidate is allowed near real-money execution.",
+        short_explanation="Whether this is allowed near real-money decisions.",
         why_it_matters="This must be explicit and conservative.",
-        caution="Phase 7A status is always Not allowed.",
+        caution="The current answer is always Not allowed.",
     ),
     "fixture_universe": PlainLanguageTerm(
         technical_key="fixture_universe",
@@ -391,6 +391,148 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="The small local set of sample symbols included with the app.",
         why_it_matters="It makes the screener repeatable while real providers are absent.",
         caution="The built-in sample universe is not live or complete market coverage.",
+    ),
+    "pretend_portfolio_test": PlainLanguageTerm(
+        technical_key="pretend_portfolio_test",
+        plain_label="Pretend Portfolio Test",
+        short_explanation=(
+            "A practice portfolio that lets EdgeLab learn how it might group ideas later."
+        ),
+        why_it_matters="It keeps portfolio thinking separate from real-money decisions.",
+        caution="Pretend portfolio tests are not recommendations.",
+    ),
+    "practice_portfolio": PlainLanguageTerm(
+        technical_key="practice_portfolio",
+        plain_label="Practice Portfolio",
+        short_explanation="A sample-data portfolio used for learning, not action.",
+        why_it_matters="It lets the app explain its thinking before any paper mode exists.",
+        caution="Practice portfolios do not prove anything about real markets.",
+    ),
+    "model_portfolio": PlainLanguageTerm(
+        technical_key="model_portfolio",
+        plain_label="Pretend Portfolio Test",
+        short_explanation=(
+            "A beginner-friendly name for a hypothetical portfolio built from sample data."
+        ),
+        why_it_matters="It shows what EdgeLab is practicing without implying a recommendation.",
+        caution="Internal APIs may still use model portfolio wording.",
+    ),
+    "target_weight": PlainLanguageTerm(
+        technical_key="target_weight",
+        plain_label="Pretend Portfolio Share",
+        short_explanation="How much of the pretend portfolio goes into one idea.",
+        why_it_matters="It explains size without turning the page into a trading dashboard.",
+    ),
+    "target_value": PlainLanguageTerm(
+        technical_key="target_value",
+        plain_label="Pretend Dollar Amount",
+        short_explanation="The fake dollar amount implied by the pretend portfolio share.",
+        why_it_matters="It keeps the number clearly separate from real money.",
+        caution="This is not spendable or investable money.",
+    ),
+    "cash_allocation": PlainLanguageTerm(
+        technical_key="cash_allocation",
+        plain_label="Cash Left Safely Unused",
+        short_explanation=(
+            "The part EdgeLab leaves unused because the evidence is not strong enough yet."
+        ),
+        why_it_matters="Cash makes restraint visible instead of making it look like inaction.",
+    ),
+    "equity_exposure": PlainLanguageTerm(
+        technical_key="equity_exposure",
+        plain_label="Invested Instead of Sitting Safely in Cash",
+        short_explanation="How much of the pretend portfolio is not sitting safely unused.",
+        why_it_matters="It shows how cautious or aggressive the practice test is.",
+    ),
+    "portfolio_constraint": PlainLanguageTerm(
+        technical_key="portfolio_constraint",
+        plain_label="Safety Rule",
+        short_explanation="A plain rule that stops one idea from becoming too large.",
+        why_it_matters="Safety rules help EdgeLab stay cautious when evidence is thin.",
+    ),
+    "safety_rule": PlainLanguageTerm(
+        technical_key="safety_rule",
+        plain_label="Safety Rule",
+        short_explanation="A simple limit that keeps a practice portfolio from getting reckless.",
+        why_it_matters="It turns caution into something the user can see.",
+    ),
+    "portfolio_monitoring": PlainLanguageTerm(
+        technical_key="portfolio_monitoring",
+        plain_label="Next Review Notes",
+        short_explanation="The next things EdgeLab should re-check before trust increases.",
+        why_it_matters="A practice portfolio should say how it could get weaker.",
+    ),
+    "holding_reason": PlainLanguageTerm(
+        technical_key="holding_reason",
+        plain_label="Why It Appears",
+        short_explanation="The plain-English reason a model holding is included.",
+        why_it_matters="Every holding should explain its job in the model.",
+    ),
+    "what_to_monitor": PlainLanguageTerm(
+        technical_key="what_to_monitor",
+        plain_label="What EdgeLab Would Watch Next",
+        short_explanation="The next condition EdgeLab would re-check in research mode.",
+        why_it_matters="Research should define how evidence can weaken.",
+    ),
+    "what_would_make_us_reconsider": PlainLanguageTerm(
+        technical_key="what_would_make_us_reconsider",
+        plain_label="What Would Make Us Reconsider",
+        short_explanation="Events or evidence gaps that would weaken the model.",
+        why_it_matters="Good portfolio research names its failure conditions.",
+    ),
+    "defensive_research": PlainLanguageTerm(
+        technical_key="defensive_research",
+        plain_label="Defensive Research",
+        short_explanation="A model style that keeps more cash and less concentrated exposure.",
+        why_it_matters="It tests restraint and reference exposure before confidence exists.",
+    ),
+    "core_research": PlainLanguageTerm(
+        technical_key="core_research",
+        plain_label="Core Research",
+        short_explanation="A balanced model style for default portfolio construction tests.",
+        why_it_matters="It gives the app a simple baseline model to inspect.",
+    ),
+    "opportunistic_research": PlainLanguageTerm(
+        technical_key="opportunistic_research",
+        plain_label="Opportunistic Research",
+        short_explanation="A higher-exposure research style that still obeys limits.",
+        why_it_matters="It tests whether stronger candidate scores create concentration risk.",
+    ),
+    "benchmark_comparison": PlainLanguageTerm(
+        technical_key="benchmark_comparison",
+        plain_label="Comparison Basket",
+        short_explanation="A simple basket used for context, not preference.",
+        why_it_matters="It helps EdgeLab compare practice tests later without implying action.",
+    ),
+    "research_model": PlainLanguageTerm(
+        technical_key="research_model",
+        plain_label="Research-Only Practice Test",
+        short_explanation="A pretend setup used for learning and validation.",
+        why_it_matters="It keeps research separate from paper or real-money action.",
+    ),
+    "allocation": PlainLanguageTerm(
+        technical_key="allocation",
+        plain_label="How Much Goes Here",
+        short_explanation="How much of the pretend portfolio goes into one idea or cash.",
+        why_it_matters="It explains sizing without finance jargon.",
+    ),
+    "diversification": PlainLanguageTerm(
+        technical_key="diversification",
+        plain_label="Not Putting Too Much In One Idea",
+        short_explanation="A way to avoid letting one idea dominate the practice portfolio.",
+        why_it_matters="It keeps one weak idea from making the whole test look better or worse.",
+    ),
+    "evidence_details": PlainLanguageTerm(
+        technical_key="evidence_details",
+        plain_label="Evidence Details",
+        short_explanation="A lower section for technical numbers after the plain-English story.",
+        why_it_matters="The user should understand EdgeLab's thinking before seeing metrics.",
+    ),
+    "next_review_item": PlainLanguageTerm(
+        technical_key="next_review_item",
+        plain_label="Next Review Item",
+        short_explanation="The next simple thing EdgeLab should check.",
+        why_it_matters="It turns research into a clear next question, not an action instruction.",
     ),
 }
 

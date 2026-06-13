@@ -61,6 +61,28 @@ def test_required_plain_language_terms_exist() -> None:
         "what_would_change_our_mind",
         "real_money_status",
         "fixture_universe",
+        "pretend_portfolio_test",
+        "practice_portfolio",
+        "model_portfolio",
+        "target_weight",
+        "target_value",
+        "cash_allocation",
+        "equity_exposure",
+        "portfolio_constraint",
+        "safety_rule",
+        "portfolio_monitoring",
+        "holding_reason",
+        "what_to_monitor",
+        "what_would_make_us_reconsider",
+        "evidence_details",
+        "next_review_item",
+        "defensive_research",
+        "core_research",
+        "opportunistic_research",
+        "benchmark_comparison",
+        "research_model",
+        "allocation",
+        "diversification",
     }
 
     assert required_terms.issubset(PLAIN_LANGUAGE_TERMS)
@@ -87,6 +109,11 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("overall_score") == "Overall Research Score"
     assert plain_label("candidate") == "Research Candidate"
     assert plain_label("research_watchlist") == "Research Watchlist"
+    assert plain_label("pretend_portfolio_test") == "Pretend Portfolio Test"
+    assert plain_label("model_portfolio") == "Pretend Portfolio Test"
+    assert plain_label("cash_allocation") == "Cash Left Safely Unused"
+    assert plain_label("portfolio_constraint") == "Safety Rule"
+    assert plain_label("evidence_details") == "Evidence Details"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

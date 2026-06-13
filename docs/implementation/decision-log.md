@@ -87,3 +87,11 @@ Phase 6 implements a local Strategy Metrics and Ranking Engine that ranks resear
 ## DEC-022: Phase 7A Candidate Equity Screener
 
 Phase 7A implements a local Candidate Equity Screener that surfaces research-only equity candidates from fixture evidence, strategy matches, discovery ideas, and ranking scorecards without live quotes, provider integrations, or real-money permission.
+
+## DEC-023: Phase 7B Model Portfolio Engine
+
+Phase 7B implements a local Model Portfolio Engine that assembles research-only simulated portfolios before paper trading or live execution.
+
+## DEC-025: Phase 7B Pretend Portfolio Tests UX
+
+Phase 7B user-facing portfolio UI uses "Pretend Portfolio Tests" and plain-English decision intelligence before traditional portfolio metrics.

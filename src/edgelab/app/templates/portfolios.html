@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Pretend Portfolio Tests{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Pretend Portfolio Tests</h2>
+    <p class="muted">
+      Practice portfolios built from sample data so EdgeLab can learn how it might assemble and
+      review portfolios later.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    these are practice portfolios, not recommendations. They use sample data built into the app,
+    do not use live quotes, and real-money status is Not allowed.
+  </section>
+
+  <section class="panel">
+    <h3>What EdgeLab is testing</h3>
+    <p>
+      EdgeLab is practicing how it might group research candidates later, explain why each one is
+      included, and leave money safely unused when the evidence is not strong enough yet.
+    </p>
+  </section>
+
+  <section class="facts" aria-label="Pretend portfolio test facts">
+    <div class="fact"><span>Practice tests shown</span><strong>{{ construction_result.portfolio_count }}</strong></div>
+    <div class="fact"><span>What EdgeLab would do</span><strong>Keep researching</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>Not allowed</strong></div>
+  </section>
+
+  <section class="section grid">
+    {% for portfolio in portfolios %}
+      <article class="summary-card">
+        <h3>
+          {{ portfolio.name.replace("EdgeLab ", "").replace("Model Portfolio", "Pretend Portfolio Test").replace("Benchmark Comparison", "Comparison Basket").replace("Portfolio", "Test") }}
+        </h3>
+        <p><strong>Bottom line:</strong> {{ portfolio.plain_english_summary }}</p>
+        <p><strong>What EdgeLab is testing:</strong> {{ portfolio.why_this_portfolio_exists }}</p>
+        <p>
+          <strong>What EdgeLab would do in research mode:</strong>
+          keep this as a practice portfolio, review whether the included ideas still make sense,
+          and avoid real-money use.
+        </p>
+        <p><strong>Why cash is included:</strong> {{ portfolio.target_cash.plain_english_reason }}</p>
+        <p><strong>What supports this test:</strong> {{ portfolio.what_supports_it[0] }}</p>
+        <p><strong>What is missing:</strong> {{ portfolio.what_is_missing[0] }}</p>
+        <p><strong>Next review item:</strong> {{ portfolio.monitoring_notes[0].future_review_trigger }}</p>
+        <p><strong>Real-money status:</strong> {{ portfolio.real_money_status }}</p>
+        <a href="/ui/portfolios/{{ portfolio.portfolio_id }}">Open details</a>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <p class="muted">
+      These details use portfolio-engine terms, translated into plain English.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Practice style</th>
+          <th>Research status</th>
+          <th>Starting sample amount</th>
+          <th>Cash left safely unused</th>
+          <th>Invested instead of sitting safely in cash</th>
+          <th>Ideas included</th>
+          <th>Summary</th>
+          <th>Real-Money Status</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for portfolio in portfolios %}
+          <tr>
+            <td>{{ portfolio.name }}</td>
+            <td>{{ portfolio.style.value.replace("_", " ") }}</td>
+            <td>{{ portfolio.status.value.replace("_", " ") }}</td>
+            <td>${{ "%.0f"|format(portfolio.initial_capital) }}</td>
+            <td>{{ "%.1f"|format(portfolio.target_cash.target_weight_pct) }}%</td>
+            <td>{{ "%.1f"|format(portfolio.target_equity_exposure_pct) }}%</td>
+            <td>{{ portfolio.holdings|length }}</td>
+            <td>{{ portfolio.plain_english_summary }}</td>
+            <td>{{ portfolio.real_money_status }}</td>
+            <td><a href="/ui/portfolios/{{ portfolio.portfolio_id }}">Open model</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

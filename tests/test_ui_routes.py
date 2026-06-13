@@ -1,3 +1,5 @@
+import re
+
 from fastapi.testclient import TestClient
 
 from edgelab.app.main import app
@@ -117,6 +119,63 @@ def test_candidates_returns_research_candidates() -> None:
     assert "SPY Research Candidate" in response.text
 
 
+def test_portfolios_returns_model_portfolios() -> None:
+    response = client.get("/ui/portfolios")
+
+    assert response.status_code == 200
+    assert "Pretend Portfolio Tests" in response.text
+    assert "practice portfolios, not recommendations" in response.text
+    assert "sample data built into the app" in response.text
+    assert "What EdgeLab is testing" in response.text
+    assert "What EdgeLab would do in research mode" in response.text
+    assert "Why cash is included" in response.text
+    assert "What supports this test" in response.text
+    assert "What is missing" in response.text
+    assert "Next review item" in response.text
+    assert "Evidence details" in response.text
+    assert "Not allowed" in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "target weight",
+        "equity exposure",
+        "constraints",
+        "benchmark",
+        "allocation",
+    ]:
+        assert phrase not in primary_text
+
+
+def test_portfolio_detail_returns_plain_english_card() -> None:
+    response = client.get("/ui/portfolios/core-research-portfolio")
+
+    assert response.status_code == 200
+    assert "Back to Pretend Portfolio Tests" in response.text
+    for phrase in [
+        "Bottom line",
+        "What EdgeLab is pretending to test",
+        "What EdgeLab would do in research mode",
+        "Why each holding appears",
+        "Why cash is included",
+        "What is missing",
+        "Why this might be wrong",
+        "What would make us reconsider",
+        "Next review item",
+        "Evidence details",
+        "Real-money status",
+    ]:
+        assert phrase in response.text
+    assert "Real-money status:</strong>\n    Not allowed" in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "target weight",
+        "equity exposure",
+        "constraints",
+        "benchmark",
+        "allocation",
+    ]:
+        assert phrase not in primary_text
+
+
 def test_candidate_detail_returns_plain_english_card() -> None:
     response = client.get("/ui/candidates/spy-research-candidate")
 
@@ -181,6 +240,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/rankings/strategy-relative-strength-pullback",
         "/ui/candidates",
         "/ui/candidates/spy-research-candidate",
+        "/ui/portfolios",
+        "/ui/portfolios/core-research-portfolio",
         "/ui/journal",
         "/ui/reports",
     ]
@@ -202,3 +263,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         assert response.status_code == 200
         for phrase in forbidden_phrases:
             assert phrase not in page
+
+
+def visible_text_before(html: str, marker: str) -> str:
+    """Return visible-ish text before a marker, ignoring attributes such as href IDs."""
+
+    return re.sub(r"<[^>]+>", " ", html.split(marker)[0]).lower()

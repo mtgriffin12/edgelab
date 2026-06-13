@@ -34,6 +34,22 @@ EdgeLab should explain conclusions before metrics.
 - Use "Research Watchlist" before "watchlist."
 - Use "What Supports It," "What Is Missing," and "What Would Change Our Mind" on candidate pages.
 - Use "Built-In Sample Universe" before "fixture universe."
+- Use "Pretend Portfolio Tests" before "model portfolio."
+- Use "Cash Left Safely Unused" and explain cash as intentional.
+- Use "Safety Rule" before "constraint."
+- Use "Why It Appears" for every model holding.
+- Use "Next Review Notes" before "monitoring."
+- Use "Evidence Details" for technical portfolio numbers.
+- Use "Next Review Item" before any future review trigger.
+
+## Portfolio Language Standard
+
+- Put plain English before technical terms.
+- Put the bottom line before numbers.
+- The user should understand what EdgeLab thinks before seeing metrics.
+- Technical terms belong in Evidence details, not the first screen.
+- Real-money status must be unmistakable.
+- Practice portfolios are not recommendations and should never sound actionable.
 
 ## Safety Language
 
@@ -47,3 +63,5 @@ Warnings should be short and direct:
 - "The app is not reading live news yet."
 - "Doing nothing is an acceptable outcome when evidence is thin."
 - "This symbol belongs on a research screen, not a real-money decision list."
+- "This pretend portfolio test is for research practice only."
+- "Real-money status: Not allowed."

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}{{ portfolio.name }}{% endblock %}
+{% block content %}
+  <p><a href="/ui/portfolios">Back to Pretend Portfolio Tests</a></p>
+
+  <section class="page-header">
+    <h2>
+      {{ portfolio.name.replace("EdgeLab ", "").replace("Model Portfolio", "Pretend Portfolio Test").replace("Benchmark Comparison", "Comparison Basket").replace("Portfolio", "Test") }}
+    </h2>
+    <p class="muted">Practice portfolio using sample data only.</p>
+  </section>
+
+  <section class="facts" aria-label="Portfolio facts">
+    <div class="fact"><span>Bottom line</span><strong>Practice only</strong></div>
+    <div class="fact"><span>What EdgeLab would do</span><strong>Keep researching</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>{{ portfolio.real_money_status }}</strong></div>
+  </section>
+
+  <section class="warning section">
+    <strong>Real-money status:</strong>
+    {{ portfolio.real_money_status }}. This is not a recommendation and does not use live data.
+  </section>
+
+  <section class="panel section">
+    <h3>Bottom line</h3>
+    <p>{{ portfolio.plain_english_summary }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab is pretending to test</h3>
+    <p>{{ portfolio.why_this_portfolio_exists }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab would do in research mode</h3>
+    <p>
+      EdgeLab would keep this as a practice portfolio, watch whether the included candidates
+      continue to make sense, and avoid real-money use.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Why each holding appears</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Simple name</th>
+          <th>Why It Appears</th>
+          <th>Why it might be wrong</th>
+          <th>What EdgeLab would watch next</th>
+          <th>Real-money status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for holding in portfolio.holdings %}
+          <tr>
+            <td>{{ holding.symbol }}</td>
+            <td>{{ holding.display_name.replace("Model Holding", "Practice Holding").replace("Reference Holding", "Comparison Basket") }}</td>
+            <td>{{ holding.plain_english_reason }}</td>
+            <td>{{ holding.what_would_make_us_reconsider[0] }}</td>
+            <td>{{ holding.what_to_monitor[0] }}</td>
+            <td>{{ holding.real_money_status }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Why cash is included</h3>
+    <p>
+      Cash is the part EdgeLab leaves safely unused because the evidence is not strong enough yet.
+      {{ portfolio.target_cash.plain_english_reason }}
+    </p>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>What supports this test</h3>
+      <ul class="list-clean">
+        {% for item in portfolio.what_supports_it %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>What is missing</h3>
+      <ul class="list-clean">
+        {% for item in portfolio.what_is_missing %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>Why this might be wrong</h3>
+      <ul class="list-clean">
+        {% for issue in portfolio.constraint_issues %}
+          <li>{{ issue.message }}</li>
+        {% endfor %}
+        {% for issue in portfolio.quality_issues %}
+          <li>{{ issue.message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>What would make us reconsider</h3>
+      <ul class="list-clean">
+        {% for item in portfolio.what_would_change_our_mind %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Next review item</h3>
+      <ul class="list-clean">
+        {% for note in portfolio.monitoring_notes %}
+          <li>{{ note.future_review_trigger }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>Real-money status</h3>
+      <p>{{ portfolio.real_money_status }}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <table>
+      <tbody>
+        <tr>
+          <th>Starting sample amount</th>
+          <td>${{ "%.0f"|format(portfolio.initial_capital) }}</td>
+        </tr>
+        <tr>
+          <th>Pretend portfolio share left in cash</th>
+          <td>{{ "%.1f"|format(portfolio.target_cash.target_weight_pct) }}%</td>
+        </tr>
+        <tr>
+          <th>Invested instead of sitting safely in cash</th>
+          <td>{{ "%.1f"|format(portfolio.target_equity_exposure_pct) }}%</td>
+        </tr>
+        <tr>
+          <th>Safety rules</th>
+          <td>{{ portfolio.constraint_issues|length }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}

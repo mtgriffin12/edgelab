@@ -54,6 +54,14 @@ sample sentiment context, sample strategy matches, discovery ideas, and ranking 
 Phase 7A is read-only, in-memory, and fixture-backed. It does not fetch live quotes, create
 recommendations, place orders, promote symbols, or claim that a candidate is proven.
 
+## Model Portfolio Engine
+
+Assembles hypothetical research portfolios from fixture-backed candidates. Phase 7B creates local
+model portfolios with starting capital, explicit cash, target weights, position reasons,
+constraint checks, monitoring notes, and real-money status. It is a bridge toward future paper
+portfolio simulation, but it does not create paper orders, broker calls, live signals, or
+real-money recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

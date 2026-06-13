@@ -19,6 +19,9 @@ from edgelab.discovery.genealogy import StrategyGenealogy
 from edgelab.discovery.ledger import ExperimentLedger
 from edgelab.discovery.library import StrategyDiscoveryLibrary
 from edgelab.discovery.schema import DiscoveryLane
+from edgelab.portfolios.cards import model_portfolio_to_markdown_card
+from edgelab.portfolios.construction import ModelPortfolioEngine
+from edgelab.portfolios.schema import PortfolioStyle
 from edgelab.ranking.cards import ranking_scorecard_to_markdown_card
 from edgelab.ranking.ranker import StrategyRankingEngine
 from edgelab.strategies.cards import strategy_to_markdown_card
@@ -44,6 +47,7 @@ candidate_screener = CandidateEquityScreener(
     discovery_library=discovery_library,
     ranking_engine=ranking_engine,
 )
+portfolio_engine = ModelPortfolioEngine(candidate_screener=candidate_screener)
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 templates.env.globals["plain_label"] = plain_label
@@ -59,7 +63,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7A candidate equity screener",
+        "phase": "Phase 7B model portfolio engine",
         "status": "research-only",
     }
 
@@ -364,6 +368,59 @@ def read_candidate_research_watchlist() -> list[dict[str, object]]:
     ]
 
 
+@app.get("/portfolios/sample")
+def read_sample_portfolios() -> dict[str, object]:
+    """Return a sample local research-only portfolio construction result."""
+
+    return portfolio_engine.construct().model_dump(mode="json")
+
+
+@app.get("/portfolios/model")
+def read_model_portfolios() -> list[dict[str, object]]:
+    """Return all local research-only model portfolios."""
+
+    return [
+        portfolio.model_dump(mode="json") for portfolio in portfolio_engine.construct().portfolios
+    ]
+
+
+@app.get("/portfolios/model/{portfolio_id}")
+def read_model_portfolio(portfolio_id: str) -> dict[str, object]:
+    """Return one local model portfolio."""
+
+    portfolio = portfolio_engine.get_portfolio(portfolio_id)
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Model portfolio not found")
+    return portfolio.model_dump(mode="json")
+
+
+@app.get("/portfolios/model/{portfolio_id}/card", response_class=Response)
+def read_model_portfolio_card(portfolio_id: str) -> Response:
+    """Return one local model portfolio as a Markdown card."""
+
+    portfolio = portfolio_engine.get_portfolio(portfolio_id)
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Model portfolio not found")
+    return Response(content=model_portfolio_to_markdown_card(portfolio), media_type="text/plain")
+
+
+@app.get("/portfolios/styles")
+def read_portfolio_styles() -> dict[str, list[str]]:
+    """Return available model portfolio styles."""
+
+    return {"styles": [style.value for style in PortfolioStyle]}
+
+
+@app.get("/portfolios/model/{portfolio_id}/monitoring")
+def read_model_portfolio_monitoring(portfolio_id: str) -> dict[str, object]:
+    """Return monitoring notes for one local model portfolio."""
+
+    notes = portfolio_engine.monitoring_notes_for(portfolio_id)
+    if notes is None:
+        raise HTTPException(status_code=404, detail="Model portfolio not found")
+    return {"portfolio_id": portfolio_id, "monitoring_notes": notes}
+
+
 @app.get("/ui", response_class=HTMLResponse)
 def read_ui_home(request: Request) -> Response:
     """Render the local research cockpit."""
@@ -376,6 +433,7 @@ def read_ui_home(request: Request) -> Response:
     )
     sample_rankings = ranking_engine.rank()
     sample_candidates = candidate_screener.screen()
+    sample_portfolios = portfolio_engine.construct()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -387,6 +445,7 @@ def read_ui_home(request: Request) -> Response:
             "discovery_count": len(discovery_library.list_records()),
             "ranking_count": len(sample_rankings.scorecards),
             "candidate_count": sample_candidates.candidate_count,
+            "portfolio_count": sample_portfolios.portfolio_count,
         },
     )
 
@@ -535,6 +594,35 @@ def read_ui_candidate_detail(request: Request, candidate_id: str) -> Response:
     )
 
 
+@app.get("/ui/portfolios", response_class=HTMLResponse)
+def read_ui_portfolios(request: Request) -> Response:
+    """Render the local model portfolio page."""
+
+    result = portfolio_engine.construct()
+    return templates.TemplateResponse(
+        request=request,
+        name="portfolios.html",
+        context={"construction_result": result, "portfolios": result.portfolios},
+    )
+
+
+@app.get("/ui/portfolios/{portfolio_id}", response_class=HTMLResponse)
+def read_ui_portfolio_detail(request: Request, portfolio_id: str) -> Response:
+    """Render one local model portfolio card."""
+
+    portfolio = portfolio_engine.get_portfolio(portfolio_id)
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Model portfolio not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="portfolio_detail.html",
+        context={
+            "portfolio": portfolio,
+            "card": model_portfolio_to_markdown_card(portfolio),
+        },
+    )
+
+
 @app.get("/ui/rankings/{scorecard_id}", response_class=HTMLResponse)
 def read_ui_ranking_detail(request: Request, scorecard_id: str) -> Response:
     """Render one ranking scorecard."""
@@ -567,6 +655,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 5C strategy discovery lab",
         "Phase 6 strategy ranking engine",
         "Phase 7A candidate equity screener",
+        "Phase 7B model portfolio engine",
     ]
     return templates.TemplateResponse(
         request=request,
@@ -592,6 +681,7 @@ def read_ui_reports(request: Request) -> Response:
         BacktestRequest(strategy_id="relative-strength-pullback", symbol="SPY")
     )
     sample_candidates = candidate_screener.screen()
+    sample_portfolios = portfolio_engine.construct()
     return templates.TemplateResponse(
         request=request,
         name="reports.html",
@@ -601,6 +691,7 @@ def read_ui_reports(request: Request) -> Response:
             "sentiment_summaries": sentiment_summaries,
             "sample_backtest": sample_backtest,
             "sample_candidates": sample_candidates,
+            "sample_portfolios": sample_portfolios,
         },
     )
 
