@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Intraday Lab{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Intraday Lab</h2>
+    <p class="muted">
+      First-hour setup research using measurable synthetic events instead of chart intuition.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    this is {{ plain_label("synthetic_intraday_data")|lower }} only. It is not live,
+    not a signal system, not a recommendation, and real-money status is Not allowed.
+  </section>
+
+  <section class="panel">
+    <h3>What this spike studies</h3>
+    <p>
+      Initial synthetic examples use S&amp;P 500-style and Nasdaq-style fixtures, but the system is
+      designed to support other symbols once suitable intraday data and instrument assumptions are
+      available. The goal is to test whether opening levels, candle behavior, failures, momentum,
+      and sit-out sessions can be explained as data.
+    </p>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Setup families</h3>
+      <ul class="list-clean">
+        <li>Opening range breakout</li>
+        <li>Opening range failure</li>
+        <li>Failed opening push</li>
+        <li>Failed opening selloff</li>
+        <li>Gap fade study</li>
+        <li>Sit-out day</li>
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>No-setup philosophy</h3>
+      <p>
+        Doing nothing is valid when the synthetic first hour is choppy, too narrow, or conflicting.
+      </p>
+      <a href="/ui/intraday-lab/prop-account-scaling">Open prop-account scaling study</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Synthetic instruments</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Point Value</th>
+          <th>Tick Size</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for instrument in instruments %}
+          <tr>
+            <td><a href="/ui/intraday-lab/{{ instrument.symbol }}">{{ instrument.symbol }}</a></td>
+            <td>{{ instrument.display_name }}</td>
+            <td>{{ instrument.instrument_type.value.replace("_", " ") }}</td>
+            <td>{{ "%.2f"|format(instrument.point_value) }}</td>
+            <td>{{ "%.2f"|format(instrument.tick_size) }}</td>
+            <td>{{ instrument.plain_english_description }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Synthetic sessions</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Session</th>
+          <th>Fixture</th>
+          <th>Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+          <tr>
+            <td>{{ session.symbol }}</td>
+            <td>{{ session.session_id }}</td>
+            <td>{{ session.fixture_file }}</td>
+            <td>
+              <a href="/ui/intraday-lab/{{ session.symbol }}?session_id={{ session.session_id }}">
+                Open session
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

@@ -62,6 +62,19 @@ constraint checks, monitoring notes, and real-money status. It is a bridge towar
 portfolio simulation, but it does not create paper orders, broker calls, live signals, or
 real-money recommendations.
 
+## Intraday Research Spike
+
+Explores whether first-hour intraday setup behavior can be represented as measurable events rather
+than chart intuition. Phase 7X adds a generic fixture-backed intraday package for instruments,
+bars, opening benchmarks, candle classification, event detection, setup or sit-out candidates,
+hypothetical short-hold simulation, generic prop-account scaling arithmetic, Markdown cards, API
+routes, and text/table UI pages.
+
+The initial fixtures include S&P 500-style and Nasdaq-style examples, plus a generic symbol to
+prove that ES/NQ are examples rather than architectural requirements. The spike is read-only,
+synthetic, local, and research-only. It does not add live data, real-time quotes, broker calls,
+prop-firm integrations, charting, paper execution, or live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

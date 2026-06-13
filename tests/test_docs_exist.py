@@ -15,6 +15,7 @@ REQUIRED_DOCS = [
     "docs/domain/strategy-ranking-engine.md",
     "docs/domain/candidate-equity-screener.md",
     "docs/domain/model-portfolio-engine.md",
+    "docs/domain/intraday-index-futures-research-spike.md",
     "docs/domain/sentiment-intelligence-layer.md",
     "docs/domain/backtesting-principles.md",
     "docs/risk/risk-governance.md",

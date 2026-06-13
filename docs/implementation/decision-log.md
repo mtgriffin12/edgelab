@@ -92,6 +92,10 @@ Phase 7A implements a local Candidate Equity Screener that surfaces research-onl
 
 Phase 7B implements a local Model Portfolio Engine that assembles research-only simulated portfolios before paper trading or live execution.
 
+## DEC-024: Phase 7X Intraday Research Spike
+
+Phase 7X implements an Intraday Research Spike to evaluate first-hour setup detection and generic prop-account scaling before any live data, paper trading, or execution integration.
+
 ## DEC-025: Phase 7B Pretend Portfolio Tests UX
 
 Phase 7B user-facing portfolio UI uses "Pretend Portfolio Tests" and plain-English decision intelligence before traditional portfolio metrics.

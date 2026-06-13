@@ -91,3 +91,14 @@ Technical terms such as allocation, equity exposure, benchmark, target weight, t
 constraint, evidence strength, and diversification belong in an Evidence details section, where
 they must be translated into beginner language. Cash should feel like intentional restraint, and
 every page should make clear that practice portfolios are not recommendations.
+
+## Phase 7X Intraday Lab UX
+
+The Intraday Lab should feel like a research microscope, not a trading terminal. It should show
+synthetic opening benchmarks, detected events, setup or sit-out candidates, hypothetical fixture
+results, and spike verdicts in plain English. It must not show charts, trade buttons, live-status
+language, broker language, account signup framing, or recommendations.
+
+No-trade days should be visible and respected. The page should make clear that initial S&P
+500-style and Nasdaq-style fixtures are examples only, and that the system is designed for other
+fixture-backed symbols once suitable intraday data and assumptions exist.

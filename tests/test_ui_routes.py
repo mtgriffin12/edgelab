@@ -176,6 +176,38 @@ def test_portfolio_detail_returns_plain_english_card() -> None:
         assert phrase not in primary_text
 
 
+def test_intraday_lab_returns_research_spike_page() -> None:
+    response = client.get("/ui/intraday-lab")
+
+    assert response.status_code == 200
+    assert "Intraday Lab" in response.text
+    assert "synthetic intraday sample data" in response.text.lower()
+    assert "not live" in response.text
+    assert "not a signal system" in response.text
+    assert "not a recommendation" in response.text
+    assert "GEN_SYN" in response.text
+
+
+def test_intraday_symbol_page_returns_generic_fixture_view() -> None:
+    response = client.get("/ui/intraday-lab/GEN_SYN")
+
+    assert response.status_code == 200
+    assert "GEN_SYN Intraday Study" in response.text
+    assert "Opening benchmarks" in response.text
+    assert "Detected events" in response.text
+    assert "Hypothetical result" in response.text
+    assert "Not allowed" in response.text
+
+
+def test_intraday_prop_account_route_is_not_captured_as_symbol() -> None:
+    response = client.get("/ui/intraday-lab/prop-account-scaling")
+
+    assert response.status_code == 200
+    assert "Prop-Account Scaling Study" in response.text
+    assert "Copied-account scenarios" in response.text
+    assert "GEN_SYN Intraday Study" not in response.text
+
+
 def test_candidate_detail_returns_plain_english_card() -> None:
     response = client.get("/ui/candidates/spy-research-candidate")
 
@@ -218,12 +250,19 @@ def test_reports_returns_summaries() -> None:
 
 
 def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
-    response = client.get("/ui/risk-sentinel")
+    for path in [
+        "/ui/risk-sentinel",
+        "/ui/intraday-lab",
+        "/ui/intraday-lab/GEN_SYN",
+        "/ui/intraday-lab/prop-account-scaling",
+    ]:
+        response = client.get(path)
 
-    assert response.status_code == 200
-    assert "<button" not in response.text.lower()
-    assert "Allowed to Use Real Money" in response.text
-    assert "No real-money use is enabled" in response.text
+        assert response.status_code == 200
+        assert "<button" not in response.text.lower()
+    risk_response = client.get("/ui/risk-sentinel")
+    assert "Allowed to Use Real Money" in risk_response.text
+    assert "No real-money use is enabled" in risk_response.text
 
 
 def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
@@ -242,6 +281,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/candidates/spy-research-candidate",
         "/ui/portfolios",
         "/ui/portfolios/core-research-portfolio",
+        "/ui/intraday-lab",
+        "/ui/intraday-lab/GEN_SYN",
+        "/ui/intraday-lab/prop-account-scaling",
         "/ui/journal",
         "/ui/reports",
     ]
@@ -249,6 +291,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "buy now",
         "sell now",
         "short now",
+        "go short",
+        "enter short",
         "place an order",
         "submit an order",
         "execute a trade",

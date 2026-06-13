@@ -41,6 +41,13 @@ EdgeLab should explain conclusions before metrics.
 - Use "Next Review Notes" before "monitoring."
 - Use "Evidence Details" for technical portfolio numbers.
 - Use "Next Review Item" before any future review trigger.
+- Use "Same-Day Market Study" before "intraday."
+- Use "First-Hour Window" before "first hour."
+- Use "Opening Reference Level" before "opening benchmark."
+- Use "Sit-Out Day" before "no-trade day."
+- Use "Hypothetical Intraday Result" before intraday simulation output.
+- Use "Research Spike Verdict" before spike verdict.
+- Use "Paired Instrument Comparison" only when paired fixture data exists.
 
 ## Portfolio Language Standard
 
@@ -50,6 +57,15 @@ EdgeLab should explain conclusions before metrics.
 - Technical terms belong in Evidence details, not the first screen.
 - Real-money status must be unmistakable.
 - Practice portfolios are not recommendations and should never sound actionable.
+
+## Intraday Language Standard
+
+- Put the bottom line before setup details.
+- Explain synthetic sample data before any event or result.
+- Use "Sit-Out Day" when no setup is supported.
+- Keep setup mechanics in Evidence details when they get technical.
+- Real-money status must be unmistakable.
+- Intraday output is not live, not a signal system, and not a recommendation.
 
 ## Safety Language
 
@@ -65,3 +81,5 @@ Warnings should be short and direct:
 - "This symbol belongs on a research screen, not a real-money decision list."
 - "This pretend portfolio test is for research practice only."
 - "Real-money status: Not allowed."
+- "This synthetic intraday result is not live and not a signal system."
+- "Copied-account scaling multiplies mistakes too."

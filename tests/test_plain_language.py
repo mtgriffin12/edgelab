@@ -83,6 +83,23 @@ def test_required_plain_language_terms_exist() -> None:
         "research_model",
         "allocation",
         "diversification",
+        "intraday",
+        "first_hour",
+        "opening_benchmark",
+        "opening_range",
+        "failed_opening_push",
+        "gap_fade",
+        "no_trade_day",
+        "hypothetical_intraday_result",
+        "prop_account",
+        "qualification_target",
+        "copied_accounts",
+        "trade_copier",
+        "loss_limit",
+        "payout_split",
+        "synthetic_intraday_data",
+        "spike_verdict",
+        "paired_instrument_comparison",
     }
 
     assert required_terms.issubset(PLAIN_LANGUAGE_TERMS)
@@ -114,6 +131,9 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("cash_allocation") == "Cash Left Safely Unused"
     assert plain_label("portfolio_constraint") == "Safety Rule"
     assert plain_label("evidence_details") == "Evidence Details"
+    assert plain_label("intraday") == "Same-Day Market Study"
+    assert plain_label("synthetic_intraday_data") == "Synthetic Intraday Sample Data"
+    assert plain_label("spike_verdict") == "Research Spike Verdict"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:
