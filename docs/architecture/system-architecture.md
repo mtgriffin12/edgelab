@@ -54,6 +54,19 @@ sample sentiment context, sample strategy matches, discovery ideas, and ranking 
 Phase 7A is read-only, in-memory, and fixture-backed. It does not fetch live quotes, create
 recommendations, place orders, promote symbols, or claim that a candidate is proven.
 
+## Intraday Research Spike
+
+Explores whether first-hour intraday setup behavior can be represented as measurable events rather
+than chart intuition. Phase 7X adds a generic fixture-backed intraday package for instruments,
+bars, opening benchmarks, candle classification, event detection, setup or sit-out candidates,
+hypothetical short-hold simulation, generic prop-account scaling arithmetic, Markdown cards, API
+routes, and text/table UI pages.
+
+The initial fixtures include S&P 500-style and Nasdaq-style examples, plus a generic symbol to
+prove that ES/NQ are examples rather than architectural requirements. The spike is read-only,
+synthetic, local, and research-only. It does not add live data, real-time quotes, broker calls,
+prop-firm integrations, charting, paper execution, or live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

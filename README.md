@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7A candidate equity screener**.
+Current phase: **Phase 7X intraday research spike**.
 
 No live trading functionality exists.
 
@@ -52,6 +52,9 @@ Then visit:
 - `http://127.0.0.1:8000/ui/discovery-lab`
 - `http://127.0.0.1:8000/ui/rankings`
 - `http://127.0.0.1:8000/ui/candidates`
+- `http://127.0.0.1:8000/ui/intraday-lab`
+- `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
+- `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
 - `http://127.0.0.1:8000/ui/lab-bench`
 - `http://127.0.0.1:8000/ui/evidence-board`
 - `http://127.0.0.1:8000/ui/sentiment-lens`
@@ -91,6 +94,15 @@ Then visit:
 - `http://127.0.0.1:8000/candidates/equities/spy-research-candidate/card`
 - `http://127.0.0.1:8000/candidates/symbols`
 - `http://127.0.0.1:8000/candidates/research-watchlist`
+- `http://127.0.0.1:8000/intraday/instruments`
+- `http://127.0.0.1:8000/intraday/sessions`
+- `http://127.0.0.1:8000/intraday/GEN_SYN/benchmarks`
+- `http://127.0.0.1:8000/intraday/GEN_SYN/events`
+- `http://127.0.0.1:8000/intraday/GEN_SYN/setups`
+- `http://127.0.0.1:8000/intraday/GEN_SYN/simulation`
+- `http://127.0.0.1:8000/intraday/GEN_SYN/simulation/card`
+- `http://127.0.0.1:8000/intraday/prop-account/sample`
+- `http://127.0.0.1:8000/intraday/prop-account/sample/card`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -117,6 +129,14 @@ The candidate endpoints and `/ui/candidates` page are read-only and local. They 
 built-in fixture universe for equities that may deserve more research by combining sample market
 data, sample market mood, strategy matches, discovery ideas, and ranking scorecards. Candidates
 are research triage only; they do not use live quotes and never approve real-money use.
+
+The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
+first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,
+generating setup or sit-out candidates, and calculating one hypothetical short-hold result when
+the fixture supports it. Initial examples use S&P 500-style and Nasdaq-style fixtures, but the
+provider and API are generic enough to support any fixture-backed symbol with suitable metadata.
+The intraday spike does not fetch live data, show charts, connect to brokers, model a real
+prop-firm rulebook, or approve paper or real-money use.
 
 To run a local fixture-backed backtest:
 

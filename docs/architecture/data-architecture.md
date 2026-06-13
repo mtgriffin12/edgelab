@@ -43,3 +43,13 @@ and read-only API inspection.
 
 Sentiment remains data, not discretionary model opinion. Real news, social, or sentiment providers
 remain future work after the local taxonomy and validation rules are stable.
+
+## Phase 7X Intraday Fixture Approach
+
+Phase 7X adds local synthetic one-minute intraday fixtures. These fixtures include session labels,
+opening benchmark inputs, first-hour bars, source labels, and ingestion timestamps. The fixture
+provider lists symbols and sessions dynamically from CSV files so the system is not hard-wired to
+S&P 500-style or Nasdaq-style examples.
+
+Intraday fixtures are for workflow validation only. They are not historical market evidence, not
+live quotes, and not enough for paper or real-money decisions.

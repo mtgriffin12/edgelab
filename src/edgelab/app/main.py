@@ -19,6 +19,16 @@ from edgelab.discovery.genealogy import StrategyGenealogy
 from edgelab.discovery.ledger import ExperimentLedger
 from edgelab.discovery.library import StrategyDiscoveryLibrary
 from edgelab.discovery.schema import DiscoveryLane
+from edgelab.intraday.benchmarks import calculate_opening_benchmarks
+from edgelab.intraday.cards import (
+    intraday_simulation_to_markdown_card,
+    prop_account_to_markdown_card,
+)
+from edgelab.intraday.fixtures import LocalIntradayFixtureProvider
+from edgelab.intraday.prop_accounts import sample_prop_account_result
+from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
+from edgelab.intraday.setups import IntradaySetupDetector
+from edgelab.intraday.simulator import IntradaySimulator
 from edgelab.ranking.cards import ranking_scorecard_to_markdown_card
 from edgelab.ranking.ranker import StrategyRankingEngine
 from edgelab.strategies.cards import strategy_to_markdown_card
@@ -31,6 +41,12 @@ sentiment_provider = LocalFixtureSentimentProvider()
 backtest_engine = BacktestEngine()
 discovery_library = StrategyDiscoveryLibrary.with_samples()
 experiment_ledger = ExperimentLedger.with_samples()
+intraday_fixture_provider = LocalIntradayFixtureProvider()
+intraday_setup_detector = IntradaySetupDetector()
+intraday_simulator = IntradaySimulator(
+    fixture_provider=intraday_fixture_provider,
+    setup_detector=intraday_setup_detector,
+)
 ranking_engine = StrategyRankingEngine(
     strategy_registry=strategy_registry,
     discovery_library=discovery_library,
@@ -59,7 +75,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7A candidate equity screener",
+        "phase": "Phase 7X intraday research spike",
         "status": "research-only",
     }
 
@@ -364,6 +380,115 @@ def read_candidate_research_watchlist() -> list[dict[str, object]]:
     ]
 
 
+@app.get("/intraday/instruments")
+def read_intraday_instruments() -> dict[str, object]:
+    """Return synthetic fixture-backed intraday instruments."""
+
+    return {
+        "instruments": [
+            instrument.model_dump(mode="json")
+            for instrument in intraday_fixture_provider.list_instruments()
+        ],
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/sessions")
+def read_intraday_sessions(symbol: str | None = None) -> dict[str, object]:
+    """Return available synthetic intraday fixture sessions."""
+
+    return {
+        "sessions": intraday_fixture_provider.list_available_sessions(symbol),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/{symbol}/benchmarks")
+def read_intraday_benchmarks(symbol: str, session_id: str | None = None) -> dict[str, object]:
+    """Return opening benchmarks for a synthetic intraday session."""
+
+    bars, load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    benchmarks = calculate_opening_benchmarks(bars)
+    data = benchmarks.model_dump(mode="json")
+    data["load_quality_issues"] = [issue.model_dump(mode="json") for issue in load_issues]
+    return data
+
+
+@app.get("/intraday/{symbol}/events")
+def read_intraday_events(symbol: str, session_id: str | None = None) -> dict[str, object]:
+    """Return detected synthetic intraday events."""
+
+    bars, load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    benchmarks = calculate_opening_benchmarks(bars)
+    events = intraday_setup_detector.detect_events(bars, benchmarks)
+    return {
+        "symbol": benchmarks.symbol,
+        "session_id": benchmarks.session_id,
+        "events": [event.model_dump(mode="json") for event in events],
+        "quality_issues": [
+            issue.model_dump(mode="json") for issue in [*load_issues, *benchmarks.quality_issues]
+        ],
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/{symbol}/setups")
+def read_intraday_setups(symbol: str, session_id: str | None = None) -> dict[str, object]:
+    """Return detected synthetic setup candidates."""
+
+    bars, load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    benchmarks = calculate_opening_benchmarks(bars)
+    setups = intraday_setup_detector.detect_setups(bars, benchmarks)
+    return {
+        "symbol": benchmarks.symbol,
+        "session_id": benchmarks.session_id,
+        "setup_candidates": [setup.model_dump(mode="json") for setup in setups],
+        "quality_issues": [
+            issue.model_dump(mode="json") for issue in [*load_issues, *benchmarks.quality_issues]
+        ],
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/{symbol}/simulation")
+def read_intraday_simulation(symbol: str, session_id: str | None = None) -> dict[str, object]:
+    """Return one synthetic intraday simulation."""
+
+    bars, load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    result = intraday_simulator.run(bars)
+    data = result.model_dump(mode="json")
+    data["load_quality_issues"] = [issue.model_dump(mode="json") for issue in load_issues]
+    return data
+
+
+@app.get("/intraday/{symbol}/simulation/card", response_class=Response)
+def read_intraday_simulation_card(symbol: str, session_id: str | None = None) -> Response:
+    """Return one synthetic intraday simulation card as Markdown."""
+
+    bars, _load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    result = intraday_simulator.run(bars)
+    return Response(content=intraday_simulation_to_markdown_card(result), media_type="text/plain")
+
+
+@app.get("/intraday/prop-account/sample")
+def read_intraday_prop_account_sample() -> dict[str, object]:
+    """Return generic prop-account-style scaling arithmetic."""
+
+    return sample_prop_account_result().model_dump(mode="json")
+
+
+@app.get("/intraday/prop-account/sample/card", response_class=Response)
+def read_intraday_prop_account_sample_card() -> Response:
+    """Return generic prop-account-style scaling arithmetic as Markdown."""
+
+    return Response(
+        content=prop_account_to_markdown_card(sample_prop_account_result()),
+        media_type="text/plain",
+    )
+
+
 @app.get("/ui", response_class=HTMLResponse)
 def read_ui_home(request: Request) -> Response:
     """Render the local research cockpit."""
@@ -376,6 +501,7 @@ def read_ui_home(request: Request) -> Response:
     )
     sample_rankings = ranking_engine.rank()
     sample_candidates = candidate_screener.screen()
+    intraday_sessions = intraday_fixture_provider.list_available_sessions()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -387,6 +513,7 @@ def read_ui_home(request: Request) -> Response:
             "discovery_count": len(discovery_library.list_records()),
             "ranking_count": len(sample_rankings.scorecards),
             "candidate_count": sample_candidates.candidate_count,
+            "intraday_session_count": len(intraday_sessions),
         },
     )
 
@@ -535,6 +662,63 @@ def read_ui_candidate_detail(request: Request, candidate_id: str) -> Response:
     )
 
 
+@app.get("/ui/intraday-lab", response_class=HTMLResponse)
+def read_ui_intraday_lab(request: Request) -> Response:
+    """Render the local intraday research spike landing page."""
+
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_lab.html",
+        context={
+            "instruments": intraday_fixture_provider.list_instruments(),
+            "sessions": intraday_fixture_provider.list_available_sessions(),
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/prop-account-scaling", response_class=HTMLResponse)
+def read_ui_intraday_prop_account_scaling(request: Request) -> Response:
+    """Render the generic prop-account scaling page."""
+
+    result = sample_prop_account_result()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_prop_account_scaling.html",
+        context={
+            "result": result,
+            "card": prop_account_to_markdown_card(result),
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/{symbol}", response_class=HTMLResponse)
+def read_ui_intraday_symbol(
+    request: Request, symbol: str, session_id: str | None = None
+) -> Response:
+    """Render one synthetic intraday research view."""
+
+    bars, load_issues = _load_intraday_bars_or_404(symbol, session_id)
+    benchmarks = calculate_opening_benchmarks(bars)
+    events = intraday_setup_detector.detect_events(bars, benchmarks)
+    setups = intraday_setup_detector.detect_setups(bars, benchmarks)
+    result = intraday_simulator.run(bars)
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_symbol.html",
+        context={
+            "symbol": benchmarks.symbol,
+            "session_id": benchmarks.session_id,
+            "sessions": intraday_fixture_provider.list_available_sessions(benchmarks.symbol),
+            "benchmarks": benchmarks,
+            "events": events,
+            "setups": setups,
+            "simulation_result": result,
+            "quality_issues": [*load_issues, *benchmarks.quality_issues, *result.quality_issues],
+            "card": intraday_simulation_to_markdown_card(result),
+        },
+    )
+
+
 @app.get("/ui/rankings/{scorecard_id}", response_class=HTMLResponse)
 def read_ui_ranking_detail(request: Request, scorecard_id: str) -> Response:
     """Render one ranking scorecard."""
@@ -567,6 +751,7 @@ def read_ui_journal(request: Request) -> Response:
         "Phase 5C strategy discovery lab",
         "Phase 6 strategy ranking engine",
         "Phase 7A candidate equity screener",
+        "Phase 7X intraday research spike",
     ]
     return templates.TemplateResponse(
         request=request,
@@ -616,3 +801,12 @@ def _run_backtest_request(request: BacktestRequest) -> dict[str, object]:
 
     result = backtest_engine.run(strategy, data.bars, request)
     return result.model_dump(mode="json")
+
+
+def _load_intraday_bars_or_404(
+    symbol: str, session_id: str | None = None
+) -> tuple[list[IntradayBar], list[IntradayQualityIssue]]:
+    bars, issues = intraday_fixture_provider.load_bars(symbol, session_id)
+    if not bars and any(issue.code in {"missing_symbol", "missing_session"} for issue in issues):
+        raise HTTPException(status_code=404, detail="Intraday fixture not found")
+    return bars, issues

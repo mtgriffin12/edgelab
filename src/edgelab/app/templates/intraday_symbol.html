@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }} Intraday Study{% endblock %}
+{% block content %}
+  <p><a href="/ui/intraday-lab">Back to Intraday Lab</a></p>
+
+  <section class="page-header">
+    <h2>{{ symbol }} Intraday Study</h2>
+    <p class="muted">{{ session_id }} uses synthetic fixture data only.</p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    this page is not live, not a signal system, not a recommendation, and real-money status is
+    Not allowed.
+  </section>
+
+  <section class="facts" aria-label="Intraday facts">
+    <div class="fact"><span>Session</span><strong>{{ session_id }}</strong></div>
+    <div class="fact"><span>Spike verdict</span><strong>{{ simulation_result.spike_verdict.value.replace("_", " ") }}</strong></div>
+    <div class="fact"><span>Hypothetical results</span><strong>{{ simulation_result.simulated_trade_count }}</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>{{ simulation_result.real_money_status }}</strong></div>
+  </section>
+
+  <section class="section">
+    <h3>Opening benchmarks</h3>
+    <table>
+      <tbody>
+        <tr><th>Prior regular close</th><td>{{ benchmarks.prior_regular_close }}</td></tr>
+        <tr><th>Overnight high</th><td>{{ benchmarks.overnight_high }}</td></tr>
+        <tr><th>Overnight low</th><td>{{ benchmarks.overnight_low }}</td></tr>
+        <tr><th>Premarket high</th><td>{{ benchmarks.premarket_high }}</td></tr>
+        <tr><th>Premarket low</th><td>{{ benchmarks.premarket_low }}</td></tr>
+        <tr><th>Regular open</th><td>{{ benchmarks.regular_open }}</td></tr>
+        <tr><th>Opening range high</th><td>{{ benchmarks.opening_range_high }}</td></tr>
+        <tr><th>Opening range low</th><td>{{ benchmarks.opening_range_low }}</td></tr>
+        <tr><th>Opening gap percent</th><td>{{ "%.2f"|format(benchmarks.opening_gap_pct or 0) }}%</td></tr>
+        <tr><th>First-hour high</th><td>{{ benchmarks.first_hour_high }}</td></tr>
+        <tr><th>First-hour low</th><td>{{ benchmarks.first_hour_low }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Detected events</h3>
+      <ul class="list-clean">
+        {% for event in events %}
+          <li>{{ event.event_type.value.replace("_", " ") }}: {{ event.plain_english_summary }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="summary-card">
+      <h3>Setup candidates</h3>
+      <ul class="list-clean">
+        {% for setup in setups %}
+          <li>{{ setup.setup_type.value.replace("_", " ") }}: {{ setup.plain_english_summary }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Hypothetical result</h3>
+      <p>{{ simulation_result.plain_english_summary }}</p>
+      <p>Total net P/L: ${{ "%.2f"|format(simulation_result.total_net_pnl) }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>Reasons EdgeLab might sit out</h3>
+      <ul class="list-clean">
+        {% for setup in setups %}
+          {% for reason in setup.no_trade_reasons %}
+            <li>{{ reason.message }}</li>
+          {% endfor %}
+          {% for reason in setup.why_edgelab_might_sit_out %}
+            <li>{{ reason }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Quality notes</h3>
+    <ul class="list-clean">
+      {% for issue in quality_issues %}
+        <li>{{ issue.message }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}

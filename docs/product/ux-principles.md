@@ -76,3 +76,14 @@ The Candidate Equity Screener should feel like a research intake desk, not a wat
 It should explain why a symbol appeared, what evidence is missing, what would change the system's
 mind, and why real-money use remains blocked. Candidate tables should make sample-data limits and
 reasons to be careful as visible as scores.
+
+## Phase 7X Intraday Lab UX
+
+The Intraday Lab should feel like a research microscope, not a trading terminal. It should show
+synthetic opening benchmarks, detected events, setup or sit-out candidates, hypothetical fixture
+results, and spike verdicts in plain English. It must not show charts, trade buttons, live-status
+language, broker language, account signup framing, or recommendations.
+
+No-trade days should be visible and respected. The page should make clear that initial S&P
+500-style and Nasdaq-style fixtures are examples only, and that the system is designed for other
+fixture-backed symbols once suitable intraday data and assumptions exist.

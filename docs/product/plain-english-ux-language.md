@@ -34,6 +34,13 @@ EdgeLab should explain conclusions before metrics.
 - Use "Research Watchlist" before "watchlist."
 - Use "What Supports It," "What Is Missing," and "What Would Change Our Mind" on candidate pages.
 - Use "Built-In Sample Universe" before "fixture universe."
+- Use "Same-Day Market Study" before "intraday."
+- Use "First-Hour Window" before "first hour."
+- Use "Opening Reference Level" before "opening benchmark."
+- Use "Sit-Out Day" before "no-trade day."
+- Use "Hypothetical Intraday Result" before intraday simulation output.
+- Use "Research Spike Verdict" before spike verdict.
+- Use "Paired Instrument Comparison" only when paired fixture data exists.
 
 ## Safety Language
 
@@ -47,3 +54,5 @@ Warnings should be short and direct:
 - "The app is not reading live news yet."
 - "Doing nothing is an acceptable outcome when evidence is thin."
 - "This symbol belongs on a research screen, not a real-money decision list."
+- "This synthetic intraday result is not live and not a signal system."
+- "Copied-account scaling multiplies mistakes too."

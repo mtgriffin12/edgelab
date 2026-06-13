@@ -16,6 +16,8 @@ Phase 6: Robustness and walk-forward testing
 
 Phase 7: Paper trading simulator
 
+Phase 7X: Intraday research spike, exploratory and fixture-backed
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

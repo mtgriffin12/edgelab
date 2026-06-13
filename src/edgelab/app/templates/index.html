@@ -8,12 +8,13 @@
 
   <section class="facts" aria-label="Current state">
     <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
-    <div class="fact"><span>Current phase</span><strong>Phase 7A</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 7X</strong></div>
     <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
     <div class="fact"><span>Sample historical test</span><strong>{{ plain_label(sample_backtest.conclusion) }}</strong></div>
     <div class="fact"><span>Discovery ideas tracked</span><strong>{{ discovery_count }}</strong></div>
     <div class="fact"><span>Ranking scorecards</span><strong>{{ ranking_count }}</strong></div>
     <div class="fact"><span>Research candidates</span><strong>{{ candidate_count }}</strong></div>
+    <div class="fact"><span>Intraday sessions</span><strong>{{ intraday_session_count }}</strong></div>
   </section>
 
   <section class="warning section">
@@ -39,6 +40,11 @@
         <h4>Candidate Screener</h4>
         <p>Local equity candidates surfaced from fixture evidence for deeper research only.</p>
         <a href="/ui/candidates">Open Candidate Screener</a>
+      </div>
+      <div class="summary-card">
+        <h4>Intraday Lab</h4>
+        <p>First-hour synthetic setup research translated into measurable events.</p>
+        <a href="/ui/intraday-lab">Open Intraday Lab</a>
       </div>
       <div class="summary-card">
         <h4>Lab Bench</h4>
@@ -104,6 +110,10 @@
         <tr>
           <th>Research equity candidates available</th>
           <td>{{ candidate_count }}</td>
+        </tr>
+        <tr>
+          <th>Synthetic intraday sessions available</th>
+          <td>{{ intraday_session_count }}</td>
         </tr>
       </tbody>
     </table>

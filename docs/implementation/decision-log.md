@@ -87,3 +87,7 @@ Phase 6 implements a local Strategy Metrics and Ranking Engine that ranks resear
 ## DEC-022: Phase 7A Candidate Equity Screener
 
 Phase 7A implements a local Candidate Equity Screener that surfaces research-only equity candidates from fixture evidence, strategy matches, discovery ideas, and ranking scorecards without live quotes, provider integrations, or real-money permission.
+
+## DEC-024: Phase 7X Intraday Research Spike
+
+Phase 7X implements an Intraday Research Spike to evaluate first-hour setup detection and generic prop-account scaling before any live data, paper trading, or execution integration.

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Prop-Account Scaling Study{% endblock %}
+{% block content %}
+  <p><a href="/ui/intraday-lab">Back to Intraday Lab</a></p>
+
+  <section class="page-header">
+    <h2>Prop-Account Scaling Study</h2>
+    <p class="muted">Generic copied-account arithmetic for research only.</p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    scaling is not a trading edge, copied accounts multiply mistakes, and real-money status is
+    Not allowed.
+  </section>
+
+  <section class="facts" aria-label="Prop-account facts">
+    <div class="fact"><span>Sample account count</span><strong>{{ result.account_count }}</strong></div>
+    <div class="fact"><span>Single account result</span><strong>${{ "%.0f"|format(result.single_account_net_pnl) }}</strong></div>
+    <div class="fact"><span>Copied-account result</span><strong>${{ "%.0f"|format(result.copied_account_total_net_pnl) }}</strong></div>
+    <div class="fact"><span>Real-money status</span><strong>{{ result.real_money_status }}</strong></div>
+  </section>
+
+  <section class="section">
+    <h3>Copied-account scenarios</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Accounts</th>
+          <th>Total sample P/L</th>
+          <th>Payout split estimate</th>
+          <th>Caution</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scenario in result.scenarios %}
+          <tr>
+            <td>{{ scenario.account_count }}</td>
+            <td>${{ "%.2f"|format(scenario.copied_account_total_net_pnl) }}</td>
+            <td>${{ "%.2f"|format(scenario.payout_split_estimate) }}</td>
+            <td>{{ scenario.cautions[0] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section grid">
+    <div class="summary-card">
+      <h3>Qualification target concept</h3>
+      <p>Reached: {{ yes_no(result.qualification_target_reached) }}</p>
+      <p>This is generic arithmetic, not a real program rule.</p>
+    </div>
+    <div class="summary-card">
+      <h3>Loss-limit caution</h3>
+      <p>Max loss breached: {{ yes_no(result.max_loss_breached) }}</p>
+      <p>Daily loss breached: {{ yes_no(result.daily_loss_breached) }}</p>
+    </div>
+    <div class="summary-card">
+      <h3>Payout split estimate</h3>
+      <p>${{ "%.2f"|format(result.payout_split_estimate) }}</p>
+      <p>{{ result.consistency_warning }}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <pre class="markdown-card">{{ card }}</pre>
+  </section>
+{% endblock %}
