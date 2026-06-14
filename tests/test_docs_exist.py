@@ -16,6 +16,7 @@ REQUIRED_DOCS = [
     "docs/domain/candidate-equity-screener.md",
     "docs/domain/model-portfolio-engine.md",
     "docs/domain/intraday-index-futures-research-spike.md",
+    "docs/domain/historical-intraday-data-and-replay.md",
     "docs/domain/sentiment-intelligence-layer.md",
     "docs/domain/backtesting-principles.md",
     "docs/risk/risk-governance.md",
@@ -30,3 +31,13 @@ def test_required_docs_exist() -> None:
     missing = [doc for doc in REQUIRED_DOCS if not (repo_root / doc).is_file()]
 
     assert missing == []
+
+
+def test_historical_intraday_doc_includes_csv_format_and_data_boundary() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    content = (repo_root / "docs/domain/historical-intraday-data-and-replay.md").read_text()
+
+    assert "symbol,raw_timestamp,source_timezone,interval,open,high,low,close,volume" in content
+    assert "data/raw/" in content
+    assert "data/processed/" in content
+    assert "Real-money status is always Not allowed" in content

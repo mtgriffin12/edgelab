@@ -99,3 +99,7 @@ Phase 7X implements an Intraday Research Spike to evaluate first-hour setup dete
 ## DEC-025: Phase 7B Pretend Portfolio Tests UX
 
 Phase 7B user-facing portfolio UI uses "Pretend Portfolio Tests" and plain-English decision intelligence before traditional portfolio metrics.
+
+## DEC-026: Phase 7X-2A Historical Intraday CSV Import
+
+Phase 7X-2A implements a local historical intraday CSV import foundation before vendor integrations, replay mode, live data, or execution.

@@ -1,0 +1,2 @@
+symbol,raw_timestamp,source_timezone,interval,open,high,low,close,volume,session_type,session_id,provider,dataset_id
+BADMISS,2024-01-02T09:30:00,America/New_York,one_minute,10.00,10.10,9.95,10.05,100,regular_first_hour,bad-missing-columns,local_csv_sample,bad_missing_sample

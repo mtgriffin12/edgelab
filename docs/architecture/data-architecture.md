@@ -53,3 +53,21 @@ S&P 500-style or Nasdaq-style examples.
 
 Intraday fixtures are for workflow validation only. They are not historical market evidence, not
 live quotes, and not enough for paper or real-money decisions.
+
+## Phase 7X-2A Historical Intraday CSV Import
+
+Phase 7X-2A adds a local historical intraday CSV import foundation before replay mode or vendor
+integrations. The canonical CSV format records symbol, raw timestamp, source timezone, interval,
+OHLCV values, session type, session ID, provider label, dataset ID, and adjustment mode. Optional
+instrument fields can provide display name, point value, tick size, tick value, venue, and regular
+session hours.
+
+Imported timestamps are normalized to UTC while preserving the raw timestamp and source timezone.
+Adjustment mode is explicit so unadjusted, adjusted, split-adjusted, and unknown data cannot be
+mixed silently. The provider reports quality issues for missing columns, blank values, invalid
+timestamps, invalid OHLC rows, duplicate bars, unsorted bars, unsupported intervals, and ambiguous
+adjustment metadata.
+
+Tiny synthetic historical fixtures may be committed for tests. Real downloaded historical files
+must stay outside source control under ignored local directories such as `data/raw/` or
+`data/processed/`.

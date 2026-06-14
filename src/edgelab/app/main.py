@@ -25,6 +25,11 @@ from edgelab.intraday.cards import (
     prop_account_to_markdown_card,
 )
 from edgelab.intraday.fixtures import LocalIntradayFixtureProvider
+from edgelab.intraday.historical_provider import (
+    FuturePaidHistoricalProvider,
+    LocalCSVHistoricalIntradayProvider,
+)
+from edgelab.intraday.historical_schema import HistoricalIntradayImportResult
 from edgelab.intraday.prop_accounts import sample_prop_account_result
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
@@ -45,6 +50,8 @@ backtest_engine = BacktestEngine()
 discovery_library = StrategyDiscoveryLibrary.with_samples()
 experiment_ledger = ExperimentLedger.with_samples()
 intraday_fixture_provider = LocalIntradayFixtureProvider()
+historical_intraday_provider = LocalCSVHistoricalIntradayProvider()
+future_historical_provider = FuturePaidHistoricalProvider()
 intraday_setup_detector = IntradaySetupDetector()
 intraday_simulator = IntradaySimulator(
     fixture_provider=intraday_fixture_provider,
@@ -79,7 +86,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7B + Phase 7X integration",
+        "phase": "Phase 7X-2A historical intraday CSV import",
         "status": "research-only",
     }
 
@@ -460,6 +467,62 @@ def read_intraday_sessions(symbol: str | None = None) -> dict[str, object]:
         "research_only_status": "Research only",
         "real_money_status": "Not allowed",
     }
+
+
+@app.get("/intraday/history/provider-capabilities")
+def read_historical_intraday_provider_capabilities() -> dict[str, object]:
+    """Return historical intraday provider capabilities."""
+
+    return {
+        "providers": [
+            historical_intraday_provider.provider_capabilities().model_dump(mode="json"),
+            future_historical_provider.provider_capabilities().model_dump(mode="json"),
+        ],
+        "plain_english_summary": (
+            "Historical intraday import currently supports local CSV files only. "
+            "Future paid providers are placeholders and make no external calls."
+        ),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/history/sessions")
+def read_historical_intraday_sessions() -> dict[str, object]:
+    """Return all local historical intraday sessions."""
+
+    result = historical_intraday_provider.load_all_sessions()
+    return _historical_import_response(result, include_bars=False)
+
+
+@app.get("/intraday/history/{symbol}/sessions")
+def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
+    """Return local historical intraday sessions for one symbol."""
+
+    result = historical_intraday_provider.load_sessions(symbol)
+    if not result.sessions:
+        raise HTTPException(status_code=404, detail="Historical intraday sessions not found")
+    return _historical_import_response(result, include_bars=False)
+
+
+@app.get("/intraday/history/{symbol}/sessions/{session_id}")
+def read_historical_intraday_session(symbol: str, session_id: str) -> dict[str, object]:
+    """Return one local historical intraday session summary."""
+
+    result = historical_intraday_provider.load_session(symbol, session_id)
+    if not result.sessions:
+        raise HTTPException(status_code=404, detail="Historical intraday session not found")
+    return _historical_import_response(result, include_bars=False)
+
+
+@app.get("/intraday/history/{symbol}/sessions/{session_id}/bars")
+def read_historical_intraday_session_bars(symbol: str, session_id: str) -> dict[str, object]:
+    """Return bars for one local historical intraday session."""
+
+    result = historical_intraday_provider.load_session(symbol, session_id)
+    if not result.sessions:
+        raise HTTPException(status_code=404, detail="Historical intraday session not found")
+    return _historical_import_response(result, include_bars=True)
 
 
 @app.get("/intraday/{symbol}/benchmarks")
@@ -901,3 +964,21 @@ def _load_intraday_bars_or_404(
     if not bars and any(issue.code in {"missing_symbol", "missing_session"} for issue in issues):
         raise HTTPException(status_code=404, detail="Intraday fixture not found")
     return bars, issues
+
+
+def _historical_import_response(
+    result: HistoricalIntradayImportResult, *, include_bars: bool
+) -> dict[str, object]:
+    response: dict[str, object] = {
+        "source": result.source.model_dump(mode="json"),
+        "instruments": [instrument.model_dump(mode="json") for instrument in result.instruments],
+        "sessions": [session.model_dump(mode="json") for session in result.sessions],
+        "bars_loaded": result.bars_loaded,
+        "quality_issues": [issue.model_dump(mode="json") for issue in result.quality_issues],
+        "plain_english_summary": result.plain_english_summary,
+        "research_only_status": result.research_only_status,
+        "real_money_status": result.real_money_status,
+    }
+    if include_bars:
+        response["bars"] = [bar.model_dump(mode="json") for bar in result.bars]
+    return response

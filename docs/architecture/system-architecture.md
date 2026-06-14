@@ -75,6 +75,14 @@ prove that ES/NQ are examples rather than architectural requirements. The spike 
 synthetic, local, and research-only. It does not add live data, real-time quotes, broker calls,
 prop-firm integrations, charting, paper execution, or live execution.
 
+## Historical Intraday Import Foundation
+
+Loads local historical intraday CSV files through a vendor-neutral provider boundary. Phase 7X-2A
+adds normalized historical bars, historical instruments, session summaries, data-source metadata,
+provider capabilities, quality issues, and session readiness labels. It is local, read-only, and
+research-only. It does not add replay mode, live data, external provider calls, credentials,
+broker calls, prop-firm integrations, charting, paper execution, or live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

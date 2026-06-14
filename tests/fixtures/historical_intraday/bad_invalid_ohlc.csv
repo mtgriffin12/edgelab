@@ -1,0 +1,7 @@
+symbol,raw_timestamp,source_timezone,interval,open,high,low,close,volume,session_type,session_id,provider,dataset_id,adjustment_mode
+BADOHLC,2024-01-02T09:30:00,America/New_York,one_minute,10.00,9.90,9.95,10.05,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted
+BADOHLC,2024-01-02T09:31:00,America/New_York,one_minute,10.05,10.15,10.00,10.10,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted
+BADOHLC,2024-01-02T09:32:00,America/New_York,one_minute,10.10,10.20,10.05,10.12,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted
+BADOHLC,2024-01-02T09:33:00,America/New_York,one_minute,10.12,10.22,10.08,10.18,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted
+BADOHLC,2024-01-02T09:34:00,America/New_York,one_minute,10.18,10.28,10.10,10.20,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted
+BADOHLC,2024-01-02T09:35:00,America/New_York,one_minute,10.20,10.30,10.15,10.25,100,regular_first_hour,bad-invalid-ohlc,local_csv_sample,bad_invalid_ohlc_sample,unadjusted

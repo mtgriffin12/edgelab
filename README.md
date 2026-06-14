@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7B pretend portfolio tests plus Phase 7X intraday research spike**.
+Current phase: **Phase 7X-2A historical intraday CSV import foundation**.
 
 No live trading functionality exists.
 
@@ -110,6 +110,11 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/GEN_SYN/simulation/card`
 - `http://127.0.0.1:8000/intraday/prop-account/sample`
 - `http://127.0.0.1:8000/intraday/prop-account/sample/card`
+- `http://127.0.0.1:8000/intraday/history/provider-capabilities`
+- `http://127.0.0.1:8000/intraday/history/sessions`
+- `http://127.0.0.1:8000/intraday/history/SPY/sessions`
+- `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
+- `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical/bars`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -150,6 +155,12 @@ the fixture supports it. Initial examples use S&P 500-style and Nasdaq-style fix
 provider and API are generic enough to support any fixture-backed symbol with suitable metadata.
 The intraday spike does not fetch live data, show charts, connect to brokers, model a real
 prop-firm rulebook, or approve paper or real-money use.
+
+The historical intraday endpoints are read-only and local. They import tiny sample CSV fixtures
+through a vendor-neutral boundary so EdgeLab can inspect historical session readiness before any
+future replay mode. They do not call external APIs, use provider SDKs, fetch live quotes, or approve
+paper or real-money use. Real downloaded data should stay outside source control under ignored
+paths such as `data/raw/` or `data/processed/`.
 
 To run a local fixture-backed backtest:
 

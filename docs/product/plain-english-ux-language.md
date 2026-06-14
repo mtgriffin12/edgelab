@@ -48,6 +48,11 @@ EdgeLab should explain conclusions before metrics.
 - Use "Hypothetical Intraday Result" before intraday simulation output.
 - Use "Research Spike Verdict" before spike verdict.
 - Use "Paired Instrument Comparison" only when paired fixture data exists.
+- Use "Historical Same-Day Sample Data" before "historical intraday data."
+- Use "Local CSV Import" before "CSV ingestion."
+- Use "Ready for Future Replay" before "session readiness."
+- Use "Original Time Zone" before "source timezone."
+- Use "Price Adjustment Note" before "adjustment mode."
 
 ## Portfolio Language Standard
 

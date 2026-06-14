@@ -98,6 +98,15 @@ def test_required_plain_language_terms_exist() -> None:
         "loss_limit",
         "payout_split",
         "synthetic_intraday_data",
+        "historical_intraday_data",
+        "local_csv_import",
+        "session_readiness",
+        "data_quality_issue",
+        "source_timezone",
+        "adjustment_mode",
+        "ready_for_replay",
+        "incomplete_session",
+        "unusable_session",
         "spike_verdict",
         "paired_instrument_comparison",
     }
@@ -133,6 +142,9 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("evidence_details") == "Evidence Details"
     assert plain_label("intraday") == "Same-Day Market Study"
     assert plain_label("synthetic_intraday_data") == "Synthetic Intraday Sample Data"
+    assert plain_label("historical_intraday_data") == "Historical Same-Day Sample Data"
+    assert plain_label("local_csv_import") == "Local CSV Import"
+    assert plain_label("session_readiness") == "Ready for Future Replay"
     assert plain_label("spike_verdict") == "Research Spike Verdict"
 
 

@@ -1,0 +1,7 @@
+symbol,raw_timestamp,source_timezone,interval,open,high,low,close,volume,session_type,session_id,provider,dataset_id,adjustment_mode
+BADDUPE,2024-01-02T09:30:00,America/New_York,one_minute,20.00,20.10,19.95,20.05,100,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
+BADDUPE,2024-01-02T09:31:00,America/New_York,one_minute,20.05,20.15,20.00,20.10,110,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
+BADDUPE,2024-01-02T09:31:00,America/New_York,one_minute,20.05,20.15,20.00,20.10,110,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
+BADDUPE,2024-01-02T09:30:30,America/New_York,one_minute,20.03,20.12,19.99,20.02,105,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
+BADDUPE,2024-01-02T09:32:00,America/New_York,one_minute,20.10,20.20,20.02,20.18,115,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
+BADDUPE,2024-01-02T09:33:00,America/New_York,one_minute,20.18,20.25,20.10,20.15,120,regular_first_hour,bad-duplicate-unsorted,local_csv_sample,bad_duplicate_unsorted_sample,unadjusted
