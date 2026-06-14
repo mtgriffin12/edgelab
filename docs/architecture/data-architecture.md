@@ -123,3 +123,14 @@ local data allows.
 This phase does not commit downloaded data, call external providers, use credentials, fetch live
 quotes, add paid provider SDKs, create charts, or connect to brokers. Results are research-only and
 real-money status remains Not allowed.
+
+## Phase 7X-2F Saved Research Runs
+
+Phase 7X-2F adds a local SQLite saved-run store at
+`data/processed/research_runs/edgelab_research_runs.db`. The path is ignored and is only for local
+research review. Saved runs contain compact summaries, source-file metadata, assumptions, quality
+warnings, and plain-English sections; they do not copy FirstRate CSV rows into the database.
+
+Freshness checks compare the saved source path, file size, modified time, fingerprint,
+assumptions, and schema version against the current ignored local file. A changed source file or
+saved-result format marks the result as stale and asks for review before relying on it as research.

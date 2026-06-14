@@ -225,3 +225,17 @@ recommendations, and not real-money permission. Real-money status remains Not al
 Future paid data providers may be investigated later, but the current historical intraday phases do
 not add provider SDKs, credentials, or external calls. The current paid-provider placeholder exists
 only to show where a future adapter could fit.
+
+## Phase 7X-2F Saved Research Runs
+
+Phase 7X-2F adds saved local research runs for expensive FirstRate many-morning analysis. EdgeLab
+now lets a user run local analysis deliberately, store a compact result in the ignored local
+research database, and reopen the latest saved result quickly later.
+
+Saved runs include plain-English bottom line, what EdgeLab tested, what EdgeLab found, whether this
+is enough to trust, what to test next, evidence details, source-file metadata, and quality warnings.
+They do not include raw CSV rows and do not make the result a recommendation.
+
+Freshness matters because ignored local files can change. If the source file path, size, modified
+time, fingerprint, assumptions, or saved-result schema no longer match, EdgeLab labels the saved
+result stale instead of treating it as current.

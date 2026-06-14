@@ -189,6 +189,7 @@ def test_intraday_lab_returns_research_spike_page() -> None:
     assert "Many-Morning Practice Test" in response.text
     assert "Repeated Pattern Results" in response.text
     assert "Sit-Out Review" in response.text
+    assert "Saved Research Runs" in response.text
 
 
 def test_intraday_symbol_page_returns_generic_fixture_view() -> None:

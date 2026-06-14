@@ -39,9 +39,12 @@
           <h4>{{ item.symbol }}</h4>
           <p>{{ item.sessions_found }} past morning(s), {{ item.sessions_ready_for_replay }} usable for practice.</p>
           <a href="/ui/intraday-lab/firstrate/{{ item.symbol }}">Open {{ item.symbol }}</a>
+          <br>
+          <a href="/ui/intraday-lab/firstrate/{{ item.symbol }}/latest-result">Latest saved result</a>
         </div>
       {% endfor %}
     </div>
+    <p><a href="/ui/intraday-lab/research-runs">Open all saved research runs</a></p>
   </section>
 
   <section class="section">

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ run.symbol }} Saved Research Run{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ run.symbol }} Latest Saved Result</h2>
+    <p class="muted">Saved {{ run.completed_at }}</p>
+    <p><a href="/ui/intraday-lab/research-runs">Back to saved research runs</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ run.plain_english_bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>{{ run.what_edgelab_tested }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    <p>{{ run.what_edgelab_found }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Is this enough to trust?</h3>
+    <p>{{ run.is_this_enough_to_trust }}</p>
+    <p><strong>Freshness status:</strong> {{ freshness.status.value.replace("_", " ") }}. {{ freshness.message }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What should EdgeLab test next?</h3>
+    <p>{{ run.what_to_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This saved result is local research only. It is not live data and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details open>
+      <summary>Show backup details</summary>
+      <div class="facts">
+        <div class="fact"><span>Past mornings found</span><strong>{{ run.evidence_details.get("sessions_found") }}</strong></div>
+        <div class="fact"><span>Past mornings reviewed</span><strong>{{ run.evidence_details.get("sessions_tested") }}</strong></div>
+        <div class="fact"><span>Usable mornings</span><strong>{{ run.evidence_details.get("usable_sessions") }}</strong></div>
+        <div class="fact"><span>Saved run time</span><strong>{{ run.elapsed_ms }} ms</strong></div>
+      </div>
+      <table>
+        <tbody>
+          <tr><th>Run id</th><td>{{ run.run_id }}</td></tr>
+          <tr><th>Run type</th><td>{{ run.run_type.value.replace("_", " ") }}</td></tr>
+          <tr><th>Source file</th><td>{{ run.source_file_path }}</td></tr>
+          <tr><th>Source file size</th><td>{{ run.source_file_size }}</td></tr>
+          <tr><th>Source file modified time</th><td>{{ run.source_file_modified_time }}</td></tr>
+          <tr><th>Start date</th><td>{{ run.start_date or "all available" }}</td></tr>
+          <tr><th>End date</th><td>{{ run.end_date or "all available" }}</td></tr>
+          <tr><th>Hold minutes</th><td>{{ run.hold_minutes }}</td></tr>
+          <tr><th>Price friction ticks</th><td>{{ run.slippage_ticks }}</td></tr>
+          <tr><th>Transaction cost</th><td>{{ run.commission_per_contract }}</td></tr>
+          <tr><th>Schema version</th><td>{{ run.schema_version }}</td></tr>
+        </tbody>
+      </table>
+      {% if run.quality_issues %}
+        <h4>Reasons to be careful</h4>
+        <ul>
+          {% for issue in run.quality_issues %}
+            <li>{{ issue.message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </details>
+  </section>
+{% endblock %}

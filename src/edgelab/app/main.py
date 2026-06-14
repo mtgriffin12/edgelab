@@ -7,7 +7,7 @@ from time import perf_counter
 from typing import cast
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -64,6 +64,18 @@ from edgelab.portfolios.construction import ModelPortfolioEngine
 from edgelab.portfolios.schema import PortfolioStyle
 from edgelab.ranking.cards import ranking_scorecard_to_markdown_card
 from edgelab.ranking.ranker import StrategyRankingEngine
+from edgelab.research_runs.cards import saved_research_run_to_markdown_card
+from edgelab.research_runs.schema import (
+    ResearchRunCreateRequest,
+    ResearchRunFreshness,
+    ResearchRunType,
+    SavedResearchRun,
+)
+from edgelab.research_runs.service import (
+    FirstRateResearchRunService,
+    ResearchRunSourceMissingError,
+)
+from edgelab.research_runs.store import SQLiteResearchRunStore
 from edgelab.strategies.cards import strategy_to_markdown_card
 from edgelab.strategies.registry import StrategyRegistry
 
@@ -107,6 +119,12 @@ candidate_screener = CandidateEquityScreener(
     ranking_engine=ranking_engine,
 )
 portfolio_engine = ModelPortfolioEngine(candidate_screener=candidate_screener)
+research_run_store = SQLiteResearchRunStore()
+research_run_service = FirstRateResearchRunService(
+    store=research_run_store,
+    provider=firstrate_historical_provider,
+    setup_detector=intraday_setup_detector,
+)
 
 
 @dataclass(frozen=True)
@@ -151,7 +169,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2E FirstRate replay integration",
+        "phase": "Phase 7X-2F saved research runs",
         "status": "research-only",
     }
 
@@ -720,6 +738,100 @@ def read_firstrate_no_trade_analysis(
         hold_minutes=hold_minutes,
         slippage_ticks=slippage_ticks,
         commission_per_contract=commission_per_contract,
+    )
+
+
+@app.get("/intraday/research-runs")
+def list_research_runs(
+    run_type: ResearchRunType | None = None,
+    symbol: str | None = None,
+    limit: int = 50,
+) -> dict[str, object]:
+    """List saved local research runs newest first."""
+
+    runs = research_run_service.list_runs(run_type=run_type, symbol=symbol, limit=limit)
+    return {
+        "runs": [run.model_dump(mode="json") for run in runs],
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/research-runs/latest")
+def read_latest_research_run(
+    symbol: str,
+    run_type: ResearchRunType = ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return the latest saved run matching local assumptions."""
+
+    request = _research_run_request(
+        run_type=run_type,
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    run, freshness = research_run_service.latest_with_freshness(request)
+    if run is None:
+        raise HTTPException(status_code=404, detail=freshness.message)
+    return _saved_run_response(run, freshness)
+
+
+@app.post("/intraday/research-runs/firstrate/{symbol}")
+def create_firstrate_research_run(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Run and save one local FirstRate many-morning analysis."""
+
+    request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    try:
+        run = research_run_service.run_firstrate_many_morning(request)
+    except ResearchRunSourceMissingError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return _saved_run_response(run, research_run_service.freshness_for_run(run))
+
+
+@app.get("/intraday/research-runs/{run_id}")
+def read_research_run(run_id: str) -> dict[str, object]:
+    """Return one saved local research run."""
+
+    run = research_run_service.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Saved research run not found")
+    return _saved_run_response(run, research_run_service.freshness_for_run(run))
+
+
+@app.get("/intraday/research-runs/{run_id}/card", response_class=Response)
+def read_research_run_card(run_id: str) -> Response:
+    """Return one saved local research run as Markdown."""
+
+    run = research_run_service.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Saved research run not found")
+    freshness = research_run_service.freshness_for_run(run)
+    return Response(
+        content=saved_research_run_to_markdown_card(run, freshness),
+        media_type="text/plain",
     )
 
 
@@ -1327,6 +1439,37 @@ def read_ui_no_trade_analysis(request: Request) -> Response:
     )
 
 
+@app.get("/ui/intraday-lab/research-runs", response_class=HTMLResponse)
+def read_ui_research_runs(request: Request) -> Response:
+    """Render saved local research runs."""
+
+    runs = research_run_service.list_runs(limit=50)
+    return templates.TemplateResponse(
+        request=request,
+        name="research_runs.html",
+        context={"runs": runs},
+    )
+
+
+@app.get("/ui/intraday-lab/research-runs/{run_id}", response_class=HTMLResponse)
+def read_ui_research_run_detail(request: Request, run_id: str) -> Response:
+    """Render one saved local research run."""
+
+    run = research_run_service.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Saved research run not found")
+    freshness = research_run_service.freshness_for_run(run)
+    return templates.TemplateResponse(
+        request=request,
+        name="research_run_detail.html",
+        context={
+            "run": run,
+            "freshness": freshness,
+            "card": saved_research_run_to_markdown_card(run, freshness),
+        },
+    )
+
+
 @app.get("/ui/intraday-lab/firstrate", response_class=HTMLResponse)
 def read_ui_firstrate_landing(request: Request) -> Response:
     """Render the FirstRate local study landing page."""
@@ -1366,6 +1509,70 @@ def read_ui_firstrate_multi_session_summary(request: Request, symbol: str) -> Re
             "cache_metadata": cache_metadata,
             "card": multi_session_replay_to_markdown_card(summary),
         },
+    )
+
+
+@app.get("/ui/intraday-lab/firstrate/{symbol}/latest-result", response_class=HTMLResponse)
+def read_ui_firstrate_latest_result(
+    request: Request,
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Render the latest saved FirstRate result for one symbol."""
+
+    run_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    run, freshness = research_run_service.latest_with_freshness(run_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="firstrate_latest_result.html",
+        context={
+            "symbol": run_request.symbol,
+            "run": run,
+            "freshness": freshness,
+            "run_request": run_request,
+        },
+    )
+
+
+@app.post("/ui/intraday-lab/firstrate/{symbol}/run-local-analysis")
+def run_ui_firstrate_local_analysis(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> RedirectResponse:
+    """Run local analysis from the UI and redirect to the saved result."""
+
+    run_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    try:
+        run = research_run_service.run_firstrate_many_morning(run_request)
+    except ResearchRunSourceMissingError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return RedirectResponse(
+        url=f"/ui/intraday-lab/research-runs/{run.run_id}",
+        status_code=303,
     )
 
 
@@ -1751,6 +1958,39 @@ def _firstrate_cache_metadata(
         "cache_status": cache_status,
         "computed_at": entry.computed_at,
         "elapsed_ms": entry.elapsed_ms,
+    }
+
+
+def _research_run_request(
+    *,
+    run_type: ResearchRunType,
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> ResearchRunCreateRequest:
+    return ResearchRunCreateRequest(
+        run_type=run_type,
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
+def _saved_run_response(
+    run: SavedResearchRun,
+    freshness: ResearchRunFreshness,
+) -> dict[str, object]:
+    return {
+        "run": run.model_dump(mode="json"),
+        "freshness": freshness.model_dump(mode="json"),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
     }
 
 

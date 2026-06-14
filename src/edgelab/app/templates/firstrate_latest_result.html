@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }} Latest Saved Result{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ symbol }} Latest Saved Result</h2>
+    <p class="muted">Fast local view for a previously saved FirstRate many-morning result.</p>
+    <p><a href="/ui/intraday-lab/firstrate/{{ symbol }}">Back to {{ symbol }} FirstRate Study</a></p>
+  </section>
+
+  {% if run %}
+    <section class="section">
+      <h3>Bottom line</h3>
+      <p>{{ run.plain_english_bottom_line }}</p>
+    </section>
+
+    <section class="section">
+      <h3>What EdgeLab tested</h3>
+      <p>{{ run.what_edgelab_tested }}</p>
+    </section>
+
+    <section class="section">
+      <h3>What EdgeLab found</h3>
+      <p>{{ run.what_edgelab_found }}</p>
+    </section>
+
+    <section class="section">
+      <h3>Is this enough to trust?</h3>
+      <p>{{ run.is_this_enough_to_trust }}</p>
+      <p><strong>Freshness status:</strong> {{ freshness.status.value.replace("_", " ") }}. {{ freshness.message }}</p>
+    </section>
+
+    <section class="section">
+      <h3>What should EdgeLab test next?</h3>
+      <p>{{ run.what_to_test_next }}</p>
+      <p><a href="/ui/intraday-lab/research-runs/{{ run.run_id }}">Open full saved result</a></p>
+    </section>
+  {% else %}
+    <section class="section">
+      <h3>Bottom line</h3>
+      <p>No saved local result matches {{ symbol }} yet.</p>
+    </section>
+
+    <section class="section">
+      <h3>What EdgeLab tested</h3>
+      <p>Nothing has been saved for this symbol and these assumptions yet.</p>
+    </section>
+
+    <section class="section">
+      <h3>What EdgeLab found</h3>
+      <p>EdgeLab needs a deliberate local analysis run before this fast page has a result.</p>
+    </section>
+
+    <section class="section">
+      <h3>Is this enough to trust?</h3>
+      <p>No. There is no saved result yet, and any future result stays research-only.</p>
+    </section>
+
+    <section class="section">
+      <h3>What should EdgeLab test next?</h3>
+      <p>Run local analysis only if the ignored local FirstRate CSV file is ready to review.</p>
+      <form method="post" action="/ui/intraday-lab/firstrate/{{ symbol }}/run-local-analysis">
+        {% if run_request.start_date %}
+          <input type="hidden" name="start_date" value="{{ run_request.start_date }}">
+        {% endif %}
+        {% if run_request.end_date %}
+          <input type="hidden" name="end_date" value="{{ run_request.end_date }}">
+        {% endif %}
+        <input type="hidden" name="hold_minutes" value="{{ run_request.hold_minutes }}">
+        <input type="hidden" name="slippage_ticks" value="{{ run_request.slippage_ticks }}">
+        <input type="hidden" name="commission_per_contract" value="{{ run_request.commission_per_contract }}">
+        <input class="button" type="submit" value="Run local analysis">
+      </form>
+    </section>
+  {% endif %}
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is not live, not a signal system, and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      {% if run %}
+        <table>
+          <tbody>
+            <tr><th>Saved run</th><td>{{ run.run_id }}</td></tr>
+            <tr><th>Source file</th><td>{{ run.source_file_path }}</td></tr>
+            <tr><th>Past mornings reviewed</th><td>{{ run.evidence_details.get("sessions_tested") }}</td></tr>
+            <tr><th>Saved run time</th><td>{{ run.elapsed_ms }} ms</td></tr>
+          </tbody>
+        </table>
+      {% else %}
+        <p>Freshness status: {{ freshness.status.value.replace("_", " ") }}. {{ freshness.message }}</p>
+        <p>The first saved result will store compact summary data and source metadata only.</p>
+      {% endif %}
+    </details>
+  </section>
+{% endblock %}

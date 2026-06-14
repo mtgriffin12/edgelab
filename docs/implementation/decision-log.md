@@ -119,3 +119,7 @@ Phase 7X-2D adds a FirstRate historical intraday CSV normalizer and local dry-ru
 ## DEC-030: Phase 7X-2E FirstRate Replay Integration
 
 Phase 7X-2E connects local ignored FirstRate SPY/QQQ CSV files to replay and multi-session summaries while keeping all outputs research-only and real-money use blocked.
+
+## DEC-031: Phase 7X-2F Saved Research Runs
+
+DEC-031: Phase 7X-2F adds local saved research runs so expensive FirstRate many-morning analyses can be run deliberately and viewed quickly without recomputing on every page load.

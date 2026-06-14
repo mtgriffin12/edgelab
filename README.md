@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2E FirstRate replay integration**.
+Current phase: **Phase 7X-2F Saved Research Runs and Fast Result Views**.
 
 No live trading functionality exists.
 
@@ -61,7 +61,10 @@ Then visit:
 - `http://127.0.0.1:8000/ui/intraday-lab/no-trade-analysis`
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate`
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY`
+- `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY/latest-result`
+- `http://127.0.0.1:8000/ui/intraday-lab/firstrate/QQQ/latest-result`
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY/multi-session-summary`
+- `http://127.0.0.1:8000/ui/intraday-lab/research-runs`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
 - `http://127.0.0.1:8000/ui/lab-bench`
@@ -128,6 +131,8 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/multi-session-summary`
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/pattern-results`
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/no-trade-analysis`
+- `http://127.0.0.1:8000/intraday/research-runs`
+- `http://127.0.0.1:8000/intraday/research-runs/latest?symbol=SPY`
 - `http://127.0.0.1:8000/intraday/history/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
@@ -173,6 +178,11 @@ Pretend Portfolio Tests: practice portfolios built from sample data so EdgeLab c
 might group ideas later. They are not recommendations, do not use live quotes, do not connect to
 brokers, and never approve paper or real-money use. Cash is shown as intentional when evidence is
 not strong enough.
+
+The saved research run endpoints and `/ui/intraday-lab/research-runs` page store compact local
+summaries in an ignored SQLite database under `data/processed/research_runs/`. They do not store
+raw CSV rows, call external services, or make results actionable. Freshness checks compare saved
+source-file metadata and assumptions against the current ignored local file.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,

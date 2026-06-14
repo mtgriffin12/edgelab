@@ -119,6 +119,14 @@ routes plus first-hour completeness reporting, while preserving the Phase 7X-2B 
 contract. It does not add live data, provider SDKs, credentials, broker calls, prop-firm
 integrations, charting, scheduling, workers, paper execution, or live execution.
 
+## Saved Research Runs
+
+Stores compact local results from deliberate FirstRate many-morning analyses so later page loads can
+show the latest saved result quickly. The store is SQLite through the Python standard library, lives
+under ignored `data/processed/research_runs/`, and saves summary JSON, evidence details, quality
+warnings, and source-file fingerprints only. It does not add external calls, live data, scheduler
+work, broker connectivity, or recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

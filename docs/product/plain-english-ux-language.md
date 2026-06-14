@@ -117,4 +117,7 @@ Warnings should be short and direct:
 - "First-hour completeness shows whether any regular first-hour minutes are missing."
 - "Small gaps should be reviewed before trusting the replay."
 - "This FirstRate study is local research only and not a recommendation."
+- "Run local analysis" means start a deliberate local research review, not place an order.
+- "Latest saved result" means the newest matching local research summary, not a current market view.
+- "This saved result may be stale because the source file changed."
 - "Copied-account scaling multiplies mistakes too."

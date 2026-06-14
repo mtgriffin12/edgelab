@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Saved Research Runs{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Saved Research Runs</h2>
+    <p class="muted">Local saved results from deliberate research runs, not live data.</p>
+    <p><a href="/ui/intraday-lab">Back to Intraday Lab</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    {% if runs %}
+      <p>EdgeLab has {{ runs|length }} saved local result(s) that can be opened quickly.</p>
+    {% else %}
+      <p>No saved local results exist yet. EdgeLab will only create one after you choose Run local analysis.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    {% if runs %}
+      <div class="grid">
+        {% for run in runs %}
+          <div class="summary-card">
+            <h4>{{ run.symbol }} latest saved result</h4>
+            <p>{{ run.plain_english_bottom_line }}</p>
+            <p class="muted">Saved {{ run.completed_at }}</p>
+            <a href="/ui/intraday-lab/research-runs/{{ run.run_id }}">Open saved result</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Use a local FirstRate symbol page to save a result when you want a faster later view.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      Start with SPY or QQQ latest saved result pages, then run local analysis only when the
+      ignored local CSV file is ready to review.
+    </p>
+    <p>
+      <a href="/ui/intraday-lab/firstrate/SPY/latest-result">SPY latest saved result</a>
+      |
+      <a href="/ui/intraday-lab/firstrate/QQQ/latest-result">QQQ latest saved result</a>
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>Saved research runs are local, read-only results. They are not recommendations.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <p>Saved results live in the ignored local research database under data/processed.</p>
+      <p>Only compact summaries and source metadata are saved; CSV rows are not copied here.</p>
+    </details>
+  </section>
+{% endblock %}

@@ -28,6 +28,8 @@ Phase 7X-2D: FirstRate historical intraday CSV normalizer and local dry-run impo
 
 Phase 7X-2E: FirstRate replay integration, first-hour completeness, and local many-morning summaries
 
+Phase 7X-2F: Saved research runs and fast latest-result views for local FirstRate analysis
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

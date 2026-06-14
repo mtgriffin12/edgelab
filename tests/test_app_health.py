@@ -19,4 +19,4 @@ def test_root_endpoint_returns_phase_metadata() -> None:
 
     assert response.status_code == 200
     assert response.json()["app"] == "EdgeLab"
-    assert response.json()["phase"] == "Phase 7X-2E FirstRate replay integration"
+    assert response.json()["phase"] == "Phase 7X-2F saved research runs"

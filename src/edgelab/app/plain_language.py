@@ -142,6 +142,62 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="The result can inform learning, but cannot trigger action.",
         why_it_matters="It keeps evidence separate from execution.",
     ),
+    "saved_research_run": PlainLanguageTerm(
+        technical_key="saved_research_run",
+        plain_label="Saved Research Run",
+        short_explanation="A compact local result saved after a deliberate research review.",
+        why_it_matters=(
+            "It lets EdgeLab reopen slow research results quickly without rerunning them."
+        ),
+        caution="A saved result can go stale when the local source file changes.",
+    ),
+    "run_local_analysis": PlainLanguageTerm(
+        technical_key="run_local_analysis",
+        plain_label="Run Local Analysis",
+        short_explanation="Start a local research review using ignored local files.",
+        why_it_matters="Slow research work should happen only when you deliberately ask for it.",
+        caution="This still creates research output only, not permission to use real money.",
+    ),
+    "latest_saved_result": PlainLanguageTerm(
+        technical_key="latest_saved_result",
+        plain_label="Latest Saved Result",
+        short_explanation="The newest saved local result matching the same assumptions.",
+        why_it_matters="It gives a fast view without recomputing the whole research run.",
+    ),
+    "stale_result": PlainLanguageTerm(
+        technical_key="stale_result",
+        plain_label="May Be Stale",
+        short_explanation=(
+            "The saved result may no longer match the local source file or app format."
+        ),
+        why_it_matters=(
+            "Old saved results should be reviewed before they are trusted even as research."
+        ),
+    ),
+    "fresh_result": PlainLanguageTerm(
+        technical_key="fresh_result",
+        plain_label="Still Matches",
+        short_explanation="The saved result still matches the local source file and assumptions.",
+        why_it_matters="It helps EdgeLab tell quick views apart from outdated local results.",
+    ),
+    "source_file_changed": PlainLanguageTerm(
+        technical_key="source_file_changed",
+        plain_label="Source File Changed",
+        short_explanation="The ignored local CSV file changed after the result was saved.",
+        why_it_matters="The result should be rerun before EdgeLab leans on it.",
+    ),
+    "local_research_database": PlainLanguageTerm(
+        technical_key="local_research_database",
+        plain_label="Local Research Database",
+        short_explanation="An ignored SQLite file used for compact saved research results.",
+        why_it_matters="It keeps slow local research results available without committing data.",
+    ),
+    "research_only_result": PlainLanguageTerm(
+        technical_key="research_only_result",
+        plain_label="Research-Only Result",
+        short_explanation="A result that can support learning but cannot become an instruction.",
+        why_it_matters="It keeps analysis separate from real-money use.",
+    ),
     "unsupported_strategy": PlainLanguageTerm(
         technical_key="unsupported_strategy",
         plain_label="Not Testable Yet",
