@@ -21,6 +21,7 @@ from edgelab.discovery.library import StrategyDiscoveryLibrary
 from edgelab.discovery.schema import DiscoveryLane
 from edgelab.intraday.benchmarks import calculate_opening_benchmarks
 from edgelab.intraday.cards import (
+    historical_replay_to_markdown_card,
     intraday_simulation_to_markdown_card,
     prop_account_to_markdown_card,
 )
@@ -29,8 +30,13 @@ from edgelab.intraday.historical_provider import (
     FuturePaidHistoricalProvider,
     LocalCSVHistoricalIntradayProvider,
 )
-from edgelab.intraday.historical_schema import HistoricalIntradayImportResult
+from edgelab.intraday.historical_schema import (
+    HistoricalIntradayImportResult,
+    HistoricalIntradaySession,
+)
 from edgelab.intraday.prop_accounts import sample_prop_account_result
+from edgelab.intraday.replay import HistoricalIntradayReplayEngine
+from edgelab.intraday.replay_schema import HistoricalReplayRequest
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
@@ -55,6 +61,10 @@ future_historical_provider = FuturePaidHistoricalProvider()
 intraday_setup_detector = IntradaySetupDetector()
 intraday_simulator = IntradaySimulator(
     fixture_provider=intraday_fixture_provider,
+    setup_detector=intraday_setup_detector,
+)
+historical_replay_engine = HistoricalIntradayReplayEngine(
+    provider=historical_intraday_provider,
     setup_detector=intraday_setup_detector,
 )
 ranking_engine = StrategyRankingEngine(
@@ -86,7 +96,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2A historical intraday CSV import",
+        "phase": "Phase 7X-2B historical intraday replay engine",
         "status": "research-only",
     }
 
@@ -525,6 +535,61 @@ def read_historical_intraday_session_bars(symbol: str, session_id: str) -> dict[
     return _historical_import_response(result, include_bars=True)
 
 
+@app.get("/intraday/replay/sample")
+def read_historical_replay_sample() -> dict[str, object]:
+    """Return a sample replay from the first ready local historical session."""
+
+    ready_session = _first_ready_historical_session()
+    if ready_session is None:
+        raise HTTPException(status_code=404, detail="No replay-ready historical session found")
+    request = HistoricalReplayRequest(
+        symbol=ready_session.symbol,
+        session_id=ready_session.session_id,
+    )
+    return historical_replay_engine.replay(request).model_dump(mode="json")
+
+
+@app.get("/intraday/replay/{symbol}/{session_id}")
+def read_historical_replay(
+    symbol: str,
+    session_id: str,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return one local historical intraday replay."""
+
+    request = HistoricalReplayRequest(
+        symbol=symbol,
+        session_id=session_id,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return historical_replay_engine.replay(request).model_dump(mode="json")
+
+
+@app.get("/intraday/replay/{symbol}/{session_id}/card", response_class=Response)
+def read_historical_replay_card(
+    symbol: str,
+    session_id: str,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Return one local historical intraday replay card as Markdown."""
+
+    request = HistoricalReplayRequest(
+        symbol=symbol,
+        session_id=session_id,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    result = historical_replay_engine.replay(request)
+    return Response(content=historical_replay_to_markdown_card(result), media_type="text/plain")
+
+
 @app.get("/intraday/{symbol}/benchmarks")
 def read_intraday_benchmarks(symbol: str, session_id: str | None = None) -> dict[str, object]:
     """Return opening benchmarks for a synthetic intraday session."""
@@ -623,6 +688,7 @@ def read_ui_home(request: Request) -> Response:
     sample_candidates = candidate_screener.screen()
     sample_portfolios = portfolio_engine.construct()
     intraday_sessions = intraday_fixture_provider.list_available_sessions()
+    historical_sessions = historical_intraday_provider.list_sessions()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -636,6 +702,7 @@ def read_ui_home(request: Request) -> Response:
             "candidate_count": sample_candidates.candidate_count,
             "portfolio_count": sample_portfolios.portfolio_count,
             "intraday_session_count": len(intraday_sessions),
+            "historical_session_count": len(historical_sessions),
         },
     )
 
@@ -842,6 +909,41 @@ def read_ui_intraday_prop_account_scaling(request: Request) -> Response:
     )
 
 
+@app.get("/ui/intraday-lab/replay", response_class=HTMLResponse)
+def read_ui_historical_replay_landing(request: Request) -> Response:
+    """Render the historical replay landing page."""
+
+    result = historical_intraday_provider.load_all_sessions()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_replay.html",
+        context={
+            "sessions": result.sessions,
+            "quality_issues": result.quality_issues,
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/replay/{symbol}/{session_id}", response_class=HTMLResponse)
+def read_ui_historical_replay_detail(
+    request: Request,
+    symbol: str,
+    session_id: str,
+) -> Response:
+    """Render one historical replay story."""
+
+    replay_request = HistoricalReplayRequest(symbol=symbol, session_id=session_id)
+    result = historical_replay_engine.replay(replay_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_replay_detail.html",
+        context={
+            "result": result,
+            "card": historical_replay_to_markdown_card(result),
+        },
+    )
+
+
 @app.get("/ui/intraday-lab/{symbol}", response_class=HTMLResponse)
 def read_ui_intraday_symbol(
     request: Request, symbol: str, session_id: str | None = None
@@ -982,3 +1084,11 @@ def _historical_import_response(
     if include_bars:
         response["bars"] = [bar.model_dump(mode="json") for bar in result.bars]
     return response
+
+
+def _first_ready_historical_session() -> HistoricalIntradaySession | None:
+    result = historical_intraday_provider.load_all_sessions()
+    return next(
+        (session for session in result.sessions if session.readiness.value == "ready_for_replay"),
+        None,
+    )

@@ -102,3 +102,14 @@ language, broker language, account signup framing, or recommendations.
 No-trade days should be visible and respected. The page should make clear that initial S&P
 500-style and Nasdaq-style fixtures are examples only, and that the system is designed for other
 fixture-backed symbols once suitable intraday data and assumptions exist.
+
+## Phase 7X-2B Past Morning Practice Test UX
+
+The user-facing page should lead with "Past Morning Practice Test," not technical replay wording.
+It should tell the story of one past morning in the simplest possible order: bottom line, what
+EdgeLab would have done in practice mode, pretend start/finish/result, what happened afterward, why
+the example might mislead, what to test next, and real-money status.
+
+Technical timing details, bar counts, setup mechanics, and quality issues belong in Evidence
+details. Replay pages must stay text/table first and must not show charts, action controls,
+broker language, live-watch framing, pattern-statistics claims, or recommendations.

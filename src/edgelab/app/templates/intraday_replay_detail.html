@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}{{ result.symbol }} Past Morning Practice Test{% endblock %}
+{% block content %}
+  {% set practice_choice = "Keep watching" %}
+  {% if result.status.value in ["incomplete", "blocked_by_data_quality", "unsupported"] %}
+    {% set practice_choice = "Not enough data" %}
+  {% elif result.setup_candidates and result.setup_candidates[0].setup_type.value == "no_trade" %}
+    {% set practice_choice = "Sit out" %}
+  {% elif result.setup_candidates %}
+    {% set practice_choice = "Practice setup found" %}
+  {% endif %}
+
+  <section class="page-header">
+    <h2>{{ result.symbol }} Past Morning Practice Test</h2>
+    <p class="muted">{{ result.session_id }}</p>
+    <p><a href="/ui/intraday-lab/replay">Back to Past Morning Practice Tests</a></p>
+  </section>
+
+  <section class="warning section">
+    <strong>Real-money status:</strong>
+    {{ result.real_money_status }}. This page is not live, not a signal system, and not a
+    recommendation.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ result.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab would have done in practice mode</h3>
+    <p><strong>{{ practice_choice }}</strong></p>
+    {% if result.decisions %}
+      <p>{{ result.decisions[-1].plain_english_summary }}</p>
+    {% endif %}
+  </section>
+
+  {% if result.hypothetical_trades %}
+    {% set pretend = result.hypothetical_trades[0] %}
+    <section class="section">
+      <h3>Pretend start and finish</h3>
+      <div class="facts">
+        <div class="fact">
+          <span>Pretend start</span>
+          <strong>{{ "%.2f"|format(pretend.entry_price) }}</strong>
+        </div>
+        <div class="fact">
+          <span>Pretend finish</span>
+          <strong>{{ "%.2f"|format(pretend.exit_price) }}</strong>
+        </div>
+        <div class="fact">
+          <span>Pretend result</span>
+          <strong>{{ pretend.result_label }}</strong>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="section">
+    <h3>What happened afterward</h3>
+    <p>{{ result.what_happened }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ result.why_it_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ result.next_review_item }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status</h3>
+    <p><strong>{{ result.real_money_status }}</strong></p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <table>
+      <tbody>
+        <tr>
+          <th>Internal replay status</th>
+          <td>{{ result.status.value.replace("_", " ") }}</td>
+        </tr>
+        <tr>
+          <th>Session readiness</th>
+          <td>{{ result.session_readiness.value.replace("_", " ") }}</td>
+        </tr>
+        <tr>
+          <th>Replay steps</th>
+          <td>{{ result.steps|length }}</td>
+        </tr>
+        <tr>
+          <th>Decisions recorded</th>
+          <td>{{ result.decisions|length }}</td>
+        </tr>
+        {% if result.setup_candidates %}
+          <tr>
+            <th>Setup ID</th>
+            <td>{{ result.setup_candidates[0].setup_id }}</td>
+          </tr>
+          <tr>
+            <th>Signal bar</th>
+            <td>{{ result.setup_candidates[0].signal_bar_timestamp }}</td>
+          </tr>
+        {% endif %}
+        {% if result.hypothetical_trades %}
+          <tr>
+            <th>Entry time</th>
+            <td>{{ result.hypothetical_trades[0].entry_time }}</td>
+          </tr>
+          <tr>
+            <th>Exit time</th>
+            <td>{{ result.hypothetical_trades[0].exit_time }}</td>
+          </tr>
+          <tr>
+            <th>Estimated cost</th>
+            <td>{{ "%.2f"|format(result.hypothetical_trades[0].estimated_costs) }}</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <h4>Raw replay timeline</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th>Replay clock</th>
+          <th>Bars visible</th>
+          <th>What changed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for step in result.steps %}
+          <tr>
+            <td>{{ step.step_type.value.replace("_", " ") }}</td>
+            <td>{{ step.replay_time_utc }}</td>
+            <td>{{ step.bars_visible_count }}</td>
+            <td>{{ step.what_changed }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h4>Reasons to be careful</h4>
+    <ul class="list-clean">
+      {% for issue in result.quality_issues %}
+        <li>{{ issue.code }}: {{ issue.message }}</li>
+      {% else %}
+        <li>No replay quality issue was reported.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

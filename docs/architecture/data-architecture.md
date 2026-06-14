@@ -71,3 +71,15 @@ adjustment metadata.
 Tiny synthetic historical fixtures may be committed for tests. Real downloaded historical files
 must stay outside source control under ignored local directories such as `data/raw/` or
 `data/processed/`.
+
+## Phase 7X-2B Historical Intraday Replay
+
+Phase 7X-2B reuses the local historical CSV import foundation and adds replay state derived from
+one session at a time. At each replay step, the engine may only use bars with timestamps at or
+before the replay clock. Setup detection receives only visible bars, hypothetical entry uses the
+next available bar after the signal bar, and hypothetical exit is recorded only after the exit bar
+is visible.
+
+Replay output stores the number of bars visible, the latest visible timestamp, decisions, quality
+issues, and plain-English explanations. It does not add multi-session statistics, live watch mode,
+external data calls, paid providers, broker execution, or real-money readiness.

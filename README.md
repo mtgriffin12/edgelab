@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2A historical intraday CSV import foundation**.
+Current phase: **Phase 7X-2B historical intraday replay engine**.
 
 No live trading functionality exists.
 
@@ -54,6 +54,8 @@ Then visit:
 - `http://127.0.0.1:8000/ui/candidates`
 - `http://127.0.0.1:8000/ui/portfolios`
 - `http://127.0.0.1:8000/ui/intraday-lab`
+- `http://127.0.0.1:8000/ui/intraday-lab/replay`
+- `http://127.0.0.1:8000/ui/intraday-lab/replay/RPLAY/replay-breakout-complete`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
 - `http://127.0.0.1:8000/ui/lab-bench`
@@ -115,6 +117,9 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical/bars`
+- `http://127.0.0.1:8000/intraday/replay/sample`
+- `http://127.0.0.1:8000/intraday/replay/RPLAY/replay-breakout-complete`
+- `http://127.0.0.1:8000/intraday/replay/RPLAY/replay-breakout-complete/card`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -157,10 +162,16 @@ The intraday spike does not fetch live data, show charts, connect to brokers, mo
 prop-firm rulebook, or approve paper or real-money use.
 
 The historical intraday endpoints are read-only and local. They import tiny sample CSV fixtures
-through a vendor-neutral boundary so EdgeLab can inspect historical session readiness before any
-future replay mode. They do not call external APIs, use provider SDKs, fetch live quotes, or approve
-paper or real-money use. Real downloaded data should stay outside source control under ignored
-paths such as `data/raw/` or `data/processed/`.
+through a vendor-neutral boundary so EdgeLab can inspect historical session readiness before replay
+or broader research. They do not call external APIs, use provider SDKs, fetch live quotes, or
+approve paper or real-money use. Real downloaded data should stay outside source control under
+ignored paths such as `data/raw/` or `data/processed/`.
+
+The historical replay endpoints are read-only and local. The UI calls this a Past Morning Practice
+Test: one imported historical session is reviewed one minute at a time so EdgeLab only uses what was
+visible then. It can find a practice setup, sit out, or report not enough data, but it does not
+calculate multi-session pattern statistics, watch live data, connect to brokers, use paid providers,
+or produce recommendations.
 
 To run a local fixture-backed backtest:
 

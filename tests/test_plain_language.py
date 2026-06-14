@@ -107,6 +107,24 @@ def test_required_plain_language_terms_exist() -> None:
         "ready_for_replay",
         "incomplete_session",
         "unusable_session",
+        "historical_replay",
+        "past_morning_practice_test",
+        "practice_setup",
+        "pretend_start",
+        "pretend_finish",
+        "pretend_result",
+        "keep_watching",
+        "not_enough_data",
+        "what_happened_afterward",
+        "why_this_might_be_misleading",
+        "what_to_test_next",
+        "replay_clock",
+        "bars_visible",
+        "what_edgelab_knew",
+        "setup_marked_for_research",
+        "sit_out",
+        "no_future_peeking",
+        "replay_result",
         "spike_verdict",
         "paired_instrument_comparison",
     }
@@ -145,6 +163,12 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("historical_intraday_data") == "Historical Same-Day Sample Data"
     assert plain_label("local_csv_import") == "Local CSV Import"
     assert plain_label("session_readiness") == "Ready for Future Replay"
+    assert plain_label("historical_replay") == "Past Morning Practice Test"
+    assert plain_label("past_morning_practice_test") == "Past Morning Practice Test"
+    assert plain_label("pretend_start") == "Pretend Start"
+    assert plain_label("pretend_finish") == "Pretend Finish"
+    assert plain_label("pretend_result") == "Pretend Result"
+    assert plain_label("no_future_peeking") == "No Future Peeking"
     assert plain_label("spike_verdict") == "Research Spike Verdict"
 
 

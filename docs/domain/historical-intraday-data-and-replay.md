@@ -2,10 +2,11 @@
 
 ## Purpose
 
-Phase 7X-2A starts the move from synthetic intraday fixtures toward historical
-intraday research. This phase only adds a local CSV import foundation. It does
-not add replay mode, live data, vendor integrations, broker connections, prop-firm
-integrations, charts, or trade recommendations.
+Phase 7X-2A started the move from synthetic intraday fixtures toward historical
+intraday research with a local CSV import foundation. Phase 7X-2B adds a local
+replay engine that inspects one imported session bar by bar. It does not add
+live data, vendor integrations, broker connections, prop-firm integrations,
+charts, pattern statistics, live watch mode, paper trading, or trade recommendations.
 
 Historical intraday data is research input. It can help EdgeLab decide what to
 study next, but it cannot prove that any setup works or is ready for real money.
@@ -24,7 +25,7 @@ vendor. It keeps early work:
 - safe for review.
 
 This avoids locking the app to a paid provider before the normalized bar format,
-session metadata, quality checks, and future replay rules are stable.
+session metadata, quality checks, and replay rules are stable.
 
 ## Where Historical Files Should Live
 
@@ -68,7 +69,7 @@ Rules:
 
 The imported file must state its source timezone. EdgeLab preserves the raw
 timestamp text and the source timezone, then normalizes the timestamp to UTC for
-internal comparisons. This protects future replay from mixing local market time
+internal comparisons. This protects replay from mixing local market time
 with machine time.
 
 ## Adjustment Mode Handling
@@ -80,7 +81,7 @@ session before trusting it.
 
 ## Session Readiness
 
-Historical sessions are classified before any future replay step:
+Historical sessions are classified before replay:
 
 - Ready for future replay: at least five valid one-minute first-hour bars and no
   critical quality issues.
@@ -101,12 +102,39 @@ unsorted bars, unsupported intervals, and unknown adjustment modes.
 Quality warnings should remain visible because weak data can make a pattern look
 more meaningful than it is.
 
-## Future Replay Mode
+## Phase 7X-2B Historical Replay Mode
 
-Replay mode is future work. When approved later, it should replay historical bars
-bar by bar as if EdgeLab does not know the future. It must avoid look-ahead,
-preserve next-bar entry timing after a signal bar, and tell a plain-English story
-about what EdgeLab knew at each point.
+Replay mode reveals one local historical session bar by bar as if EdgeLab were
+watching the morning unfold. It answers:
+
+- what EdgeLab knew at the open,
+- what changed during the first hour,
+- whether EdgeLab marked a setup for research or sat out,
+- what happened afterward once later bars became visible,
+- whether the replay was complete, incomplete, or blocked by data quality,
+- what EdgeLab should check next.
+
+The replay engine must run without future knowledge. At any replay step, EdgeLab
+may only use bars whose timestamps are at or before the replay clock. Setup
+detection can occur only after the signal bar is visible. Hypothetical entry uses
+the next available bar open after the signal bar. Hypothetical exit is recorded
+only after the replay clock reaches the exit bar.
+
+## What EdgeLab Knows When
+
+Before the regular open, EdgeLab may know prior, overnight, or premarket context
+only if those bars exist in the local file. At the regular open, it knows the
+regular open. After five regular-session one-minute bars, it knows the opening
+range. As the session unfolds, it knows first-hour high and low so far. Final
+first-hour levels and final hypothetical results are after-the-fact information
+and must not be used early.
+
+## Why One Replay Is Not Proof
+
+One replay can show whether the process is honest and understandable. It cannot
+prove an edge, profitability, timeliness, or readiness for real money. Replay is
+a bridge to future pattern statistics across many clean sessions, not a result
+that can stand alone.
 
 ## Future Vendor Research
 

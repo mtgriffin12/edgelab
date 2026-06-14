@@ -208,6 +208,69 @@ def test_intraday_prop_account_route_is_not_captured_as_symbol() -> None:
     assert "GEN_SYN Intraday Study" not in response.text
 
 
+def test_intraday_replay_landing_returns_historical_sessions() -> None:
+    response = client.get("/ui/intraday-lab/replay")
+
+    assert response.status_code == 200
+    assert "Past Morning Practice Test" in response.text
+    page_text = re.sub(r"\s+", " ", response.text)
+    assert (
+        "EdgeLab replays past market mornings one minute at a time to see whether it would "
+        "have noticed a useful setup without peeking at what happened later."
+    ) in page_text
+    assert "not live" in response.text
+    assert "not a signal system" in response.text
+    assert "not a recommendation" in response.text
+    assert "real-money status is Not allowed" in response.text
+    assert "RPLAY" in response.text
+
+
+def test_intraday_replay_detail_returns_plain_english_story() -> None:
+    response = client.get("/ui/intraday-lab/replay/RPLAY/replay-breakout-complete")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Bottom line",
+        "What EdgeLab would have done in practice mode",
+        "Pretend start and finish",
+        "Pretend start",
+        "Pretend finish",
+        "Pretend result",
+        "What happened afterward",
+        "Why this might be misleading",
+        "What EdgeLab should test next",
+        "Real-money status",
+        "Not allowed",
+        "Evidence details",
+    ]:
+        assert phrase in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "replay clock",
+        "bars visible",
+        "setup candidate",
+        "signal bar",
+        "hypothetical trade",
+        "long context",
+        "short context",
+        "slippage",
+        "commission",
+        "quality issue",
+        "session readiness",
+        "entry",
+        "exit",
+    ]:
+        assert phrase not in primary_text
+
+
+def test_intraday_replay_route_is_not_captured_as_symbol() -> None:
+    response = client.get("/ui/intraday-lab/replay")
+
+    assert response.status_code == 200
+    assert "Past Morning Practice Test" in response.text
+    assert "REPLAY Intraday Study" not in response.text
+
+
 def test_candidate_detail_returns_plain_english_card() -> None:
     response = client.get("/ui/candidates/spy-research-candidate")
 
@@ -255,6 +318,8 @@ def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
         "/ui/intraday-lab",
         "/ui/intraday-lab/GEN_SYN",
         "/ui/intraday-lab/prop-account-scaling",
+        "/ui/intraday-lab/replay",
+        "/ui/intraday-lab/replay/RPLAY/replay-breakout-complete",
     ]:
         response = client.get(path)
 
@@ -284,6 +349,8 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/intraday-lab",
         "/ui/intraday-lab/GEN_SYN",
         "/ui/intraday-lab/prop-account-scaling",
+        "/ui/intraday-lab/replay",
+        "/ui/intraday-lab/replay/RPLAY/replay-breakout-complete",
         "/ui/journal",
         "/ui/reports",
     ]

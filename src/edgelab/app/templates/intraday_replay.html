@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Past Morning Practice Test{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Past Morning Practice Test</h2>
+    <p class="muted">
+      EdgeLab replays past market mornings one minute at a time to see whether it would have
+      noticed a useful setup without peeking at what happened later.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    local/sample historical data only. This is not live, not a signal system, not a recommendation,
+    and real-money status is Not allowed.
+  </section>
+
+  <section class="panel">
+    <h3>What this practice test answers</h3>
+    <p>
+      Did EdgeLab see something useful, would it have practiced taking action or sat out, and what
+      should it test next? This is still research-only and cannot be used with real money.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Available practice mornings</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Morning</th>
+          <th>Usable sample?</th>
+          <th>Minutes in sample</th>
+          <th>Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+          <tr>
+            <td>{{ session.symbol }}</td>
+            <td>{{ session.session_id }}</td>
+            <td>
+              {% if session.readiness.value == "ready_for_replay" %}
+                Ready
+              {% elif session.readiness.value == "incomplete" %}
+                Not enough data
+              {% elif session.readiness.value == "needs_review" %}
+                Needs review
+              {% else %}
+                Not usable yet
+              {% endif %}
+            </td>
+            <td>{{ session.bar_count }}</td>
+            <td>
+              <a href="/ui/intraday-lab/replay/{{ session.symbol }}/{{ session.session_id }}">
+                View practice test
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <ul class="list-clean">
+      {% for issue in quality_issues %}
+        <li>{{ issue.message }}</li>
+      {% else %}
+        <li>No local import issue is blocking the session list.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

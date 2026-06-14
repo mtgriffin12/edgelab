@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
+from edgelab.intraday.replay_schema import HistoricalReplayResult
 from edgelab.intraday.schema import (
     IntradaySetupCandidate,
     IntradaySetupType,
@@ -123,6 +124,40 @@ def prop_account_to_markdown_card(result: PropAccountSimulationResult) -> str:
     )
 
 
+def historical_replay_to_markdown_card(result: HistoricalReplayResult) -> str:
+    """Render a historical replay as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            f"# {result.symbol} Past Morning Practice Test",
+            "",
+            "## Bottom line",
+            result.bottom_line,
+            "",
+            "## What EdgeLab would have done in practice mode",
+            *_bullets(_practice_mode_lines(result)),
+            "",
+            "## Pretend start and finish",
+            *_bullets(_pretend_result_lines(result)),
+            "",
+            "## What happened afterward",
+            result.what_happened,
+            "",
+            "## Why this might be misleading",
+            result.why_it_might_be_misleading,
+            "",
+            "## What EdgeLab should test next",
+            result.next_review_item,
+            "",
+            "## Real-money status: Not allowed",
+            f"- {result.real_money_status}",
+            "",
+            "## Evidence details",
+            *_bullets(_replay_evidence_lines(result)),
+        ]
+    )
+
+
 def _setup_lines(setups: list[IntradaySetupCandidate]) -> list[str]:
     return [f"- {setup.plain_english_summary}" for setup in setups] or ["- No setup was selected."]
 
@@ -154,6 +189,47 @@ def _quality_lines(result: IntradaySimulationResult) -> list[str]:
     return [issue.message for issue in result.quality_issues] or [
         "No additional fixture quality issues were reported."
     ]
+
+
+def _practice_mode_lines(result: HistoricalReplayResult) -> list[str]:
+    if result.status.value in {"incomplete", "blocked_by_data_quality", "unsupported"}:
+        choice = "Not enough data."
+    elif result.setup_candidates and result.setup_candidates[0].setup_type.value == "no_trade":
+        choice = "Sit out."
+    elif result.setup_candidates:
+        choice = "Practice setup found."
+    else:
+        choice = "Keep watching."
+
+    lines = [choice]
+    if result.decisions:
+        lines.append(result.decisions[-1].plain_english_summary)
+    return lines
+
+
+def _pretend_result_lines(result: HistoricalReplayResult) -> list[str]:
+    if not result.hypothetical_trades:
+        return ["No pretend start or finish was calculated."]
+
+    pretend = result.hypothetical_trades[0]
+    return [
+        f"Pretend start: {pretend.entry_price:.2f}.",
+        f"Pretend finish: {pretend.exit_price:.2f}.",
+        f"Pretend result: {pretend.result_label}.",
+    ]
+
+
+def _replay_evidence_lines(result: HistoricalReplayResult) -> list[str]:
+    issue_lines = [issue.message for issue in result.quality_issues]
+    details = [
+        f"Internal replay status: {result.status.value.replace('_', ' ')}.",
+        f"Session readiness: {result.session_readiness.value.replace('_', ' ')}.",
+        f"Steps recorded: {len(result.steps)}.",
+        f"Decisions recorded: {len(result.decisions)}.",
+    ]
+    if result.hypothetical_trades:
+        details.append(f"Hypothetical result label: {result.hypothetical_trades[0].result_label}.")
+    return [*details, *issue_lines]
 
 
 def _bullets(items: Iterable[str]) -> list[str]:

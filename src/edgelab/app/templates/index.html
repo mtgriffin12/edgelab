@@ -8,7 +8,7 @@
 
   <section class="facts" aria-label="Current state">
     <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
-    <div class="fact"><span>Current phase</span><strong>Phase 7B + 7X</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 7X-2B</strong></div>
     <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
     <div class="fact"><span>Sample historical test</span><strong>{{ plain_label(sample_backtest.conclusion) }}</strong></div>
     <div class="fact"><span>Discovery ideas tracked</span><strong>{{ discovery_count }}</strong></div>
@@ -16,6 +16,7 @@
     <div class="fact"><span>Research candidates</span><strong>{{ candidate_count }}</strong></div>
     <div class="fact"><span>Pretend portfolio tests</span><strong>{{ portfolio_count }}</strong></div>
     <div class="fact"><span>Intraday sessions</span><strong>{{ intraday_session_count }}</strong></div>
+    <div class="fact"><span>Historical replay sessions</span><strong>{{ historical_session_count }}</strong></div>
   </section>
 
   <section class="warning section">
@@ -51,6 +52,11 @@
         <h4>Intraday Lab</h4>
         <p>First-hour synthetic setup research translated into measurable events.</p>
         <a href="/ui/intraday-lab">Open Intraday Lab</a>
+      </div>
+      <div class="summary-card">
+        <h4>Past Morning Practice Test</h4>
+        <p>One past morning reviewed slowly to see what EdgeLab would have noticed.</p>
+        <a href="/ui/intraday-lab/replay">Open Practice Tests</a>
       </div>
       <div class="summary-card">
         <h4>Lab Bench</h4>
@@ -124,6 +130,10 @@
         <tr>
           <th>Synthetic intraday sessions available</th>
           <td>{{ intraday_session_count }}</td>
+        </tr>
+        <tr>
+          <th>Historical replay sessions available</th>
+          <td>{{ historical_session_count }}</td>
         </tr>
       </tbody>
     </table>

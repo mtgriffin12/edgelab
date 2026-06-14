@@ -83,6 +83,16 @@ provider capabilities, quality issues, and session readiness labels. It is local
 research-only. It does not add replay mode, live data, external provider calls, credentials,
 broker calls, prop-firm integrations, charting, paper execution, or live execution.
 
+## Historical Intraday Replay Engine
+
+Replays one imported historical intraday session bar by bar using only local CSV-backed data.
+Phase 7X-2B converts imported bars into the existing intraday setup detector shape, reveals only
+bars whose timestamps are at or before the replay clock, marks setup or sit-out decisions for
+research, and records a hypothetical result only after the later exit bar is visible. It is local,
+read-only, and research-only. It does not add pattern statistics, live watch mode, external
+provider calls, credentials, broker calls, prop-firm integrations, charting, paper execution, or
+live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

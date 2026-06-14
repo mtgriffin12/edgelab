@@ -53,6 +53,21 @@ EdgeLab should explain conclusions before metrics.
 - Use "Ready for Future Replay" before "session readiness."
 - Use "Original Time Zone" before "source timezone."
 - Use "Price Adjustment Note" before "adjustment mode."
+- Use "Past Morning Practice Test" before "historical replay" or "replay engine."
+- Use "Practice Setup" before "setup candidate."
+- Use "Pretend Start" before "entry."
+- Use "Pretend Finish" before "exit."
+- Use "Pretend Result" before "hypothetical trade."
+- Use "Keep Watching" before "no decision yet."
+- Use "Not Enough Data" before "incomplete replay."
+- Use "What Happened Afterward" before "post-signal result."
+- Use "Why This Might Be Misleading" before "replay limitation."
+- Use "What EdgeLab Should Test Next" before "next validation step."
+- Use "Replay Clock" before "current replay timestamp."
+- Use "Bars Visible So Far" before "visible bar count."
+- Use "What EdgeLab Knew Then" before "point-in-time context."
+- Use "Setup Marked for Research" before "detected setup."
+- Use "No Future Peeking" before "look-ahead bias control."
 
 ## Portfolio Language Standard
 

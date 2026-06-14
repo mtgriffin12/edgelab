@@ -20,6 +20,8 @@ Phase 7X: Intraday research spike, exploratory and fixture-backed
 
 Phase 7X-2A: Historical intraday CSV import foundation, local and vendor-neutral
 
+Phase 7X-2B: Historical intraday replay engine, local and no-look-ahead
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research
