@@ -107,3 +107,7 @@ Phase 7X-2A implements a local historical intraday CSV import foundation before 
 ## DEC-027: Phase 7X-2B Historical Intraday Replay
 
 Phase 7X-2B implements historical intraday replay so EdgeLab can inspect one imported session bar by bar without future knowledge.
+
+## DEC-028: Phase 7X-2C Multi-Session Historical Replay Summaries
+
+Phase 7X-2C adds multi-session historical replay summaries and no-trade analysis so EdgeLab can evaluate repeated first-hour patterns without implying real-money readiness.

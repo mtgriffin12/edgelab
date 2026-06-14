@@ -125,6 +125,17 @@ def test_required_plain_language_terms_exist() -> None:
         "sit_out",
         "no_future_peeking",
         "replay_result",
+        "many_morning_test",
+        "pattern_results",
+        "sit_out_analysis",
+        "useful_pattern",
+        "not_enough_examples",
+        "interesting_but_unproven",
+        "weak_or_inconsistent",
+        "worth_more_testing",
+        "what_usually_happened",
+        "what_edgelab_avoided",
+        "what_edgelab_missed",
         "spike_verdict",
         "paired_instrument_comparison",
     }
@@ -169,6 +180,11 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("pretend_finish") == "Pretend Finish"
     assert plain_label("pretend_result") == "Pretend Result"
     assert plain_label("no_future_peeking") == "No Future Peeking"
+    assert plain_label("many_morning_test") == "Many-Morning Practice Test"
+    assert plain_label("pattern_results") == "Repeated Pattern Results"
+    assert plain_label("sit_out_analysis") == "Sit-Out Review"
+    assert plain_label("not_enough_examples") == "Not Enough Examples"
+    assert plain_label("worth_more_testing") == "Worth More Testing"
     assert plain_label("spike_verdict") == "Research Spike Verdict"
 
 

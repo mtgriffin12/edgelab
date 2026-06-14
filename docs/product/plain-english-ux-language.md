@@ -68,6 +68,13 @@ EdgeLab should explain conclusions before metrics.
 - Use "What EdgeLab Knew Then" before "point-in-time context."
 - Use "Setup Marked for Research" before "detected setup."
 - Use "No Future Peeking" before "look-ahead bias control."
+- Use "Many-Morning Practice Test" before "multi-session replay."
+- Use "Repeated Pattern Results" before "pattern statistics."
+- Use "Sit-Out Review" before "no-trade analysis."
+- Use "Not Enough Examples" before any sample-size warning.
+- Use "Worth More Testing" only as a research next step, never as permission.
+- Use "What Usually Happened" before outcome counts.
+- Use "What EdgeLab Might Have Missed" before hindsight review.
 
 ## Portfolio Language Standard
 
@@ -86,6 +93,10 @@ EdgeLab should explain conclusions before metrics.
 - Keep setup mechanics in Evidence details when they get technical.
 - Real-money status must be unmistakable.
 - Intraday output is not live, not a signal system, and not a recommendation.
+- Repeated intraday summaries should say "Not enough examples yet" when the local
+  fixture set is tiny.
+- Repeated pattern and sit-out review pages should put all technical counts in
+  Evidence details.
 
 ## Safety Language
 

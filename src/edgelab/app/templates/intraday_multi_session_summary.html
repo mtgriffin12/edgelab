@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Many-Morning Practice Test{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Many-Morning Practice Test</h2>
+    <p class="muted">
+      EdgeLab replays local historical mornings one at a time, then summarizes what repeated.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    {{ summary.bottom_line }} Real-money status: {{ summary.real_money_status }}.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ summary.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>{{ summary.what_edgelab_tested }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What usually happened</h3>
+    <p>{{ summary.what_usually_happened }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Whether EdgeLab found anything worth more testing</h3>
+    <p>{{ summary.anything_worth_more_testing }}</p>
+  </section>
+
+  <section class="section">
+    <h3>When EdgeLab sat out</h3>
+    <p>{{ summary.when_edgelab_sat_out }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Whether sitting out seemed helpful</h3>
+    <p>{{ summary.whether_sitting_out_helped }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ summary.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ summary.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status</h3>
+    <p><strong>{{ summary.real_money_status }}</strong></p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <table>
+      <tbody>
+        <tr><th>Local mornings found</th><td>{{ summary.sessions_found }}</td></tr>
+        <tr><th>Mornings tested</th><td>{{ summary.sessions_tested }}</td></tr>
+        <tr><th>Mornings clean enough to replay</th><td>{{ summary.usable_sessions }}</td></tr>
+        <tr><th>Mornings EdgeLab could not trust</th><td>{{ summary.skipped_due_to_data }}</td></tr>
+        <tr><th>Possible practice setups</th><td>{{ summary.setup_count }}</td></tr>
+        <tr><th>Sit-out mornings</th><td>{{ summary.sit_out_count }}</td></tr>
+        <tr>
+          <th>Research label</th>
+          <td>{{ summary.classification.value.replace("_", " ") }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <ul class="list-clean">
+      {% for issue in summary.quality_issues %}
+        <li>{{ issue }}</li>
+      {% else %}
+        <li>No extra data issue was reported by the many-morning summary.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

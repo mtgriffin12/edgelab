@@ -113,3 +113,15 @@ the example might mislead, what to test next, and real-money status.
 Technical timing details, bar counts, setup mechanics, and quality issues belong in Evidence
 details. Replay pages must stay text/table first and must not show charts, action controls,
 broker language, live-watch framing, pattern-statistics claims, or recommendations.
+
+## Phase 7X-2C Many-Morning Practice Test UX
+
+The many-session replay UI should lead with "Many-Morning Practice Test," "Repeated Pattern
+Results," and "Sit-Out Review" instead of technical aggregation language. Each page should show the
+bottom line, what EdgeLab tested, what usually happened, why the result might mislead, what to test
+next, and real-money status before counts.
+
+The default user-facing story should be conservative: tiny local fixtures are workflow tests only,
+and "Not enough examples yet" is the honest headline until many more clean mornings exist.
+Technical terms such as win rate, expectancy, distribution, statistical significance, sample size,
+slippage, and cost assumptions belong in Evidence details if they appear at all.

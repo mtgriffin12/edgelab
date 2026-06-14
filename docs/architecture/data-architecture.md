@@ -83,3 +83,14 @@ is visible.
 Replay output stores the number of bars visible, the latest visible timestamp, decisions, quality
 issues, and plain-English explanations. It does not add multi-session statistics, live watch mode,
 external data calls, paid providers, broker execution, or real-money readiness.
+
+## Phase 7X-2C Multi-Session Historical Replay Summaries
+
+Phase 7X-2C derives aggregate summaries from local replay results. It does not create a new data
+source. Each session still comes from local CSV-backed historical fixtures, and each replay keeps
+the Phase 7X-2B point-in-time visibility rules.
+
+Aggregate fields include sessions found, sessions tested, usable sessions, data-skipped sessions,
+setup counts, sit-out counts, pretend result buckets, cost-changed-conclusion flags, setup-family
+summaries, sit-out reason summaries, and evidence-detail counts. These outputs are research-only
+views over local fixtures and are not proof, live data, provider data, or real-money readiness.

@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2B historical intraday replay engine**.
+Current phase: **Phase 7X-2C multi-session pattern results**.
 
 No live trading functionality exists.
 
@@ -56,6 +56,9 @@ Then visit:
 - `http://127.0.0.1:8000/ui/intraday-lab`
 - `http://127.0.0.1:8000/ui/intraday-lab/replay`
 - `http://127.0.0.1:8000/ui/intraday-lab/replay/RPLAY/replay-breakout-complete`
+- `http://127.0.0.1:8000/ui/intraday-lab/multi-session-summary`
+- `http://127.0.0.1:8000/ui/intraday-lab/pattern-results`
+- `http://127.0.0.1:8000/ui/intraday-lab/no-trade-analysis`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
 - `http://127.0.0.1:8000/ui/lab-bench`
@@ -120,6 +123,12 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/replay/sample`
 - `http://127.0.0.1:8000/intraday/replay/RPLAY/replay-breakout-complete`
 - `http://127.0.0.1:8000/intraday/replay/RPLAY/replay-breakout-complete/card`
+- `http://127.0.0.1:8000/intraday/multi-session-summary`
+- `http://127.0.0.1:8000/intraday/multi-session-summary/card`
+- `http://127.0.0.1:8000/intraday/pattern-results`
+- `http://127.0.0.1:8000/intraday/pattern-results/RPLAY`
+- `http://127.0.0.1:8000/intraday/no-trade-analysis`
+- `http://127.0.0.1:8000/intraday/no-trade-analysis/RPLAY`
 
 The strategy endpoints are read-only and use an in-memory sample registry. The market-data
 and sentiment endpoints are read-only and use synthetic local CSV fixtures only. The backtesting
@@ -172,6 +181,13 @@ Test: one imported historical session is reviewed one minute at a time so EdgeLa
 visible then. It can find a practice setup, sit out, or report not enough data, but it does not
 calculate multi-session pattern statistics, watch live data, connect to brokers, use paid providers,
 or produce recommendations.
+
+The multi-session historical replay endpoints are read-only and local. The UI calls this a
+Many-Morning Practice Test: EdgeLab reuses the same one-morning replay engine across local CSV
+sessions, summarizes repeated practice setups, and reviews sit-out reasons in plain English. The
+committed fixtures are tiny workflow tests only, so the default conclusion should stay "Not enough
+examples yet." This layer does not fetch live data, call provider APIs, use paid provider SDKs,
+connect to brokers, add charts, schedule jobs, deploy services, or produce recommendations.
 
 To run a local fixture-backed backtest:
 

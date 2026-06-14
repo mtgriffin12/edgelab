@@ -186,6 +186,9 @@ def test_intraday_lab_returns_research_spike_page() -> None:
     assert "not a signal system" in response.text
     assert "not a recommendation" in response.text
     assert "GEN_SYN" in response.text
+    assert "Many-Morning Practice Test" in response.text
+    assert "Repeated Pattern Results" in response.text
+    assert "Sit-Out Review" in response.text
 
 
 def test_intraday_symbol_page_returns_generic_fixture_view() -> None:
@@ -263,6 +266,121 @@ def test_intraday_replay_detail_returns_plain_english_story() -> None:
         assert phrase not in primary_text
 
 
+def test_intraday_multi_session_summary_returns_plain_english_story() -> None:
+    response = client.get("/ui/intraday-lab/multi-session-summary")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Many-Morning Practice Test",
+        "Bottom line",
+        "What EdgeLab tested",
+        "What usually happened",
+        "Whether EdgeLab found anything worth more testing",
+        "When EdgeLab sat out",
+        "Whether sitting out seemed helpful",
+        "Why this might be misleading",
+        "What EdgeLab should test next",
+        "Real-money status",
+        "Not allowed",
+        "Evidence details",
+    ]:
+        assert phrase in response.text
+    assert "Not enough examples yet" in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "win rate",
+        "expectancy",
+        "sharpe",
+        "drawdown",
+        "profit factor",
+        "slippage",
+        "distribution",
+        "statistical significance",
+        "sample size",
+        "volatility",
+    ]:
+        assert phrase not in primary_text
+
+
+def test_intraday_pattern_results_returns_plain_english_story() -> None:
+    response = client.get("/ui/intraday-lab/pattern-results")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Repeated Pattern Results",
+        "Bottom line",
+        "What EdgeLab tested",
+        "What usually happened",
+        "Why this might be misleading",
+        "What EdgeLab should test next",
+        "Real-money status",
+        "Not allowed",
+        "Evidence details",
+    ]:
+        assert phrase in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "win rate",
+        "expectancy",
+        "sharpe",
+        "drawdown",
+        "profit factor",
+        "slippage",
+        "distribution",
+        "statistical significance",
+        "sample size",
+        "volatility",
+    ]:
+        assert phrase not in primary_text
+
+
+def test_intraday_no_trade_analysis_returns_plain_english_story() -> None:
+    response = client.get("/ui/intraday-lab/no-trade-analysis")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Sit-Out Review",
+        "Bottom line",
+        "What EdgeLab tested",
+        "What usually happened",
+        "Why this might be misleading",
+        "What EdgeLab should test next",
+        "Real-money status",
+        "Not allowed",
+        "Evidence details",
+    ]:
+        assert phrase in response.text
+    primary_text = visible_text_before(response.text, "Evidence details")
+    for phrase in [
+        "win rate",
+        "expectancy",
+        "sharpe",
+        "drawdown",
+        "profit factor",
+        "slippage",
+        "distribution",
+        "statistical significance",
+        "sample size",
+        "volatility",
+    ]:
+        assert phrase not in primary_text
+
+
+def test_intraday_many_morning_routes_are_not_captured_as_symbol() -> None:
+    for path, marker in [
+        ("/ui/intraday-lab/multi-session-summary", "Many-Morning Practice Test"),
+        ("/ui/intraday-lab/pattern-results", "Repeated Pattern Results"),
+        ("/ui/intraday-lab/no-trade-analysis", "Sit-Out Review"),
+    ]:
+        response = client.get(path)
+
+        assert response.status_code == 200
+        assert marker in response.text
+        assert "MULTI-SESSION-SUMMARY Intraday Study" not in response.text
+        assert "PATTERN-RESULTS Intraday Study" not in response.text
+        assert "NO-TRADE-ANALYSIS Intraday Study" not in response.text
+
+
 def test_intraday_replay_route_is_not_captured_as_symbol() -> None:
     response = client.get("/ui/intraday-lab/replay")
 
@@ -320,6 +438,9 @@ def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
         "/ui/intraday-lab/prop-account-scaling",
         "/ui/intraday-lab/replay",
         "/ui/intraday-lab/replay/RPLAY/replay-breakout-complete",
+        "/ui/intraday-lab/multi-session-summary",
+        "/ui/intraday-lab/pattern-results",
+        "/ui/intraday-lab/no-trade-analysis",
     ]:
         response = client.get(path)
 
@@ -351,6 +472,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/intraday-lab/prop-account-scaling",
         "/ui/intraday-lab/replay",
         "/ui/intraday-lab/replay/RPLAY/replay-breakout-complete",
+        "/ui/intraday-lab/multi-session-summary",
+        "/ui/intraday-lab/pattern-results",
+        "/ui/intraday-lab/no-trade-analysis",
         "/ui/journal",
         "/ui/reports",
     ]

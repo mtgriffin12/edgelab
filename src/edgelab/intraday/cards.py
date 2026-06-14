@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
 from edgelab.intraday.replay_schema import HistoricalReplayResult
 from edgelab.intraday.schema import (
@@ -158,6 +159,46 @@ def historical_replay_to_markdown_card(result: HistoricalReplayResult) -> str:
     )
 
 
+def multi_session_replay_to_markdown_card(summary: MultiSessionReplaySummary) -> str:
+    """Render a multi-session replay summary as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            "# Many-Morning Practice Test",
+            "",
+            "## Bottom line",
+            summary.bottom_line,
+            "",
+            "## What EdgeLab tested",
+            summary.what_edgelab_tested,
+            "",
+            "## What usually happened",
+            summary.what_usually_happened,
+            "",
+            "## Whether anything deserves more testing",
+            summary.anything_worth_more_testing,
+            "",
+            "## When EdgeLab sat out",
+            summary.when_edgelab_sat_out,
+            "",
+            "## Whether sitting out seemed helpful",
+            summary.whether_sitting_out_helped,
+            "",
+            "## Why this might be misleading",
+            summary.why_this_might_be_misleading,
+            "",
+            "## What EdgeLab should test next",
+            summary.what_edgelab_should_test_next,
+            "",
+            "## Real-money status: Not allowed",
+            f"- {summary.real_money_status}",
+            "",
+            "## Evidence details",
+            *_bullets(_multi_session_evidence_lines(summary)),
+        ]
+    )
+
+
 def _setup_lines(setups: list[IntradaySetupCandidate]) -> list[str]:
     return [f"- {setup.plain_english_summary}" for setup in setups] or ["- No setup was selected."]
 
@@ -230,6 +271,30 @@ def _replay_evidence_lines(result: HistoricalReplayResult) -> list[str]:
     if result.hypothetical_trades:
         details.append(f"Hypothetical result label: {result.hypothetical_trades[0].result_label}.")
     return [*details, *issue_lines]
+
+
+def _multi_session_evidence_lines(summary: MultiSessionReplaySummary) -> list[str]:
+    lines = [
+        f"Local mornings found: {summary.sessions_found}.",
+        f"Mornings tested: {summary.sessions_tested}.",
+        f"Mornings clean enough to replay: {summary.usable_sessions}.",
+        f"Mornings EdgeLab could not trust: {summary.skipped_due_to_data}.",
+        f"Possible practice setups found: {summary.setup_count}.",
+        f"Sit-out mornings: {summary.sit_out_count}.",
+        f"Finished pretend results: {summary.completed_pretend_result_count}.",
+        f"Later move looked helpful: {summary.favorable_count}.",
+        f"Later move went the wrong way: {summary.failed_count}.",
+        f"Later move looked flat: {summary.flat_count}.",
+        f"Overall research label: {summary.classification.value.replace('_', ' ')}.",
+    ]
+    if summary.average_pretend_result is not None:
+        lines.append(f"Average pretend result: {summary.average_pretend_result:.2f}.")
+    if summary.worst_pretend_result is not None:
+        lines.append(f"Weakest pretend result: {summary.worst_pretend_result:.2f}.")
+    if summary.best_pretend_result is not None:
+        lines.append(f"Strongest pretend result: {summary.best_pretend_result:.2f}.")
+    lines.extend(summary.quality_issues)
+    return lines
 
 
 def _bullets(items: Iterable[str]) -> list[str]:

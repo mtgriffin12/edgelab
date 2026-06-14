@@ -1,5 +1,6 @@
 """Minimal FastAPI app for EdgeLab."""
 
+from datetime import date
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -23,6 +24,7 @@ from edgelab.intraday.benchmarks import calculate_opening_benchmarks
 from edgelab.intraday.cards import (
     historical_replay_to_markdown_card,
     intraday_simulation_to_markdown_card,
+    multi_session_replay_to_markdown_card,
     prop_account_to_markdown_card,
 )
 from edgelab.intraday.fixtures import LocalIntradayFixtureProvider
@@ -34,6 +36,8 @@ from edgelab.intraday.historical_schema import (
     HistoricalIntradayImportResult,
     HistoricalIntradaySession,
 )
+from edgelab.intraday.pattern_results import MultiSessionPatternRunner
+from edgelab.intraday.pattern_results_schema import MultiSessionReplayRequest
 from edgelab.intraday.prop_accounts import sample_prop_account_result
 from edgelab.intraday.replay import HistoricalIntradayReplayEngine
 from edgelab.intraday.replay_schema import HistoricalReplayRequest
@@ -67,6 +71,10 @@ historical_replay_engine = HistoricalIntradayReplayEngine(
     provider=historical_intraday_provider,
     setup_detector=intraday_setup_detector,
 )
+multi_session_pattern_runner = MultiSessionPatternRunner(
+    provider=historical_intraday_provider,
+    replay_engine=historical_replay_engine,
+)
 ranking_engine = StrategyRankingEngine(
     strategy_registry=strategy_registry,
     discovery_library=discovery_library,
@@ -96,7 +104,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2B historical intraday replay engine",
+        "phase": "Phase 7X-2C multi-session pattern results",
         "status": "research-only",
     }
 
@@ -590,6 +598,131 @@ def read_historical_replay_card(
     return Response(content=historical_replay_to_markdown_card(result), media_type="text/plain")
 
 
+@app.get("/intraday/multi-session-summary")
+def read_multi_session_summary(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return a local multi-session historical replay summary."""
+
+    request = _multi_session_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return multi_session_pattern_runner.run(request).model_dump(mode="json")
+
+
+@app.get("/intraday/multi-session-summary/card", response_class=Response)
+def read_multi_session_summary_card(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Return a local multi-session summary card as Markdown."""
+
+    request = _multi_session_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    summary = multi_session_pattern_runner.run(request)
+    return Response(content=multi_session_replay_to_markdown_card(summary), media_type="text/plain")
+
+
+@app.get("/intraday/pattern-results")
+def read_pattern_results(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return local repeated-pattern replay results."""
+
+    request = _multi_session_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return multi_session_pattern_runner.run(request).model_dump(mode="json")
+
+
+@app.get("/intraday/pattern-results/{symbol}")
+def read_symbol_pattern_results(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return local repeated-pattern replay results for one symbol."""
+
+    request = _multi_session_request(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return multi_session_pattern_runner.run(request).model_dump(mode="json")
+
+
+@app.get("/intraday/no-trade-analysis")
+def read_no_trade_analysis(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return local sit-out review from multi-session replay."""
+
+    request = _multi_session_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return multi_session_pattern_runner.run(request).model_dump(mode="json")
+
+
+@app.get("/intraday/no-trade-analysis/{symbol}")
+def read_symbol_no_trade_analysis(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return local sit-out review for one symbol."""
+
+    request = _multi_session_request(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return multi_session_pattern_runner.run(request).model_dump(mode="json")
+
+
 @app.get("/intraday/{symbol}/benchmarks")
 def read_intraday_benchmarks(symbol: str, session_id: str | None = None) -> dict[str, object]:
     """Return opening benchmarks for a synthetic intraday session."""
@@ -944,6 +1077,42 @@ def read_ui_historical_replay_detail(
     )
 
 
+@app.get("/ui/intraday-lab/multi-session-summary", response_class=HTMLResponse)
+def read_ui_multi_session_summary(request: Request) -> Response:
+    """Render the many-morning practice test page."""
+
+    summary = multi_session_pattern_runner.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_multi_session_summary.html",
+        context={"summary": summary, "card": multi_session_replay_to_markdown_card(summary)},
+    )
+
+
+@app.get("/ui/intraday-lab/pattern-results", response_class=HTMLResponse)
+def read_ui_pattern_results(request: Request) -> Response:
+    """Render repeated pattern results."""
+
+    summary = multi_session_pattern_runner.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_pattern_results.html",
+        context={"summary": summary, "card": multi_session_replay_to_markdown_card(summary)},
+    )
+
+
+@app.get("/ui/intraday-lab/no-trade-analysis", response_class=HTMLResponse)
+def read_ui_no_trade_analysis(request: Request) -> Response:
+    """Render sit-out review."""
+
+    summary = multi_session_pattern_runner.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_no_trade_analysis.html",
+        context={"summary": summary, "card": multi_session_replay_to_markdown_card(summary)},
+    )
+
+
 @app.get("/ui/intraday-lab/{symbol}", response_class=HTMLResponse)
 def read_ui_intraday_symbol(
     request: Request, symbol: str, session_id: str | None = None
@@ -1091,4 +1260,23 @@ def _first_ready_historical_session() -> HistoricalIntradaySession | None:
     return next(
         (session for session in result.sessions if session.readiness.value == "ready_for_replay"),
         None,
+    )
+
+
+def _multi_session_request(
+    *,
+    symbol: str | None = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> MultiSessionReplayRequest:
+    return MultiSessionReplayRequest(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
     )

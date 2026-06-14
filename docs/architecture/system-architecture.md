@@ -93,6 +93,15 @@ read-only, and research-only. It does not add pattern statistics, live watch mod
 provider calls, credentials, broker calls, prop-firm integrations, charting, paper execution, or
 live execution.
 
+## Historical Intraday Multi-Session Pattern Results
+
+Runs the historical replay engine across many local CSV-backed sessions and aggregates the
+research-only outcomes. Phase 7X-2C adds conservative setup-family summaries, sit-out reason
+review, cost-sensitivity flags, quality warnings, Markdown cards, API routes, and text/table UI
+pages. It reuses the no-look-ahead replay contract from Phase 7X-2B and does not add live data,
+external provider calls, credentials, broker calls, prop-firm integrations, charting, scheduling,
+paper execution, or live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

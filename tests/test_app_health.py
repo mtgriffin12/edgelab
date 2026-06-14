@@ -19,4 +19,4 @@ def test_root_endpoint_returns_phase_metadata() -> None:
 
     assert response.status_code == 200
     assert response.json()["app"] == "EdgeLab"
-    assert response.json()["phase"] == "Phase 7X-2B historical intraday replay engine"
+    assert response.json()["phase"] == "Phase 7X-2C multi-session pattern results"

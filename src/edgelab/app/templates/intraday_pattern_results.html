@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Repeated Pattern Results{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Repeated Pattern Results</h2>
+    <p class="muted">
+      EdgeLab checks whether the same first-hour practice setup appeared across local mornings.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    {{ summary.anything_worth_more_testing }} Real-money status: {{ summary.real_money_status }}.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ summary.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>{{ summary.what_edgelab_tested }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What usually happened</h3>
+    <p>{{ summary.what_usually_happened }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ summary.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ summary.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status</h3>
+    <p><strong>{{ summary.real_money_status }}</strong></p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Practice setup</th>
+          <th>Examples found</th>
+          <th>Finished pretend results</th>
+          <th>Plain-English label</th>
+          <th>What usually happened</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for setup in summary.setup_type_summaries %}
+          <tr>
+            <td>{{ setup.setup_type.value.replace("_", " ") }}</td>
+            <td>{{ setup.examples_found }}</td>
+            <td>{{ setup.completed_pretend_results }}</td>
+            <td>{{ setup.classification.value.replace("_", " ") }}</td>
+            <td>{{ setup.what_usually_happened }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5">No repeated practice setup appeared in the local mornings tested.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

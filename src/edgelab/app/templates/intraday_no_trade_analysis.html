@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Sit-Out Review{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Sit-Out Review</h2>
+    <p class="muted">
+      EdgeLab reviews when it chose to do nothing and whether that restraint needs more study.
+    </p>
+  </section>
+
+  <section class="warning section">
+    <strong>Current conclusion:</strong>
+    {{ summary.whether_sitting_out_helped }} Real-money status: {{ summary.real_money_status }}.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ summary.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>{{ summary.what_edgelab_tested }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What usually happened</h3>
+    <p>{{ summary.what_usually_happened }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ summary.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ summary.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status</h3>
+    <p><strong>{{ summary.real_money_status }}</strong></p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Sit-out reason</th>
+          <th>How often it appeared</th>
+          <th>What EdgeLab avoided</th>
+          <th>What EdgeLab might have missed</th>
+          <th>Plain-English label</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reason in summary.no_trade_reason_summaries %}
+          <tr>
+            <td>{{ reason.display_reason }}</td>
+            <td>{{ reason.appeared_count }}</td>
+            <td>{{ reason.what_edgelab_avoided }}</td>
+            <td>{{ reason.what_edgelab_might_have_missed }}</td>
+            <td>{{ reason.usefulness_label.value.replace("_", " ") }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}
