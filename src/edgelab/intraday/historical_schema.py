@@ -195,6 +195,7 @@ class HistoricalIntradaySession(BaseModel):
     has_premarket: bool = False
     has_regular_first_hour: bool = False
     has_regular_session: bool = False
+    has_after_hours: bool = False
     has_overnight: bool = False
     readiness: HistoricalIntradayReadiness
     quality_issue_count: int = Field(ge=0)

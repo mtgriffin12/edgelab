@@ -27,6 +27,7 @@ from edgelab.intraday.cards import (
     multi_session_replay_to_markdown_card,
     prop_account_to_markdown_card,
 )
+from edgelab.intraday.csv_normalizers import FirstRateLocalCSVHistoricalProvider
 from edgelab.intraday.fixtures import LocalIntradayFixtureProvider
 from edgelab.intraday.historical_provider import (
     FuturePaidHistoricalProvider,
@@ -61,6 +62,7 @@ discovery_library = StrategyDiscoveryLibrary.with_samples()
 experiment_ledger = ExperimentLedger.with_samples()
 intraday_fixture_provider = LocalIntradayFixtureProvider()
 historical_intraday_provider = LocalCSVHistoricalIntradayProvider()
+firstrate_historical_provider = FirstRateLocalCSVHistoricalProvider()
 future_historical_provider = FuturePaidHistoricalProvider()
 intraday_setup_detector = IntradaySetupDetector()
 intraday_simulator = IntradaySimulator(
@@ -104,7 +106,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2C multi-session pattern results",
+        "phase": "Phase 7X-2D FirstRate CSV normalizer",
         "status": "research-only",
     }
 
@@ -494,10 +496,12 @@ def read_historical_intraday_provider_capabilities() -> dict[str, object]:
     return {
         "providers": [
             historical_intraday_provider.provider_capabilities().model_dump(mode="json"),
+            firstrate_historical_provider.provider_capabilities().model_dump(mode="json"),
             future_historical_provider.provider_capabilities().model_dump(mode="json"),
         ],
         "plain_english_summary": (
-            "Historical intraday import currently supports local CSV files only. "
+            "Historical intraday import currently supports local CSV files and ignored "
+            "FirstRate dry-run files only. "
             "Future paid providers are placeholders and make no external calls."
         ),
         "research_only_status": "Research only",
@@ -510,6 +514,53 @@ def read_historical_intraday_sessions() -> dict[str, object]:
     """Return all local historical intraday sessions."""
 
     result = historical_intraday_provider.load_all_sessions()
+    return _historical_import_response(result, include_bars=False)
+
+
+@app.get("/intraday/history/firstrate/files")
+def read_firstrate_files() -> dict[str, object]:
+    """Return detected ignored local FirstRate CSV files."""
+
+    detected_files = firstrate_historical_provider.detected_files()
+    return {
+        "data_dir": str(firstrate_historical_provider.data_dir),
+        "files_found": len(detected_files),
+        "files": [detected_file.model_dump(mode="json") for detected_file in detected_files],
+        "plain_english_summary": (
+            "Detected ignored local FirstRate CSV files for dry-run inspection only."
+            if detected_files
+            else "No ignored local FirstRate CSV files were found for dry-run inspection."
+        ),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/history/firstrate/dry-run")
+def read_firstrate_dry_run() -> dict[str, object]:
+    """Return a dry-run summary for ignored local FirstRate files."""
+
+    return firstrate_historical_provider.dry_run().model_dump(mode="json")
+
+
+@app.get("/intraday/history/firstrate/{symbol}/sessions")
+def read_firstrate_symbol_sessions(symbol: str) -> dict[str, object]:
+    """Return normalized FirstRate session summaries for one symbol."""
+
+    sessions = firstrate_historical_provider.list_sessions(symbol)
+    if not sessions:
+        raise HTTPException(status_code=404, detail="FirstRate sessions not found")
+    result = firstrate_historical_provider.load_sessions(symbol)
+    return _historical_import_response(result, include_bars=False)
+
+
+@app.get("/intraday/history/firstrate/{symbol}/sessions/{session_id}")
+def read_firstrate_session(symbol: str, session_id: str) -> dict[str, object]:
+    """Return one normalized FirstRate session summary."""
+
+    result = firstrate_historical_provider.load_session(symbol, session_id)
+    if not result.sessions:
+        raise HTTPException(status_code=404, detail="FirstRate session not found")
     return _historical_import_response(result, include_bars=False)
 
 

@@ -39,6 +39,7 @@ should live under ignored local paths such as:
 
 - `data/raw/`
 - `data/processed/`
+- `data/raw/historical_intraday/firstratedata/`
 
 Those directories are ignored because real market data may be large, licensed, or
 not appropriate for source control.
@@ -59,8 +60,8 @@ Rules:
 - `raw_timestamp` is parsed using `source_timezone`.
 - Internal timestamps are normalized to UTC.
 - `interval` supports `one_minute` for this phase.
-- `session_type` should use `overnight`, `premarket`, `regular_first_hour`, or
-  `regular_session`.
+- `session_type` should use `overnight`, `premarket`, `regular_first_hour`,
+  `regular_session`, or `after_hours`.
 - `adjustment_mode` must be explicit: `unadjusted`, `adjusted`,
   `split_adjusted`, or `unknown`.
 - Missing required columns produce quality issues.
@@ -166,9 +167,38 @@ No-trade analysis is treated as research, not inactivity. A sit-out rule can be
 useful, harmful, inconclusive, or need more examples. These labels are plain
 review labels only and do not create action instructions.
 
+## Phase 7X-2D FirstRate Local CSV Normalizer
+
+Phase 7X-2D adds a local dry-run path for FirstRate historical intraday CSV files. FirstRate files
+should live under the ignored folder:
+
+`data/raw/historical_intraday/firstratedata/`
+
+The detected FirstRate format is:
+
+`timestamp,open,high,low,close,volume`
+
+EdgeLab adds the metadata needed by its canonical historical intraday model: symbol, source
+timezone, interval, session type, session id, provider, dataset id, and adjustment mode. Symbol is
+inferred from filenames such as `SPY_1min_firstratedata.csv` unless a caller supplies it directly.
+The source timezone assumption is `America/New_York` unless overridden.
+
+FirstRate local times are classified as premarket from 04:00:00 through 09:29:59, regular first
+hour from 09:30:00 through 10:29:59, regular session from 10:30:00 through 16:00:00, and
+after-hours after 16:00:00 through 20:00:00. Normal after-hours rows are retained as context and
+do not create one quality issue per row.
+
+The normalizer is local and read-only. It streams rows for dry-run inspection, reports quality
+issues, and does not create processed output files. Real downloaded market data must not be copied
+into `tests/fixtures/` or committed to source control.
+
+FirstRate dry-run output remains research-only. Real-money status remains Not allowed. Unknown
+adjustment mode is recorded as source metadata, but it does not automatically make every otherwise
+clean session unready for replay. Replay and pattern conclusions still require enough clean
+sessions, known assumptions, and later validation before trust can increase.
+
 ## Future Vendor Research
 
-Future paid data providers may be investigated later, but the current historical
-intraday phases do not add provider SDKs, credentials, or external calls. The
-current paid-provider placeholder exists only to show where a future adapter
-could fit.
+Future paid data providers may be investigated later, but the current historical intraday phases do
+not add provider SDKs, credentials, or external calls. The current paid-provider placeholder exists
+only to show where a future adapter could fit.

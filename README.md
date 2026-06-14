@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2C multi-session pattern results**.
+Current phase: **Phase 7X-2D FirstRate CSV normalizer**.
 
 No live trading functionality exists.
 
@@ -116,6 +116,10 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/prop-account/sample`
 - `http://127.0.0.1:8000/intraday/prop-account/sample/card`
 - `http://127.0.0.1:8000/intraday/history/provider-capabilities`
+- `http://127.0.0.1:8000/intraday/history/firstrate/files`
+- `http://127.0.0.1:8000/intraday/history/firstrate/dry-run`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions/SPY-2022-09-30`
 - `http://127.0.0.1:8000/intraday/history/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
@@ -188,6 +192,13 @@ sessions, summarizes repeated practice setups, and reviews sit-out reasons in pl
 committed fixtures are tiny workflow tests only, so the default conclusion should stay "Not enough
 examples yet." This layer does not fetch live data, call provider APIs, use paid provider SDKs,
 connect to brokers, add charts, schedule jobs, deploy services, or produce recommendations.
+
+The FirstRate historical import endpoints are read-only and local. They inspect ignored files under
+`data/raw/historical_intraday/firstratedata/` with FirstRate's
+`timestamp,open,high,low,close,volume` format, normalize rows into EdgeLab's historical intraday
+shape, and produce dry-run summaries. Real downloaded market data must not be committed, and this
+phase does not write processed files, fetch data, call vendors, connect to brokers, add charts, or
+approve paper or real-money use.
 
 To run a local fixture-backed backtest:
 

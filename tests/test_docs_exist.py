@@ -42,4 +42,7 @@ def test_historical_intraday_doc_includes_csv_format_and_data_boundary() -> None
     assert "data/processed/" in content
     assert "Real-money status is always Not allowed" in content
     assert "Phase 7X-2B" in content
+    assert "Phase 7X-2D" in content
+    assert "FirstRate" in content
+    assert "data/raw/historical_intraday/firstratedata/" in content
     assert "without future knowledge" in content

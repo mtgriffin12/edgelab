@@ -631,6 +631,7 @@ def _build_sessions(
                 has_regular_session=_has_session_type(
                     session_bars, IntradaySessionType.REGULAR_SESSION
                 ),
+                has_after_hours=_has_session_type(session_bars, IntradaySessionType.AFTER_HOURS),
                 has_overnight=_has_session_type(session_bars, IntradaySessionType.OVERNIGHT),
                 readiness=readiness,
                 quality_issue_count=len(session_issues),

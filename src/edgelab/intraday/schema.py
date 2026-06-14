@@ -44,6 +44,7 @@ class IntradaySessionType(StrEnum):
     PREMARKET = "premarket"
     REGULAR_FIRST_HOUR = "regular_first_hour"
     REGULAR_SESSION = "regular_session"
+    AFTER_HOURS = "after_hours"
 
 
 class IntradayBarInterval(StrEnum):

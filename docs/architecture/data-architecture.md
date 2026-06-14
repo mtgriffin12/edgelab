@@ -94,3 +94,16 @@ Aggregate fields include sessions found, sessions tested, usable sessions, data-
 setup counts, sit-out counts, pretend result buckets, cost-changed-conclusion flags, setup-family
 summaries, sit-out reason summaries, and evidence-detail counts. These outputs are research-only
 views over local fixtures and are not proof, live data, provider data, or real-money readiness.
+
+## Phase 7X-2D FirstRate Local CSV Dry Run
+
+Phase 7X-2D adds a FirstRate normalizer for ignored local files under
+`data/raw/historical_intraday/firstratedata/`. The normalizer reads FirstRate's
+`timestamp,open,high,low,close,volume` format and maps each row into EdgeLab's canonical historical
+intraday structure with explicit metadata.
+
+The dry-run path is read-only. It does not write normalized output files, commit real downloaded
+data, call external providers, use credentials, or fetch live quotes. Local FirstRate files remain
+outside source control, while tiny synthetic FirstRate-style rows in tests cover parser behavior.
+FirstRate rows from 16:00:01 through 20:00:00 Eastern are treated as after-hours context, not as
+per-row quality issues, so replay readiness stays focused on clean regular first-hour coverage.

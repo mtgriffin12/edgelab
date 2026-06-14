@@ -102,6 +102,15 @@ pages. It reuses the no-look-ahead replay contract from Phase 7X-2B and does not
 external provider calls, credentials, broker calls, prop-firm integrations, charting, scheduling,
 paper execution, or live execution.
 
+## FirstRate Historical CSV Normalizer
+
+Normalizes ignored local FirstRate historical intraday CSV files into EdgeLab's canonical
+historical intraday shape. Phase 7X-2D reads files from
+`data/raw/historical_intraday/firstratedata/`, infers symbols from filenames, applies explicit
+metadata, validates rows, and reports dry-run summaries. It is local, read-only, and research-only.
+It does not commit real data, create processed outputs, call providers, require credentials, fetch
+live data, add charting, or connect to brokers.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

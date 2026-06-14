@@ -111,3 +111,7 @@ Phase 7X-2B implements historical intraday replay so EdgeLab can inspect one imp
 ## DEC-028: Phase 7X-2C Multi-Session Historical Replay Summaries
 
 Phase 7X-2C adds multi-session historical replay summaries and no-trade analysis so EdgeLab can evaluate repeated first-hour patterns without implying real-money readiness.
+
+## DEC-029: Phase 7X-2D FirstRate Historical Intraday CSV Normalizer
+
+Phase 7X-2D adds a FirstRate historical intraday CSV normalizer and local dry-run import path so EdgeLab can inspect real SPY/QQQ CSV samples without committing data or adding vendor integrations.
