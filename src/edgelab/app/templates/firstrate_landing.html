@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}FirstRate SPY/QQQ Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>FirstRate SPY/QQQ Study</h2>
+    <p class="muted">Local historical SPY and QQQ morning studies, not live market data.</p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      EdgeLab found {{ dry_run.files_found }} ignored local FirstRate file(s) for
+      {{ dry_run.symbols_detected|join(", ") }} and can study them without live data.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    <p>
+      The local files cover {{ dry_run.session_count }} past market morning(s).
+      {{ completeness_summary.plain_english_summary }}
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>
+      This is enough to open a local study, but it is still only historical practice data.
+      It does not prove that any pattern works now.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What to test next</h3>
+    <p>Open one symbol, review a single past morning, then compare many mornings only if needed.</p>
+    <div class="grid">
+      {% for item in symbol_summaries %}
+        <div class="summary-card">
+          <h4>{{ item.symbol }}</h4>
+          <p>{{ item.sessions_found }} past morning(s), {{ item.sessions_ready_for_replay }} usable for practice.</p>
+          <a href="/ui/intraday-lab/firstrate/{{ item.symbol }}">Open {{ item.symbol }}</a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is not live, not a signal system, and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <table>
+        <tbody>
+          <tr><th>Files found</th><td>{{ dry_run.files_found }}</td></tr>
+          <tr><th>Rows inspected</th><td>{{ dry_run.row_count }}</td></tr>
+          <tr><th>Past market mornings</th><td>{{ dry_run.session_count }}</td></tr>
+          <tr><th>Rows with reasons to be careful</th><td>{{ dry_run.quality_issue_count }}</td></tr>
+          <tr><th>First-hour complete</th><td>{{ completeness_summary.complete }}</td></tr>
+          <tr><th>First-hour small gaps</th><td>{{ completeness_summary.minor_gaps }}</td></tr>
+          <tr><th>First-hour larger gaps</th><td>{{ completeness_summary.major_gaps }}</td></tr>
+          <tr><th>Unsafe for replay</th><td>{{ completeness_summary.replay_unsafe }}</td></tr>
+          <tr><th>Source folder</th><td>{{ dry_run.data_dir }}</td></tr>
+          <tr><th>Earliest timestamp</th><td>{{ dry_run.earliest_timestamp_utc }}</td></tr>
+          <tr><th>Latest timestamp</th><td>{{ dry_run.latest_timestamp_utc }}</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </section>
+{% endblock %}

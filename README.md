@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2D FirstRate CSV normalizer**.
+Current phase: **Phase 7X-2E FirstRate replay integration**.
 
 No live trading functionality exists.
 
@@ -59,6 +59,9 @@ Then visit:
 - `http://127.0.0.1:8000/ui/intraday-lab/multi-session-summary`
 - `http://127.0.0.1:8000/ui/intraday-lab/pattern-results`
 - `http://127.0.0.1:8000/ui/intraday-lab/no-trade-analysis`
+- `http://127.0.0.1:8000/ui/intraday-lab/firstrate`
+- `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY`
+- `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY/multi-session-summary`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
 - `http://127.0.0.1:8000/ui/lab-bench`
@@ -120,6 +123,11 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/history/firstrate/dry-run`
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions/SPY-2022-09-30`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions/SPY-2022-09-30/replay`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/sessions/SPY-2022-09-30/replay/card`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/multi-session-summary`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/pattern-results`
+- `http://127.0.0.1:8000/intraday/history/firstrate/SPY/no-trade-analysis`
 - `http://127.0.0.1:8000/intraday/history/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
@@ -199,6 +207,12 @@ The FirstRate historical import endpoints are read-only and local. They inspect 
 shape, and produce dry-run summaries. Real downloaded market data must not be committed, and this
 phase does not write processed files, fetch data, call vendors, connect to brokers, add charts, or
 approve paper or real-money use.
+
+The FirstRate replay integration is also read-only and local. It lets EdgeLab replay one local
+FirstRate SPY or QQQ morning and summarize many local mornings with the existing no-look-ahead
+replay engine. It reports first-hour completeness so missing or duplicate first-hour minutes stay
+visible before any replay is trusted. These results are not live signals, not recommendations, and
+real-money status remains Not allowed.
 
 To run a local fixture-backed backtest:
 

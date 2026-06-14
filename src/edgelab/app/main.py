@@ -1,7 +1,10 @@
 """Minimal FastAPI app for EdgeLab."""
 
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from time import perf_counter
+from typing import cast
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
@@ -28,6 +31,13 @@ from edgelab.intraday.cards import (
     prop_account_to_markdown_card,
 )
 from edgelab.intraday.csv_normalizers import FirstRateLocalCSVHistoricalProvider
+from edgelab.intraday.firstrate_replay import (
+    CachedFirstRateHistoricalDataProvider,
+    FirstHourCompleteness,
+    FirstHourCompletenessSummary,
+    first_hour_completeness_for_import_result,
+    summarize_first_hour_completeness,
+)
 from edgelab.intraday.fixtures import LocalIntradayFixtureProvider
 from edgelab.intraday.historical_provider import (
     FuturePaidHistoricalProvider,
@@ -36,12 +46,16 @@ from edgelab.intraday.historical_provider import (
 from edgelab.intraday.historical_schema import (
     HistoricalIntradayImportResult,
     HistoricalIntradaySession,
+    utc_now,
 )
 from edgelab.intraday.pattern_results import MultiSessionPatternRunner
-from edgelab.intraday.pattern_results_schema import MultiSessionReplayRequest
+from edgelab.intraday.pattern_results_schema import (
+    MultiSessionReplayRequest,
+    MultiSessionReplaySummary,
+)
 from edgelab.intraday.prop_accounts import sample_prop_account_result
 from edgelab.intraday.replay import HistoricalIntradayReplayEngine
-from edgelab.intraday.replay_schema import HistoricalReplayRequest
+from edgelab.intraday.replay_schema import HistoricalReplayRequest, HistoricalReplayResult
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
@@ -63,6 +77,8 @@ experiment_ledger = ExperimentLedger.with_samples()
 intraday_fixture_provider = LocalIntradayFixtureProvider()
 historical_intraday_provider = LocalCSVHistoricalIntradayProvider()
 firstrate_historical_provider = FirstRateLocalCSVHistoricalProvider()
+_firstrate_cached_provider_source: FirstRateLocalCSVHistoricalProvider | None = None
+_firstrate_cached_replay_provider: CachedFirstRateHistoricalDataProvider | None = None
 future_historical_provider = FuturePaidHistoricalProvider()
 intraday_setup_detector = IntradaySetupDetector()
 intraday_simulator = IntradaySimulator(
@@ -91,6 +107,35 @@ candidate_screener = CandidateEquityScreener(
     ranking_engine=ranking_engine,
 )
 portfolio_engine = ModelPortfolioEngine(candidate_screener=candidate_screener)
+
+
+@dataclass(frozen=True)
+class FirstRateMultiSessionCacheKey:
+    """Process-local key for expensive FirstRate many-morning summaries."""
+
+    symbol: str
+    start_date: date | None
+    end_date: date | None
+    hold_minutes: int
+    slippage_ticks: int
+    commission_per_contract: float
+    file_signature: tuple[tuple[str, int, int], ...]
+
+
+@dataclass(frozen=True)
+class FirstRateMultiSessionCacheEntry:
+    """Cached FirstRate many-morning result."""
+
+    summary: MultiSessionReplaySummary
+    completeness: list[FirstHourCompleteness]
+    completeness_summary: FirstHourCompletenessSummary
+    computed_at: str
+    elapsed_ms: int
+
+
+_firstrate_multi_session_cache: dict[
+    FirstRateMultiSessionCacheKey, FirstRateMultiSessionCacheEntry
+] = {}
 APP_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(APP_DIR / "templates"))
 templates.env.globals["plain_label"] = plain_label
@@ -106,7 +151,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2D FirstRate CSV normalizer",
+        "phase": "Phase 7X-2E FirstRate replay integration",
         "status": "research-only",
     }
 
@@ -564,6 +609,120 @@ def read_firstrate_session(symbol: str, session_id: str) -> dict[str, object]:
     return _historical_import_response(result, include_bars=False)
 
 
+@app.get("/intraday/history/firstrate/{symbol}/sessions/{session_id}/replay")
+def read_firstrate_replay(
+    symbol: str,
+    session_id: str,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return one local FirstRate replay using the historical replay engine."""
+
+    result, completeness = _firstrate_replay_result(
+        symbol=symbol,
+        session_id=session_id,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    response = cast(dict[str, object], result.model_dump(mode="json"))
+    response["first_hour_completeness"] = completeness.model_dump(mode="json")
+    return response
+
+
+@app.get("/intraday/history/firstrate/{symbol}/sessions/{session_id}/replay/card")
+def read_firstrate_replay_card(
+    symbol: str,
+    session_id: str,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Return one local FirstRate replay as a Markdown card."""
+
+    result, completeness = _firstrate_replay_result(
+        symbol=symbol,
+        session_id=session_id,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    card = "\n".join(
+        [
+            historical_replay_to_markdown_card(result),
+            "",
+            "## First-hour completeness",
+            f"- {completeness.plain_english_summary}",
+            f"- Label: {completeness.first_hour_completeness_label.value.replace('_', ' ')}",
+        ]
+    )
+    return Response(content=card, media_type="text/plain")
+
+
+@app.get("/intraday/history/firstrate/{symbol}/multi-session-summary")
+def read_firstrate_multi_session_summary(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return a many-morning replay summary for local FirstRate sessions."""
+
+    return _firstrate_multi_session_response(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
+@app.get("/intraday/history/firstrate/{symbol}/pattern-results")
+def read_firstrate_pattern_results(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return repeated-pattern results for local FirstRate sessions."""
+
+    return _firstrate_multi_session_response(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
+@app.get("/intraday/history/firstrate/{symbol}/no-trade-analysis")
+def read_firstrate_no_trade_analysis(
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return sit-out review for local FirstRate sessions."""
+
+    return _firstrate_multi_session_response(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
 @app.get("/intraday/history/{symbol}/sessions")
 def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
     """Return local historical intraday sessions for one symbol."""
@@ -873,6 +1032,7 @@ def read_ui_home(request: Request) -> Response:
     sample_portfolios = portfolio_engine.construct()
     intraday_sessions = intraday_fixture_provider.list_available_sessions()
     historical_sessions = historical_intraday_provider.list_sessions()
+    firstrate_dry_run = firstrate_historical_provider.dry_run()
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -887,6 +1047,8 @@ def read_ui_home(request: Request) -> Response:
             "portfolio_count": sample_portfolios.portfolio_count,
             "intraday_session_count": len(intraday_sessions),
             "historical_session_count": len(historical_sessions),
+            "firstrate_files_found": firstrate_dry_run.files_found,
+            "firstrate_symbols": firstrate_dry_run.symbols_detected,
         },
     )
 
@@ -1074,6 +1236,7 @@ def read_ui_intraday_lab(request: Request) -> Response:
         context={
             "instruments": intraday_fixture_provider.list_instruments(),
             "sessions": intraday_fixture_provider.list_available_sessions(),
+            "firstrate_dry_run": firstrate_historical_provider.dry_run(),
         },
     )
 
@@ -1161,6 +1324,91 @@ def read_ui_no_trade_analysis(request: Request) -> Response:
         request=request,
         name="intraday_no_trade_analysis.html",
         context={"summary": summary, "card": multi_session_replay_to_markdown_card(summary)},
+    )
+
+
+@app.get("/ui/intraday-lab/firstrate", response_class=HTMLResponse)
+def read_ui_firstrate_landing(request: Request) -> Response:
+    """Render the FirstRate local study landing page."""
+
+    provider = _firstrate_replay_provider()
+    dry_run = firstrate_historical_provider.dry_run()
+    completeness = provider.first_hour_completeness_for_sessions()
+    symbol_summaries = [
+        _firstrate_symbol_summary(provider, symbol) for symbol in dry_run.symbols_detected
+    ]
+    return templates.TemplateResponse(
+        request=request,
+        name="firstrate_landing.html",
+        context={
+            "dry_run": dry_run,
+            "completeness_summary": summarize_first_hour_completeness(completeness),
+            "symbol_summaries": symbol_summaries,
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/firstrate/{symbol}/multi-session-summary", response_class=HTMLResponse)
+def read_ui_firstrate_multi_session_summary(request: Request, symbol: str) -> Response:
+    """Render the FirstRate many-morning page for one symbol."""
+
+    summary, completeness, completeness_summary, cache_metadata = _firstrate_multi_session_summary(
+        symbol=symbol
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="firstrate_multi_session_summary.html",
+        context={
+            "symbol": symbol.strip().upper(),
+            "summary": summary,
+            "completeness": completeness,
+            "completeness_summary": completeness_summary,
+            "cache_metadata": cache_metadata,
+            "card": multi_session_replay_to_markdown_card(summary),
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/firstrate/{symbol}/{session_id}/replay", response_class=HTMLResponse)
+def read_ui_firstrate_replay_detail(
+    request: Request,
+    symbol: str,
+    session_id: str,
+) -> Response:
+    """Render one FirstRate replay story."""
+
+    result, completeness = _firstrate_replay_result(symbol=symbol, session_id=session_id)
+    return templates.TemplateResponse(
+        request=request,
+        name="firstrate_replay_detail.html",
+        context={
+            "result": result,
+            "completeness": completeness,
+            "card": historical_replay_to_markdown_card(result),
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/firstrate/{symbol}", response_class=HTMLResponse)
+def read_ui_firstrate_symbol(request: Request, symbol: str) -> Response:
+    """Render one FirstRate symbol study page."""
+
+    provider = _firstrate_replay_provider()
+    summary = _firstrate_symbol_summary(provider, symbol)
+    if summary["sessions_found"] == 0:
+        raise HTTPException(status_code=404, detail="FirstRate symbol not found")
+    sessions = provider.list_sessions(symbol)
+    completeness = provider.first_hour_completeness_for_sessions(symbol)
+    return templates.TemplateResponse(
+        request=request,
+        name="firstrate_symbol.html",
+        context={
+            "symbol": symbol.strip().upper(),
+            "summary": summary,
+            "sessions": sessions,
+            "completeness": completeness,
+            "completeness_summary": summarize_first_hour_completeness(completeness),
+        },
     )
 
 
@@ -1331,3 +1579,204 @@ def _multi_session_request(
         slippage_ticks=slippage_ticks,
         commission_per_contract=commission_per_contract,
     )
+
+
+def _firstrate_replay_provider() -> CachedFirstRateHistoricalDataProvider:
+    global _firstrate_cached_provider_source, _firstrate_cached_replay_provider
+    if (
+        _firstrate_cached_provider_source is not firstrate_historical_provider
+        or _firstrate_cached_replay_provider is None
+    ):
+        _firstrate_cached_provider_source = firstrate_historical_provider
+        _firstrate_cached_replay_provider = CachedFirstRateHistoricalDataProvider(
+            firstrate_historical_provider
+        )
+    return _firstrate_cached_replay_provider
+
+
+def _firstrate_replay_result(
+    *,
+    symbol: str,
+    session_id: str,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> tuple[HistoricalReplayResult, FirstHourCompleteness]:
+    provider = _firstrate_replay_provider()
+    import_result = provider.load_session(symbol, session_id)
+    if not import_result.sessions:
+        raise HTTPException(status_code=404, detail="FirstRate session not found")
+    engine = HistoricalIntradayReplayEngine(
+        provider=provider,
+        setup_detector=intraday_setup_detector,
+    )
+    replay_request = HistoricalReplayRequest(
+        symbol=symbol,
+        session_id=session_id,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    result = engine.replay(replay_request)
+    completeness = first_hour_completeness_for_import_result(import_result)[0]
+    return result, completeness
+
+
+def _firstrate_multi_session_summary(
+    *,
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> tuple[
+    MultiSessionReplaySummary,
+    list[FirstHourCompleteness],
+    FirstHourCompletenessSummary,
+    dict[str, object],
+]:
+    provider = _firstrate_replay_provider()
+    replay_request = _multi_session_request(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    cache_key = _firstrate_multi_session_cache_key(provider, replay_request)
+    cached_entry = _firstrate_multi_session_cache.get(cache_key)
+    if cached_entry is not None:
+        return (
+            cached_entry.summary,
+            cached_entry.completeness,
+            cached_entry.completeness_summary,
+            _firstrate_cache_metadata(cached_entry, cache_status="cached"),
+        )
+
+    started_at = perf_counter()
+    engine = HistoricalIntradayReplayEngine(
+        provider=provider,
+        setup_detector=intraday_setup_detector,
+    )
+    runner = MultiSessionPatternRunner(provider=provider, replay_engine=engine)
+    summary = runner.run(replay_request)
+    completeness = provider.first_hour_completeness_for_sessions(symbol, start_date, end_date)
+    completeness_summary = summarize_first_hour_completeness(completeness)
+    entry = FirstRateMultiSessionCacheEntry(
+        summary=summary,
+        completeness=completeness,
+        completeness_summary=completeness_summary,
+        computed_at=utc_now().isoformat(),
+        elapsed_ms=round((perf_counter() - started_at) * 1000),
+    )
+    _firstrate_multi_session_cache[cache_key] = entry
+    return (
+        summary,
+        completeness,
+        completeness_summary,
+        _firstrate_cache_metadata(
+            entry,
+            cache_status="fresh",
+        ),
+    )
+
+
+def _firstrate_multi_session_response(
+    *,
+    symbol: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    summary, completeness, completeness_summary, cache_metadata = _firstrate_multi_session_summary(
+        symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    response = cast(dict[str, object], summary.model_dump(mode="json"))
+    response["first_hour_completeness_summary"] = completeness_summary.model_dump(mode="json")
+    response["first_hour_completeness_by_session"] = [
+        item.model_dump(mode="json") for item in completeness
+    ]
+    response["cache_metadata"] = cache_metadata
+    raw_quality_issues = response.get("quality_issues", [])
+    quality_issues = (
+        [str(issue) for issue in raw_quality_issues] if isinstance(raw_quality_issues, list) else []
+    )
+    if completeness_summary.minor_gaps or completeness_summary.major_gaps:
+        quality_issues.append(completeness_summary.plain_english_summary)
+    if completeness_summary.replay_unsafe:
+        quality_issues.append(
+            "Some local FirstRate mornings have first-hour gaps that are unsafe for replay."
+        )
+    response["quality_issues"] = quality_issues
+    return response
+
+
+def _firstrate_multi_session_cache_key(
+    provider: CachedFirstRateHistoricalDataProvider,
+    replay_request: MultiSessionReplayRequest,
+) -> FirstRateMultiSessionCacheKey:
+    normalized_symbol = replay_request.symbol or ""
+    file_signature = tuple(
+        (item.path, item.size_bytes, item.modified_time_ns)
+        for item in provider.provider.file_cache_signature()
+        if not normalized_symbol
+        or provider.provider.normalizer.infer_symbol_from_path(Path(item.path)) == normalized_symbol
+    )
+    return FirstRateMultiSessionCacheKey(
+        symbol=normalized_symbol,
+        start_date=replay_request.start_date,
+        end_date=replay_request.end_date,
+        hold_minutes=replay_request.hold_minutes,
+        slippage_ticks=replay_request.slippage_ticks,
+        commission_per_contract=replay_request.commission_per_contract,
+        file_signature=file_signature,
+    )
+
+
+def _firstrate_cache_metadata(
+    entry: FirstRateMultiSessionCacheEntry,
+    *,
+    cache_status: str,
+) -> dict[str, object]:
+    return {
+        "cache_status": cache_status,
+        "computed_at": entry.computed_at,
+        "elapsed_ms": entry.elapsed_ms,
+    }
+
+
+def _firstrate_symbol_summary(
+    provider: CachedFirstRateHistoricalDataProvider,
+    symbol: str,
+) -> dict[str, object]:
+    sessions = provider.list_sessions(symbol)
+    completeness = provider.first_hour_completeness_for_sessions(symbol)
+    completeness_summary = summarize_first_hour_completeness(completeness)
+    ready_sessions = [
+        session for session in sessions if session.readiness.value == "ready_for_replay"
+    ]
+    sample_session = ready_sessions[0] if ready_sessions else sessions[0] if sessions else None
+    return {
+        "symbol": symbol.strip().upper(),
+        "date_range": (
+            f"{sessions[0].session_date.isoformat()} to {sessions[-1].session_date.isoformat()}"
+            if sessions
+            else "No sessions found"
+        ),
+        "sessions_found": len(sessions),
+        "sessions_ready_for_replay": len(ready_sessions),
+        "minor_gaps": completeness_summary.minor_gaps,
+        "major_gaps": completeness_summary.major_gaps,
+        "replay_unsafe": completeness_summary.replay_unsafe,
+        "sample_session_id": sample_session.session_id if sample_session else None,
+        "completeness_summary": completeness_summary,
+    }

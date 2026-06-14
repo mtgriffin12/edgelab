@@ -113,4 +113,8 @@ Warnings should be short and direct:
 - "This pretend portfolio test is for research practice only."
 - "Real-money status: Not allowed."
 - "This synthetic intraday result is not live and not a signal system."
+- "These are local historical files, not live market data."
+- "First-hour completeness shows whether any regular first-hour minutes are missing."
+- "Small gaps should be reviewed before trusting the replay."
+- "This FirstRate study is local research only and not a recommendation."
 - "Copied-account scaling multiplies mistakes too."

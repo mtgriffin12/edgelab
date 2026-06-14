@@ -107,3 +107,19 @@ data, call external providers, use credentials, or fetch live quotes. Local Firs
 outside source control, while tiny synthetic FirstRate-style rows in tests cover parser behavior.
 FirstRate rows from 16:00:01 through 20:00:00 Eastern are treated as after-hours context, not as
 per-row quality issues, so replay readiness stays focused on clean regular first-hour coverage.
+
+## Phase 7X-2E FirstRate Replay Integration
+
+Phase 7X-2E keeps FirstRate files local and ignored, then passes normalized SPY and QQQ sessions
+into the existing historical replay and multi-session summary workflow. The integration uses a
+read-only in-memory bridge so one request can reuse normalized bars without writing processed files
+or creating a background job.
+
+Each FirstRate session now receives first-hour completeness details: expected first-hour timestamps,
+actual first-hour bars, missing timestamps, duplicate timestamps, and a plain completeness label.
+The check exists because missing first-hour minutes can make a replay story look cleaner than the
+local data allows.
+
+This phase does not commit downloaded data, call external providers, use credentials, fetch live
+quotes, add paid provider SDKs, create charts, or connect to brokers. Results are research-only and
+real-money status remains Not allowed.

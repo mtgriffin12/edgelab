@@ -197,6 +197,29 @@ adjustment mode is recorded as source metadata, but it does not automatically ma
 clean session unready for replay. Replay and pattern conclusions still require enough clean
 sessions, known assumptions, and later validation before trust can increase.
 
+## Phase 7X-2E FirstRate Replay Integration
+
+Phase 7X-2E connects ignored local FirstRate SPY and QQQ files to the existing Past Morning
+Practice Test and Many-Morning Practice Test workflows. EdgeLab reuses the Phase 7X-2B replay
+engine, so replay still reveals one bar at a time, setup detection receives only visible bars,
+pretend starts use the next available bar after the signal bar, and pretend finishes appear only
+after the finish bar is visible.
+
+The FirstRate replay bridge reads normalized local FirstRate bars and converts them into the same
+replay-compatible shape used by local fixture sessions. It does not duplicate replay logic, write
+processed output files, call vendors, fetch live data, use credentials, add charts, or connect to
+brokers.
+
+First-hour completeness is reported for every FirstRate session. EdgeLab checks the expected
+regular first-hour one-minute timestamps, the actual first-hour bars, missing timestamps, duplicate
+timestamps, and a plain label: `complete`, `minor_gaps`, `major_gaps`, or `replay_unsafe`. Minor
+gaps can still be replayed if the replay engine can handle the session safely, but the gap must be
+visible in the API and UI. Bigger gaps or duplicate first-hour timestamps require caution before
+trust increases.
+
+FirstRate replay and many-morning outputs remain research-only. They are not live signals, not
+recommendations, and not real-money permission. Real-money status remains Not allowed.
+
 ## Future Vendor Research
 
 Future paid data providers may be investigated later, but the current historical intraday phases do

@@ -26,6 +26,8 @@ Phase 7X-2C: Multi-session historical replay summaries and sit-out review, local
 
 Phase 7X-2D: FirstRate historical intraday CSV normalizer and local dry-run import path
 
+Phase 7X-2E: FirstRate replay integration, first-hour completeness, and local many-morning summaries
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

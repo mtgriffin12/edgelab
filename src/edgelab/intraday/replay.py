@@ -5,7 +5,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 from edgelab.intraday.benchmarks import calculate_opening_benchmarks
-from edgelab.intraday.historical_provider import LocalCSVHistoricalIntradayProvider
+from edgelab.intraday.historical_provider import (
+    HistoricalIntradayDataProvider,
+    LocalCSVHistoricalIntradayProvider,
+)
 from edgelab.intraday.historical_schema import (
     HistoricalIntradayBar,
     HistoricalIntradayImportResult,
@@ -40,7 +43,7 @@ class HistoricalIntradayReplayEngine:
 
     def __init__(
         self,
-        provider: LocalCSVHistoricalIntradayProvider | None = None,
+        provider: HistoricalIntradayDataProvider | None = None,
         setup_detector: IntradaySetupDetector | None = None,
     ) -> None:
         self.provider = provider or LocalCSVHistoricalIntradayProvider()

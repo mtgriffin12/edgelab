@@ -8,7 +8,7 @@
 
   <section class="facts" aria-label="Current state">
     <div class="fact"><span>Current mode</span><strong>Research-only</strong></div>
-    <div class="fact"><span>Current phase</span><strong>Phase 7X-2B</strong></div>
+    <div class="fact"><span>Current phase</span><strong>Phase 7X-2E</strong></div>
     <div class="fact"><span>Safety state</span><strong>No live trading enabled</strong></div>
     <div class="fact"><span>Sample historical test</span><strong>{{ plain_label(sample_backtest.conclusion) }}</strong></div>
     <div class="fact"><span>Discovery ideas tracked</span><strong>{{ discovery_count }}</strong></div>
@@ -17,6 +17,7 @@
     <div class="fact"><span>Pretend portfolio tests</span><strong>{{ portfolio_count }}</strong></div>
     <div class="fact"><span>Intraday sessions</span><strong>{{ intraday_session_count }}</strong></div>
     <div class="fact"><span>Historical replay sessions</span><strong>{{ historical_session_count }}</strong></div>
+    <div class="fact"><span>FirstRate files found</span><strong>{{ firstrate_files_found }}</strong></div>
   </section>
 
   <section class="warning section">
@@ -62,6 +63,11 @@
         <h4>Many-Morning Practice Test</h4>
         <p>Repeated local morning replays summarized in plain English.</p>
         <a href="/ui/intraday-lab/multi-session-summary">Open Many-Morning Test</a>
+      </div>
+      <div class="summary-card">
+        <h4>FirstRate SPY/QQQ Study</h4>
+        <p>Local SPY and QQQ historical files studied without live data or recommendations.</p>
+        <a href="/ui/intraday-lab/firstrate">Open FirstRate Study</a>
       </div>
       <div class="summary-card">
         <h4>Lab Bench</h4>
@@ -139,6 +145,10 @@
         <tr>
           <th>Historical replay sessions available</th>
           <td>{{ historical_session_count }}</td>
+        </tr>
+        <tr>
+          <th>Local FirstRate symbols available</th>
+          <td>{{ firstrate_symbols|join(", ") }}</td>
         </tr>
       </tbody>
     </table>

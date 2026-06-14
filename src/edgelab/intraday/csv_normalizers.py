@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 from collections.abc import Iterator
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from pathlib import Path
 from typing import Protocol, Self
@@ -208,6 +209,15 @@ class FirstRateFileNormalizationResult:
         self.instrument = instrument
         self.source_timezone = source_timezone
         self.adjustment_mode = adjustment_mode
+
+
+@dataclass(frozen=True)
+class FirstRateFileCacheSignature:
+    """Process-local cache fingerprint for one ignored local CSV file."""
+
+    path: str
+    size_bytes: int
+    modified_time_ns: int
 
 
 class FirstRateHistoricalCSVNormalizer:
@@ -532,6 +542,18 @@ class FirstRateLocalCSVHistoricalProvider:
     ) -> None:
         self.data_dir = data_dir or _default_firstrate_data_dir()
         self.normalizer = normalizer or FirstRateHistoricalCSVNormalizer()
+        self._normalization_cache: dict[
+            tuple[
+                tuple[FirstRateFileCacheSignature, ...],
+                str | None,
+                bool,
+                str | None,
+            ],
+            list[FirstRateFileNormalizationResult],
+        ] = {}
+        self._dry_run_cache: dict[
+            tuple[FirstRateFileCacheSignature, ...], FirstRateDryRunSummary
+        ] = {}
 
     def provider_capabilities(self) -> HistoricalIntradayProviderCapabilities:
         """Return FirstRate local-file capabilities."""
@@ -589,20 +611,27 @@ class FirstRateLocalCSVHistoricalProvider:
         self,
         start_date: date | None = None,
         end_date: date | None = None,
+        include_bars: bool = False,
     ) -> HistoricalIntradayImportResult:
         """Load normalized FirstRate sessions without storing all bars."""
 
-        return self._load(start_date=start_date, end_date=end_date)
+        return self._load(start_date=start_date, end_date=end_date, include_bars=include_bars)
 
     def load_sessions(
         self,
         symbol: str,
         start_date: date | None = None,
         end_date: date | None = None,
+        include_bars: bool = False,
     ) -> HistoricalIntradayImportResult:
         """Load normalized FirstRate sessions for one symbol."""
 
-        return self._load(symbol=symbol, start_date=start_date, end_date=end_date)
+        return self._load(
+            symbol=symbol,
+            start_date=start_date,
+            end_date=end_date,
+            include_bars=include_bars,
+        )
 
     def get_instrument(self, symbol: str) -> HistoricalIntradayInstrument | None:
         """Return FirstRate instrument metadata if a matching file exists."""
@@ -615,11 +644,15 @@ class FirstRateLocalCSVHistoricalProvider:
     def dry_run(self) -> FirstRateDryRunSummary:
         """Inspect local FirstRate files without writing processed output."""
 
+        file_signature = self.file_cache_signature()
+        if file_signature in self._dry_run_cache:
+            return self._dry_run_cache[file_signature]
+
         result = self._load()
         file_summaries = [
             _file_dry_run_summary(file_result) for file_result in self._normalize_files(symbol=None)
         ]
-        return FirstRateDryRunSummary(
+        summary = FirstRateDryRunSummary(
             data_dir=str(self.data_dir),
             files_found=len(file_summaries),
             symbols_detected=[summary.symbol for summary in file_summaries],
@@ -639,6 +672,8 @@ class FirstRateLocalCSVHistoricalProvider:
             quality_issues=result.quality_issues,
             plain_english_summary=_dry_run_summary(result.sessions, file_summaries),
         )
+        self._dry_run_cache[file_signature] = summary
+        return summary
 
     def _load(
         self,
@@ -724,8 +759,14 @@ class FirstRateLocalCSVHistoricalProvider:
         include_bars: bool = False,
         only_session_id: str | None = None,
     ) -> list[FirstRateFileNormalizationResult]:
+        file_signature = self.file_cache_signature()
+        cache_key = (file_signature, symbol, include_bars, only_session_id)
+        if cache_key in self._normalization_cache:
+            return self._normalization_cache[cache_key]
+
         results: list[FirstRateFileNormalizationResult] = []
-        for path in self._csv_paths():
+        for file_item in file_signature:
+            path = Path(file_item.path)
             inferred_symbol = self.normalizer.infer_symbol_from_path(path)
             if symbol is not None and inferred_symbol != symbol:
                 continue
@@ -739,12 +780,30 @@ class FirstRateLocalCSVHistoricalProvider:
                     only_session_id=only_session_id,
                 )
             )
+        self._normalization_cache[cache_key] = results
         return results
 
     def _csv_paths(self) -> list[Path]:
         if not self.data_dir.exists():
             return []
         return sorted(self.data_dir.glob("*.csv"))
+
+    def file_cache_signature(self) -> tuple[FirstRateFileCacheSignature, ...]:
+        """Return cache keys that refresh when local CSV files change."""
+
+        signatures: list[FirstRateFileCacheSignature] = []
+        for path in self._csv_paths():
+            if not self.normalizer.can_normalize(path):
+                continue
+            stat = path.stat()
+            signatures.append(
+                FirstRateFileCacheSignature(
+                    path=str(path),
+                    size_bytes=stat.st_size,
+                    modified_time_ns=stat.st_mtime_ns,
+                )
+            )
+        return tuple(signatures)
 
 
 class _ParsedFirstRateRow:

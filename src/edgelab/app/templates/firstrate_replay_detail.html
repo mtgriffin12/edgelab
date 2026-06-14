@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ result.symbol }} FirstRate Practice Replay{% endblock %}
+{% block content %}
+  {% set practice_choice = "Keep watching" %}
+  {% if result.status.value in ["incomplete", "blocked_by_data_quality", "unsupported"] %}
+    {% set practice_choice = "Not enough data" %}
+  {% elif result.setup_candidates and result.setup_candidates[0].setup_type.value == "no_trade" %}
+    {% set practice_choice = "Sit out" %}
+  {% elif result.setup_candidates %}
+    {% set practice_choice = "Possible practice pattern found" %}
+  {% endif %}
+
+  <section class="page-header">
+    <h2>{{ result.symbol }} FirstRate Past Morning Practice Test</h2>
+    <p class="muted">{{ result.session_id }}</p>
+    <p><a href="/ui/intraday-lab/firstrate/{{ result.symbol }}">Back to {{ result.symbol }} FirstRate Study</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ result.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    <p>
+      EdgeLab replayed this past morning one bar at a time.
+      In practice mode it would mark: <strong>{{ practice_choice }}</strong>.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>{{ result.why_it_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What to test next</h3>
+    <p>{{ result.next_review_item }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is not live, not a signal system, and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <table>
+        <tbody>
+          <tr><th>Internal replay status</th><td>{{ result.status.value.replace("_", " ") }}</td></tr>
+          <tr><th>Whether the data is usable</th><td>{{ result.session_readiness.value.replace("_", " ") }}</td></tr>
+          <tr><th>Replay steps</th><td>{{ result.steps|length }}</td></tr>
+          <tr><th>Decisions recorded</th><td>{{ result.decisions|length }}</td></tr>
+          <tr><th>Expected first-hour minutes</th><td>{{ completeness.expected_first_hour_bar_count }}</td></tr>
+          <tr><th>Actual first-hour bars</th><td>{{ completeness.actual_first_hour_bar_count }}</td></tr>
+          <tr><th>Unique first-hour bars</th><td>{{ completeness.unique_first_hour_bar_count }}</td></tr>
+          <tr><th>First-hour check</th><td>{{ completeness.first_hour_completeness_label.value.replace("_", " ") }}</td></tr>
+          <tr><th>Missing first-hour timestamps</th><td>{{ completeness.missing_first_hour_timestamps_utc|length }}</td></tr>
+          <tr><th>Duplicate first-hour timestamps</th><td>{{ completeness.duplicate_first_hour_timestamps_utc|length }}</td></tr>
+          {% if result.setup_candidates %}
+            <tr><th>Possible pattern ID</th><td>{{ result.setup_candidates[0].setup_id }}</td></tr>
+            <tr><th>Signal bar</th><td>{{ result.setup_candidates[0].signal_bar_timestamp }}</td></tr>
+          {% endif %}
+          {% if result.hypothetical_trades %}
+            <tr><th>Pretend start</th><td>{{ "%.2f"|format(result.hypothetical_trades[0].entry_price) }}</td></tr>
+            <tr><th>Pretend finish</th><td>{{ "%.2f"|format(result.hypothetical_trades[0].exit_price) }}</td></tr>
+            <tr><th>Pretend result</th><td>{{ result.hypothetical_trades[0].result_label }}</td></tr>
+            <tr><th>Estimated friction</th><td>{{ "%.2f"|format(result.hypothetical_trades[0].estimated_costs) }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <h4>What happened afterward</h4>
+      <p>{{ result.what_happened }}</p>
+
+      <h4>Timeline sample</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Replay clock</th>
+            <th>Bars visible</th>
+            <th>What changed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for step in result.steps[:25] %}
+            <tr>
+              <td>{{ step.step_type.value.replace("_", " ") }}</td>
+              <td>{{ step.replay_time_utc }}</td>
+              <td>{{ step.bars_visible_count }}</td>
+              <td>{{ step.what_changed }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if result.steps|length > 25 %}
+        <p class="muted">Showing the first 25 replay steps to keep the page readable.</p>
+      {% endif %}
+
+      <h4>Reasons to be careful</h4>
+      <ul class="list-clean">
+        {% for issue in result.quality_issues %}
+          <li>{{ issue.code }}: {{ issue.message }}</li>
+        {% else %}
+          <li>No replay quality issue was reported.</li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }} FirstRate Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ symbol }} FirstRate Study</h2>
+    <p class="muted">{{ summary.date_range }}</p>
+    <p><a href="/ui/intraday-lab/firstrate">Back to FirstRate SPY/QQQ Study</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      EdgeLab found {{ summary.sessions_found }} local {{ symbol }} past market morning(s).
+      {{ summary.sessions_ready_for_replay }} are usable for a Past Morning Practice Test.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    <p>{{ summary.completeness_summary.plain_english_summary }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>
+      The data can support local practice review, but it is still only a historical sample.
+      It does not prove anything current or create permission to use it.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What to test next</h3>
+    <p>
+      {% if summary.sample_session_id %}
+        Start with one past morning:
+        <a href="/ui/intraday-lab/firstrate/{{ symbol }}/{{ summary.sample_session_id }}/replay">{{ summary.sample_session_id }}</a>.
+        Then compare many mornings if the single example raises a useful question.
+      {% else %}
+        Add a clean local FirstRate file before running a replay.
+      {% endif %}
+    </p>
+    <p><a href="/ui/intraday-lab/firstrate/{{ symbol }}/multi-session-summary">Open many-morning summary</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is not live, not a signal system, and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <div class="facts">
+        <div class="fact"><span>Past market mornings</span><strong>{{ summary.sessions_found }}</strong></div>
+        <div class="fact"><span>Usable for practice</span><strong>{{ summary.sessions_ready_for_replay }}</strong></div>
+        <div class="fact"><span>Small first-hour gaps</span><strong>{{ summary.minor_gaps }}</strong></div>
+        <div class="fact"><span>Larger first-hour gaps</span><strong>{{ summary.major_gaps }}</strong></div>
+        <div class="fact"><span>Unsafe for replay</span><strong>{{ summary.replay_unsafe }}</strong></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Past morning</th>
+            <th>Date</th>
+            <th>First-hour check</th>
+            <th>Missing minutes</th>
+            <th>Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for session in sessions[:12] %}
+            {% set check = completeness[loop.index0] %}
+            <tr>
+              <td>{{ session.session_id }}</td>
+              <td>{{ session.session_date }}</td>
+              <td>{{ check.first_hour_completeness_label.value.replace("_", " ") }}</td>
+              <td>{{ check.missing_first_hour_timestamps_utc|length }}</td>
+              <td><a href="/ui/intraday-lab/firstrate/{{ symbol }}/{{ session.session_id }}/replay">Open replay</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if sessions|length > 12 %}
+        <p class="muted">Showing the first 12 past mornings to keep the page readable.</p>
+      {% endif %}
+    </details>
+  </section>
+{% endblock %}

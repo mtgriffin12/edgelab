@@ -115,3 +115,7 @@ Phase 7X-2C adds multi-session historical replay summaries and no-trade analysis
 ## DEC-029: Phase 7X-2D FirstRate Historical Intraday CSV Normalizer
 
 Phase 7X-2D adds a FirstRate historical intraday CSV normalizer and local dry-run import path so EdgeLab can inspect real SPY/QQQ CSV samples without committing data or adding vendor integrations.
+
+## DEC-030: Phase 7X-2E FirstRate Replay Integration
+
+Phase 7X-2E connects local ignored FirstRate SPY/QQQ CSV files to replay and multi-session summaries while keeping all outputs research-only and real-money use blocked.

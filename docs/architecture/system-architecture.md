@@ -111,6 +111,14 @@ metadata, validates rows, and reports dry-run summaries. It is local, read-only,
 It does not commit real data, create processed outputs, call providers, require credentials, fetch
 live data, add charting, or connect to brokers.
 
+## FirstRate Replay Integration
+
+Uses normalized ignored FirstRate SPY and QQQ files as a local historical data provider for the
+existing replay engine and multi-session runner. Phase 7X-2E adds FirstRate-specific API and UI
+routes plus first-hour completeness reporting, while preserving the Phase 7X-2B no-look-ahead
+contract. It does not add live data, provider SDKs, credentials, broker calls, prop-firm
+integrations, charting, scheduling, workers, paper execution, or live execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

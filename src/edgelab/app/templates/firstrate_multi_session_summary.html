@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ symbol }} FirstRate Many-Morning Test{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ symbol }} FirstRate Many-Morning Test</h2>
+    <p class="muted">Local historical mornings only, not live market data.</p>
+    <p><a href="/ui/intraday-lab/firstrate/{{ symbol }}">Back to {{ symbol }} FirstRate Study</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ summary.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab found</h3>
+    <p>
+      EdgeLab tested {{ summary.sessions_tested }} past market morning(s).
+      {{ summary.anything_worth_more_testing }}
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>{{ summary.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What to test next</h3>
+    <p>{{ summary.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is not live, not a signal system, and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <table>
+        <tbody>
+          <tr><th>Past market mornings found</th><td>{{ summary.sessions_found }}</td></tr>
+          <tr><th>Past market mornings tested</th><td>{{ summary.sessions_tested }}</td></tr>
+          <tr><th>Usable for practice</th><td>{{ summary.usable_sessions }}</td></tr>
+          <tr><th>Mornings EdgeLab could not trust</th><td>{{ summary.skipped_due_to_data }}</td></tr>
+          <tr><th>Possible practice patterns</th><td>{{ summary.setup_count }}</td></tr>
+          <tr><th>Sat-out mornings</th><td>{{ summary.sit_out_count }}</td></tr>
+          <tr><th>Research label</th><td>{{ summary.classification.value.replace("_", " ") }}</td></tr>
+          <tr><th>First-hour complete</th><td>{{ completeness_summary.complete }}</td></tr>
+          <tr><th>First-hour small gaps</th><td>{{ completeness_summary.minor_gaps }}</td></tr>
+          <tr><th>First-hour larger gaps</th><td>{{ completeness_summary.major_gaps }}</td></tr>
+          <tr><th>Unsafe for replay</th><td>{{ completeness_summary.replay_unsafe }}</td></tr>
+          <tr><th>Cache status</th><td>{{ cache_metadata.cache_status }}</td></tr>
+          <tr><th>Computed at</th><td>{{ cache_metadata.computed_at }}</td></tr>
+          <tr><th>Calculation time</th><td>{{ cache_metadata.elapsed_ms }} ms</td></tr>
+        </tbody>
+      </table>
+      <h4>What usually happened</h4>
+      <p>{{ summary.what_usually_happened }}</p>
+      <h4>When EdgeLab sat out</h4>
+      <p>{{ summary.when_edgelab_sat_out }}</p>
+      <h4>Whether sitting out seemed helpful</h4>
+      <p>{{ summary.whether_sitting_out_helped }}</p>
+      <h4>Reasons to be careful</h4>
+      <ul class="list-clean">
+        {% for issue in summary.quality_issues %}
+          <li>{{ issue }}</li>
+        {% else %}
+          <li>No extra data issue was reported by the many-morning test.</li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

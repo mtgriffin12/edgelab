@@ -196,6 +196,39 @@ def test_firstrate_provider_handles_zero_files(tmp_path: Path) -> None:
     assert "No ignored local FirstRate CSV files" in dry_run.plain_english_summary
 
 
+def test_firstrate_provider_caches_until_local_file_changes(monkeypatch, tmp_path: Path) -> None:
+    path = tmp_path / "SPY_1min_firstratedata.csv"
+    _write_firstrate_file(path, _clean_full_session_rows())
+    normalizer = FirstRateHistoricalCSVNormalizer(
+        adjustment_mode=HistoricalIntradayAdjustmentMode.UNADJUSTED
+    )
+    call_count = 0
+    original_normalize_file = normalizer.normalize_file
+
+    def counting_normalize_file(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return original_normalize_file(*args, **kwargs)
+
+    monkeypatch.setattr(normalizer, "normalize_file", counting_normalize_file)
+    provider = FirstRateLocalCSVHistoricalProvider(data_dir=tmp_path, normalizer=normalizer)
+
+    first_dry_run = provider.dry_run()
+    second_dry_run = provider.dry_run()
+    provider.list_sessions("SPY")
+    provider.list_sessions("SPY")
+
+    assert first_dry_run.row_count == second_dry_run.row_count
+    assert call_count == 2
+
+    _write_firstrate_file(path, [*_clean_full_session_rows(), _row("2024-01-02 20:01:00")])
+
+    changed_dry_run = provider.dry_run()
+
+    assert changed_dry_run.row_count == first_dry_run.row_count + 1
+    assert call_count == 3
+
+
 def test_real_firstrate_data_paths_remain_ignored_and_untracked() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     raw_path = "data/raw/historical_intraday/firstratedata/SPY_1min_firstratedata.csv"
