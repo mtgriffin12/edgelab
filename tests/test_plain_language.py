@@ -22,6 +22,23 @@ def test_required_plain_language_terms_exist() -> None:
         "eligible_for_paper_trading",
         "eligible_for_live_trading",
         "research_only",
+        "comparative_study",
+        "early_move_failed",
+        "failed_early_push",
+        "opening_range_failure",
+        "symbol_difference",
+        "too_noisy_to_compare",
+        "not_enough_evidence",
+        "moved_as_expected",
+        "moved_against_the_test",
+        "did_not_move_enough",
+        "current_saved_result",
+        "stale_saved_result",
+        "future_signal_shape",
+        "practice_setup_found",
+        "what_looked_different",
+        "what_to_compare_next",
+        "spy_vs_qqq_pattern_study",
         "unsupported_strategy",
         "insufficient_evidence",
         "fixture_data",
@@ -186,6 +203,17 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("not_enough_examples") == "Not Enough Examples"
     assert plain_label("worth_more_testing") == "Worth More Testing"
     assert plain_label("spike_verdict") == "Research Spike Verdict"
+    assert plain_label("comparative_study") == "Comparison Study"
+    assert plain_label("opening_range_failure") == "Early Move Failed"
+    assert plain_label("early_move_failed") == "Early Move Failed"
+    assert plain_label("failed_early_push") == "Failed Early Push"
+    assert plain_label("moved_as_expected") == "Moved as Expected"
+    assert plain_label("moved_against_the_test") == "Moved Against the Test"
+    assert plain_label("did_not_move_enough") == "Did Not Move Enough"
+    assert plain_label("future_signal_shape") == "Future Watch Message"
+    assert plain_label("sit_out") == "Sit Out"
+    assert plain_label("keep_watching") == "Keep Watching"
+    assert plain_label("spy_vs_qqq_pattern_study") == "SPY vs QQQ Pattern Study"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

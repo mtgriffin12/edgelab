@@ -239,3 +239,21 @@ They do not include raw CSV rows and do not make the result a recommendation.
 Freshness matters because ignored local files can change. If the source file path, size, modified
 time, fingerprint, assumptions, or saved-result schema no longer match, EdgeLab labels the saved
 result stale instead of treating it as current.
+
+## Phase 7X-2G SPY/QQQ Comparative Pattern Study
+
+Phase 7X-2G adds a local SPY/QQQ Pattern Study focused first on failed early moves. The technical
+setup name is Opening Range Failure, but user-facing pages explain it as the first market move
+failing to hold. The study checks current saved research runs for SPY and QQQ before comparing
+detailed local replay outcomes.
+If either saved result is missing or stale, EdgeLab shows a clear review state and asks for "Run
+local analysis" instead of creating hidden saved results.
+
+The comparison reviews possible examples, sit-out mornings, what happened afterward, setup
+direction context, opening gap buckets, first-hour range-width buckets, data quality, and
+first-hour completeness. These details stay under Evidence details in the UI.
+
+The goal is to choose the next controlled research question, such as whether opening gap size or
+first-hour range width explains a SPY/QQQ difference. The study does not optimize settings,
+generate variants, enable paper mode, produce recommendations, or prove that any pattern works.
+Real-money status remains Not allowed.

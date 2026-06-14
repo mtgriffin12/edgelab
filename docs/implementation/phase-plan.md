@@ -30,6 +30,8 @@ Phase 7X-2E: FirstRate replay integration, first-hour completeness, and local ma
 
 Phase 7X-2F: Saved research runs and fast latest-result views for local FirstRate analysis
 
+Phase 7X-2G: SPY/QQQ comparative pattern study for failed early moves, local and research-only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

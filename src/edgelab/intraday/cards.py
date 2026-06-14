@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from edgelab.intraday.comparative_study_schema import ComparativeStudyResult
 from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
 from edgelab.intraday.replay_schema import HistoricalReplayResult
@@ -199,6 +200,53 @@ def multi_session_replay_to_markdown_card(summary: MultiSessionReplaySummary) ->
     )
 
 
+def comparative_study_to_markdown_card(result: ComparativeStudyResult) -> str:
+    """Render a SPY/QQQ comparative study as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            "# SPY vs QQQ Pattern Study",
+            "",
+            "## Bottom line",
+            result.bottom_line,
+            "",
+            "## What EdgeLab compared",
+            result.what_edgelab_compared,
+            (
+                "EdgeLab watches the first few minutes after the open. If price pushes outside "
+                "that early range but cannot hold the move, EdgeLab marks it as a failed early "
+                "move."
+            ),
+            "",
+            "## What looked different",
+            result.what_looked_different,
+            "",
+            "## Why that might matter",
+            result.why_that_might_matter,
+            "",
+            "## Why this might be misleading",
+            result.why_this_might_be_misleading,
+            "",
+            "## What EdgeLab should test next",
+            result.what_edgelab_should_test_next,
+            "",
+            "## What this is leading toward",
+            (
+                "Eventually, EdgeLab should turn well-tested research patterns into a simple "
+                "live watch message: sit out, keep watching, or practice setup found. Later, in "
+                "paper mode, a setup would include a pretend start, planned finish, and reason "
+                "to stop watching it. This does not exist yet as a live signal."
+            ),
+            "",
+            "## Real-money status: Not allowed",
+            f"- {result.real_money_status}",
+            "",
+            "## Evidence details",
+            *_bullets(_comparative_evidence_lines(result)),
+        ]
+    )
+
+
 def _setup_lines(setups: list[IntradaySetupCandidate]) -> list[str]:
     return [f"- {setup.plain_english_summary}" for setup in setups] or ["- No setup was selected."]
 
@@ -294,6 +342,44 @@ def _multi_session_evidence_lines(summary: MultiSessionReplaySummary) -> list[st
     if summary.best_pretend_result is not None:
         lines.append(f"Strongest pretend result: {summary.best_pretend_result:.2f}.")
     lines.extend(summary.quality_issues)
+    return lines
+
+
+def _comparative_evidence_lines(result: ComparativeStudyResult) -> list[str]:
+    lines = [
+        f"Technical research label: {result.classification.value.replace('_', ' ')}.",
+        "Technical setup name: Opening Range Failure.",
+        f"Comparison available: {_yes_no(result.comparison_available)}.",
+        f"Cache status: {result.cache_metadata.get('cache_status', 'unknown')}.",
+        (
+            "Moved as expected means the market moved in the direction EdgeLab was testing "
+            "after the practice setup appeared. It does not mean the setup is proven."
+        ),
+    ]
+    for summary in result.setup_family_comparison.symbol_summaries:
+        freshness = summary.saved_run_freshness.value.replace("_", " ")
+        lines.extend(
+            [
+                f"{summary.symbol}: saved run freshness {freshness}.",
+                f"{summary.symbol}: {summary.sessions_tested} mornings tested.",
+                f"{summary.symbol}: {summary.usable_sessions} mornings usable.",
+                (
+                    f"{summary.symbol}: {summary.possible_setup_count} possible "
+                    "early-failed-move examples."
+                ),
+                f"{summary.symbol}: {summary.sit_out_count} sit-out mornings.",
+                (f"{summary.symbol}: moved as expected {summary.helpful_afterward_count} time(s)."),
+                (
+                    f"{summary.symbol}: moved against the test "
+                    f"{summary.wrong_way_afterward_count} time(s)."
+                ),
+                (
+                    f"{summary.symbol}: did not move enough to matter "
+                    f"{summary.flat_afterward_count} time(s)."
+                ),
+            ]
+        )
+    lines.extend(issue.message for issue in result.quality_issues)
     return lines
 
 

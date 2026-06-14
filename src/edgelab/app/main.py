@@ -25,11 +25,14 @@ from edgelab.discovery.library import StrategyDiscoveryLibrary
 from edgelab.discovery.schema import DiscoveryLane
 from edgelab.intraday.benchmarks import calculate_opening_benchmarks
 from edgelab.intraday.cards import (
+    comparative_study_to_markdown_card,
     historical_replay_to_markdown_card,
     intraday_simulation_to_markdown_card,
     multi_session_replay_to_markdown_card,
     prop_account_to_markdown_card,
 )
+from edgelab.intraday.comparative_study import SpyQqqComparativeStudyService
+from edgelab.intraday.comparative_study_schema import ComparativeStudyRequest
 from edgelab.intraday.csv_normalizers import FirstRateLocalCSVHistoricalProvider
 from edgelab.intraday.firstrate_replay import (
     CachedFirstRateHistoricalDataProvider,
@@ -125,6 +128,11 @@ research_run_service = FirstRateResearchRunService(
     provider=firstrate_historical_provider,
     setup_detector=intraday_setup_detector,
 )
+comparative_study_service = SpyQqqComparativeStudyService(
+    research_run_service=research_run_service,
+    provider=firstrate_historical_provider,
+    setup_detector=intraday_setup_detector,
+)
 
 
 @dataclass(frozen=True)
@@ -169,7 +177,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2F saved research runs",
+        "phase": "Phase 7X-2G SPY/QQQ comparative pattern study",
         "status": "research-only",
     }
 
@@ -835,6 +843,67 @@ def read_research_run_card(run_id: str) -> Response:
     )
 
 
+@app.get("/intraday/comparative-study/spy-qqq")
+def read_spy_qqq_comparative_study(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return the local SPY/QQQ comparative pattern study."""
+
+    request = _comparative_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return comparative_study_service.compare(request).model_dump(mode="json")
+
+
+@app.get("/intraday/comparative-study/spy-qqq/opening-range-failure")
+def read_spy_qqq_opening_range_failure_comparison(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return the local SPY/QQQ Opening Range Failure comparison."""
+
+    request = _comparative_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return comparative_study_service.compare(request).model_dump(mode="json")
+
+
+@app.get("/intraday/comparative-study/spy-qqq/card", response_class=Response)
+def read_spy_qqq_comparative_study_card(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Return the local SPY/QQQ comparative study as Markdown."""
+
+    request = _comparative_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    result = comparative_study_service.compare(request)
+    return Response(content=comparative_study_to_markdown_card(result), media_type="text/plain")
+
+
 @app.get("/intraday/history/{symbol}/sessions")
 def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
     """Return local historical intraday sessions for one symbol."""
@@ -1470,6 +1539,65 @@ def read_ui_research_run_detail(request: Request, run_id: str) -> Response:
     )
 
 
+@app.get("/ui/intraday-lab/comparative-study", response_class=HTMLResponse)
+def read_ui_comparative_study_landing(request: Request) -> Response:
+    """Render the comparative study landing page without running heavy work."""
+
+    spy_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="SPY",
+    )
+    qqq_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="QQQ",
+    )
+    spy_run, spy_freshness = research_run_service.latest_with_freshness(spy_request)
+    qqq_run, qqq_freshness = research_run_service.latest_with_freshness(qqq_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="comparative_study_landing.html",
+        context={
+            "saved_states": {
+                "SPY": {"run": spy_run, "freshness": spy_freshness},
+                "QQQ": {"run": qqq_run, "freshness": qqq_freshness},
+            },
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/comparative-study/spy-qqq", response_class=HTMLResponse)
+def read_ui_spy_qqq_comparative_study(request: Request) -> Response:
+    """Render the SPY/QQQ comparative study overview."""
+
+    result = comparative_study_service.compare()
+    return templates.TemplateResponse(
+        request=request,
+        name="comparative_study_overview.html",
+        context={
+            "result": result,
+            "card": comparative_study_to_markdown_card(result),
+        },
+    )
+
+
+@app.get(
+    "/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure",
+    response_class=HTMLResponse,
+)
+def read_ui_spy_qqq_opening_range_failure_study(request: Request) -> Response:
+    """Render the SPY/QQQ Opening Range Failure comparison."""
+
+    result = comparative_study_service.compare()
+    return templates.TemplateResponse(
+        request=request,
+        name="comparative_study_opening_range_failure.html",
+        context={
+            "result": result,
+            "card": comparative_study_to_markdown_card(result),
+        },
+    )
+
+
 @app.get("/ui/intraday-lab/firstrate", response_class=HTMLResponse)
 def read_ui_firstrate_landing(request: Request) -> Response:
     """Render the FirstRate local study landing page."""
@@ -1974,6 +2102,23 @@ def _research_run_request(
     return ResearchRunCreateRequest(
         run_type=run_type,
         symbol=symbol,
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
+def _comparative_study_request(
+    *,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> ComparativeStudyRequest:
+    return ComparativeStudyRequest(
         start_date=start_date,
         end_date=end_date,
         hold_minutes=hold_minutes,

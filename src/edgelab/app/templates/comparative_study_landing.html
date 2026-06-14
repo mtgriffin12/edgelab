@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}SPY vs QQQ Pattern Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY vs QQQ Pattern Study</h2>
+    <p class="muted">A local research comparison for the early-failed-move pattern, not a signal system.</p>
+    <p><a href="/ui/intraday-lab">Back to Intraday Lab</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      EdgeLab can compare SPY and QQQ only after both symbols have current saved local research
+      results for the same assumptions.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab compared</h3>
+    <p>
+      EdgeLab watches the first few minutes after the open. If price pushes outside that early
+      range but cannot hold the move, EdgeLab marks it as a failed early move.
+    </p>
+  </section>
+
+  <section class="section grid">
+    {% for symbol, state in saved_states.items() %}
+      <div class="summary-card">
+        <h3>{{ symbol }}</h3>
+        {% if state.run %}
+          <p>Latest saved run: {{ state.run.run_id }}</p>
+        {% else %}
+          <p>No saved local result found yet.</p>
+        {% endif %}
+        {% if state.freshness.status.value == "fresh" %}
+          <p>This result is current for the local file.</p>
+        {% else %}
+          <p>{{ state.freshness.message }}</p>
+        {% endif %}
+        <a href="/ui/intraday-lab/firstrate/{{ symbol }}/latest-result">Open {{ symbol }} saved-result page</a>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="section">
+    <h3>What looked different</h3>
+    <p>
+      Open the comparison only after both saved results are current. EdgeLab will then compare possible
+      setups, sit-outs, what happened afterward, and simple opening context.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Why that might matter</h3>
+    <p>
+      If SPY and QQQ behave differently, the next research test can focus on why instead of guessing.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>
+      Missing or stale saved results can make the comparison unfair, so EdgeLab checks whether the
+      local files still match first.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      If both saved results are current, review the failed early move comparison.
+    </p>
+    <p><a href="/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure">Open failed early move comparison</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is local historical research only. It is not live and not a recommendation.</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <p>The comparison uses saved-run freshness plus ignored local FirstRate files.</p>
+      <p>Technical setup name: Opening Range Failure.</p>
+      <p>Normal page load does not create saved runs.</p>
+    </details>
+  </section>
+{% endblock %}

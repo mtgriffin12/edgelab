@@ -190,6 +190,52 @@ def test_intraday_lab_returns_research_spike_page() -> None:
     assert "Repeated Pattern Results" in response.text
     assert "Sit-Out Review" in response.text
     assert "Saved Research Runs" in response.text
+    assert "SPY vs QQQ Pattern Study" in response.text
+
+
+def test_comparative_study_ui_routes_return_plain_english_sections() -> None:
+    routes = [
+        "/ui/intraday-lab/comparative-study",
+        "/ui/intraday-lab/comparative-study/spy-qqq",
+        "/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure",
+    ]
+
+    for route in routes:
+        response = client.get(route)
+        assert response.status_code == 200
+        assert "SPY vs QQQ" in response.text or "Failed Early Move" in response.text
+        for phrase in [
+            "Bottom line",
+            "What EdgeLab compared",
+            "What looked different",
+            "Why that might matter",
+            "Why this might be misleading",
+            "What EdgeLab should test next",
+            "Real-money status: Not allowed",
+            "Evidence details",
+        ]:
+            assert phrase in response.text
+        assert "failed early move" in response.text.lower()
+        primary_text = visible_text_before(response.text, "Evidence details")
+        assert "Opening Range Failure" not in primary_text
+        assert "Freshness:" not in primary_text
+        assert "Helpful afterward" not in primary_text
+        assert "Wrong-way afterward" not in primary_text
+        assert "Flat afterward" not in primary_text
+        assert "spy_more_interesting" not in primary_text
+        assert "interesting_but_unproven" not in primary_text
+        assert "weak_or_inconsistent" not in primary_text
+        assert "trade button" not in response.text.lower()
+        assert "buy now" not in response.text.lower()
+        assert "sell now" not in response.text.lower()
+        assert "short now" not in response.text.lower()
+        assert "ready for real money" not in response.text.lower()
+        assert "validated edge" not in response.text.lower()
+        if route != "/ui/intraday-lab/comparative-study":
+            assert "What this is leading toward" in response.text
+            assert "Moved as expected" in response.text
+            assert "Moved against the test" in response.text
+            assert "Did not move enough to matter" in response.text
 
 
 def test_intraday_symbol_page_returns_generic_fixture_view() -> None:

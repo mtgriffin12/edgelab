@@ -1,0 +1,106 @@
+<section class="section">
+  <h3>Bottom line</h3>
+  <p>{{ result.bottom_line }}</p>
+</section>
+
+<section class="section">
+  <h3>What EdgeLab compared</h3>
+  <p>{{ result.what_edgelab_compared }}</p>
+  <p>
+    EdgeLab watches the first few minutes after the open. If price pushes outside that early
+    range but cannot hold the move, EdgeLab marks it as a failed early move. This matters because
+    failed early moves may sometimes lead to quick reversals.
+  </p>
+</section>
+
+<section class="section">
+  <h3>What looked different</h3>
+  <p>{{ result.what_looked_different }}</p>
+</section>
+
+<section class="section">
+  <h3>Why that might matter</h3>
+  <p>{{ result.why_that_might_matter }}</p>
+</section>
+
+<section class="section">
+  <h3>Why this might be misleading</h3>
+  <p>{{ result.why_this_might_be_misleading }}</p>
+</section>
+
+<section class="section">
+  <h3>What EdgeLab should test next</h3>
+  <p>{{ result.what_edgelab_should_test_next }}</p>
+  {% if not result.comparison_available %}
+    <div class="warning">
+      <strong>Saved results needed:</strong>
+      run local analysis for SPY and QQQ from their FirstRate saved-result pages, then return here.
+    </div>
+    <p>
+      <a href="/ui/intraday-lab/firstrate/SPY/latest-result">Open SPY saved-result page</a>
+      ·
+      <a href="/ui/intraday-lab/firstrate/QQQ/latest-result">Open QQQ saved-result page</a>
+    </p>
+  {% endif %}
+</section>
+
+<section class="section">
+  <h3>What this is leading toward</h3>
+  <p>
+    Eventually, EdgeLab should turn well-tested research patterns into a simple live watch message:
+    sit out, keep watching, or practice setup found. Later, in paper mode, a setup would include a
+    pretend start, planned finish, and reason to stop watching it.
+  </p>
+  <p>This does not exist yet as a live signal.</p>
+</section>
+
+<section class="section">
+  <h3>Real-money status: Not allowed</h3>
+  <p>This page is local historical research only. It is not live and not a recommendation.</p>
+</section>
+
+<section class="section">
+  <h3>Evidence details</h3>
+  <details open>
+    <summary>Show backup details</summary>
+    <p>Technical research label: {{ result.classification.value.replace("_", " ") }}</p>
+    <p>Technical setup name: Opening Range Failure.</p>
+    <p>Cache status: {{ result.cache_metadata.get("cache_status", "unknown") }}</p>
+    <p>
+      Moved as expected means the market moved in the direction EdgeLab was testing after the
+      practice setup appeared. It does not mean the setup is proven.
+    </p>
+    <div class="grid">
+      {% for summary in result.setup_family_comparison.symbol_summaries %}
+        <div class="summary-card">
+          <h4>{{ summary.symbol }}</h4>
+          <p>{{ summary.plain_english_summary }}</p>
+          <ul class="list-clean">
+            <li>Saved run: {{ summary.saved_run_id or "None yet" }}</li>
+            {% if summary.saved_run_freshness.value == "fresh" %}
+              <li>This saved result is current for the local file.</li>
+            {% else %}
+              <li>Saved result check: {{ summary.saved_run_freshness.value.replace("_", " ") }}</li>
+            {% endif %}
+            <li>Mornings tested: {{ summary.sessions_tested }}</li>
+            <li>Mornings usable: {{ summary.usable_sessions }}</li>
+            <li>Possible examples: {{ summary.possible_setup_count }}</li>
+            <li>Sit-out mornings: {{ summary.sit_out_count }}</li>
+            <li>Moved as expected: {{ summary.helpful_afterward_count }}</li>
+            <li>Moved against the test: {{ summary.wrong_way_afterward_count }}</li>
+            <li>Did not move enough to matter: {{ summary.flat_afterward_count }}</li>
+            <li>Internal setup label: {{ summary.setup_classification }}</li>
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+    {% if result.quality_issues %}
+      <h4>Reasons to be careful</h4>
+      <ul>
+        {% for issue in result.quality_issues %}
+          <li>{{ issue.message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </details>
+</section>

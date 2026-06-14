@@ -198,6 +198,125 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="A result that can support learning but cannot become an instruction.",
         why_it_matters="It keeps analysis separate from real-money use.",
     ),
+    "comparative_study": PlainLanguageTerm(
+        technical_key="comparative_study",
+        plain_label="Comparison Study",
+        short_explanation="A local review that checks whether two symbols behaved differently.",
+        why_it_matters="It helps EdgeLab choose the next research question without guessing.",
+        caution="A comparison is not a recommendation.",
+    ),
+    "opening_range_failure": PlainLanguageTerm(
+        technical_key="opening_range_failure",
+        plain_label="Early Move Failed",
+        short_explanation=(
+            "A morning pattern where the first push outside the early range does not hold."
+        ),
+        why_it_matters="It gives EdgeLab a repeatable behavior to review across past mornings.",
+        caution="The pattern still needs many clean examples before EdgeLab should trust it.",
+    ),
+    "early_move_failed": PlainLanguageTerm(
+        technical_key="early_move_failed",
+        plain_label="Early Move Failed",
+        short_explanation=(
+            "Price pushed outside the early range after the open but could not hold the move."
+        ),
+        why_it_matters="Failed early moves may sometimes lead to quick reversals worth studying.",
+        caution="This is a research label only, not a signal.",
+    ),
+    "failed_early_push": PlainLanguageTerm(
+        technical_key="failed_early_push",
+        plain_label="Failed Early Push",
+        short_explanation="The first push of the morning did not continue.",
+        why_it_matters="It helps EdgeLab describe the setup without market jargon.",
+        caution="A failed push is not enough by itself to trust a setup.",
+    ),
+    "moved_as_expected": PlainLanguageTerm(
+        technical_key="moved_as_expected",
+        plain_label="Moved as Expected",
+        short_explanation=(
+            "After the practice setup appeared, the market moved in the direction EdgeLab "
+            "was testing."
+        ),
+        why_it_matters="It describes the after-the-fact result without implying proof.",
+    ),
+    "moved_against_the_test": PlainLanguageTerm(
+        technical_key="moved_against_the_test",
+        plain_label="Moved Against the Test",
+        short_explanation="After the practice setup appeared, the market moved the other way.",
+        why_it_matters="It shows when the idea did not behave as hoped in the local sample.",
+    ),
+    "did_not_move_enough": PlainLanguageTerm(
+        technical_key="did_not_move_enough",
+        plain_label="Did Not Move Enough",
+        short_explanation="The later move was too small to matter for this practice test.",
+        why_it_matters="Small moves should not be treated as meaningful evidence.",
+    ),
+    "current_saved_result": PlainLanguageTerm(
+        technical_key="current_saved_result",
+        plain_label="Current Saved Result",
+        short_explanation="The saved result still matches the local file and assumptions.",
+        why_it_matters="It lets EdgeLab use a fast saved view without rerunning the analysis.",
+    ),
+    "stale_saved_result": PlainLanguageTerm(
+        technical_key="stale_saved_result",
+        plain_label="Saved Result May Be Stale",
+        short_explanation="The saved result may no longer match the local file.",
+        why_it_matters="EdgeLab should rerun local analysis before leaning on an old result.",
+    ),
+    "future_signal_shape": PlainLanguageTerm(
+        technical_key="future_signal_shape",
+        plain_label="Future Watch Message",
+        short_explanation=(
+            "A future simple message such as sit out, keep watching, or practice setup found."
+        ),
+        why_it_matters=(
+            "It points the research UI toward clear decisions without enabling live use."
+        ),
+        caution="This does not exist yet as a live signal.",
+    ),
+    "practice_setup_found": PlainLanguageTerm(
+        technical_key="practice_setup_found",
+        plain_label="Practice Setup Found",
+        short_explanation="EdgeLab found a research setup in the local practice data.",
+        why_it_matters="It separates a testable idea from an instruction to act.",
+    ),
+    "symbol_difference": PlainLanguageTerm(
+        technical_key="symbol_difference",
+        plain_label="Symbol Difference",
+        short_explanation="A sign that SPY and QQQ did not behave the same way in the sample.",
+        why_it_matters="It can point to a better next test instead of treating all symbols alike.",
+    ),
+    "too_noisy_to_compare": PlainLanguageTerm(
+        technical_key="too_noisy_to_compare",
+        plain_label="Too Noisy to Compare",
+        short_explanation="The sample is too mixed for a clean SPY versus QQQ read.",
+        why_it_matters="It tells EdgeLab to slow down before creating more variants.",
+    ),
+    "not_enough_evidence": PlainLanguageTerm(
+        technical_key="not_enough_evidence",
+        plain_label="Not Enough Evidence",
+        short_explanation="There are not enough clean examples to support a useful comparison.",
+        why_it_matters="Small samples can make ordinary noise look meaningful.",
+    ),
+    "what_looked_different": PlainLanguageTerm(
+        technical_key="what_looked_different",
+        plain_label="What Looked Different",
+        short_explanation="The plain-English difference EdgeLab noticed between two samples.",
+        why_it_matters="It puts the main observation before the backup counts.",
+    ),
+    "what_to_compare_next": PlainLanguageTerm(
+        technical_key="what_to_compare_next",
+        plain_label="What to Compare Next",
+        short_explanation="The next controlled research question EdgeLab should test.",
+        why_it_matters="It keeps the study focused on learning rather than jumping to action.",
+    ),
+    "spy_vs_qqq_pattern_study": PlainLanguageTerm(
+        technical_key="spy_vs_qqq_pattern_study",
+        plain_label="SPY vs QQQ Pattern Study",
+        short_explanation="A local comparison of one pattern family across SPY and QQQ.",
+        why_it_matters="It helps EdgeLab see whether the same setup deserves different review.",
+        caution="This is local historical research only.",
+    ),
     "unsupported_strategy": PlainLanguageTerm(
         technical_key="unsupported_strategy",
         plain_label="Not Testable Yet",
@@ -827,8 +946,8 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
     "keep_watching": PlainLanguageTerm(
         technical_key="keep_watching",
         plain_label="Keep Watching",
-        short_explanation="EdgeLab has not seen enough to mark anything yet.",
-        why_it_matters="Waiting should feel like a valid research outcome.",
+        short_explanation="EdgeLab sees no clear practice setup yet.",
+        why_it_matters="It gives a simple middle state between sit out and setup found.",
     ),
     "not_enough_data": PlainLanguageTerm(
         technical_key="not_enough_data",
@@ -890,8 +1009,8 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
     "sit_out": PlainLanguageTerm(
         technical_key="sit_out",
         plain_label="Sit Out",
-        short_explanation="EdgeLab did not find enough support to mark a setup.",
-        why_it_matters="Doing nothing is a valid research result when evidence is thin.",
+        short_explanation="EdgeLab would do nothing in this practice situation.",
+        why_it_matters="Doing nothing can be the clearest research conclusion.",
     ),
     "no_future_peeking": PlainLanguageTerm(
         technical_key="no_future_peeking",

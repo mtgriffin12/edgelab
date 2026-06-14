@@ -127,6 +127,15 @@ under ignored `data/processed/research_runs/`, and saves summary JSON, evidence 
 warnings, and source-file fingerprints only. It does not add external calls, live data, scheduler
 work, broker connectivity, or recommendations.
 
+## SPY/QQQ Comparative Pattern Study
+
+Compares failed early moves across SPY and QQQ using current saved local research runs plus ignored
+local FirstRate files for detailed replay evidence. The technical setup name remains Opening Range
+Failure, but primary UI copy uses the beginner-friendly label. The comparison service is read-only
+and uses process-local caching keyed by source-file signatures and replay assumptions. It does not
+create saved runs on page load, write processed outputs, call external services, create strategy
+variants, promote paper mode, or produce recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

@@ -134,3 +134,14 @@ warnings, and plain-English sections; they do not copy FirstRate CSV rows into t
 Freshness checks compare the saved source path, file size, modified time, fingerprint,
 assumptions, and schema version against the current ignored local file. A changed source file or
 saved-result format marks the result as stale and asks for review before relying on it as research.
+
+## Phase 7X-2G Comparative Study Data Use
+
+Phase 7X-2G reads saved-run freshness and recomputes detailed comparison evidence from ignored
+local FirstRate files when both SPY and QQQ saved runs are current. Comparative output is not stored
+in a new database in this phase. It is cached only in the running Python process using the symbols,
+setup family, date range, replay assumptions, code version, and source-file path, size, and modified
+time.
+
+No raw FirstRate rows, saved research database files, or processed outputs are committed. The study
+does not call external APIs or fetch live data.

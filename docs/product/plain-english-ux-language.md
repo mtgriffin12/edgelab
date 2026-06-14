@@ -121,3 +121,8 @@ Warnings should be short and direct:
 - "Latest saved result" means the newest matching local research summary, not a current market view.
 - "This saved result may be stale because the source file changed."
 - "Copied-account scaling multiplies mistakes too."
+- "SPY vs QQQ Pattern Study" means a local comparison, not a market instruction.
+- "What Looked Different" should appear before technical comparison counts.
+- "Too Noisy to Compare" means EdgeLab should slow down, not force an answer.
+- "Early Move Failed" should appear before the technical name "Opening Range Failure."
+- "Opening Range Failure" belongs in Evidence details as the technical setup name.

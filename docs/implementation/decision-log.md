@@ -123,3 +123,7 @@ Phase 7X-2E connects local ignored FirstRate SPY/QQQ CSV files to replay and mul
 ## DEC-031: Phase 7X-2F Saved Research Runs
 
 DEC-031: Phase 7X-2F adds local saved research runs so expensive FirstRate many-morning analyses can be run deliberately and viewed quickly without recomputing on every page load.
+
+## DEC-032: Phase 7X-2G SPY/QQQ Comparative Pattern Study
+
+DEC-032: Phase 7X-2G adds a SPY/QQQ comparative pattern study so EdgeLab can investigate why failed early moves, technically Opening Range Failure, behaved differently across symbols before generating strategy variants.

@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2F Saved Research Runs and Fast Result Views**.
+Current phase: **Phase 7X-2G SPY/QQQ Comparative Pattern Study**.
 
 No live trading functionality exists.
 
@@ -64,6 +64,9 @@ Then visit:
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY/latest-result`
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate/QQQ/latest-result`
 - `http://127.0.0.1:8000/ui/intraday-lab/firstrate/SPY/multi-session-summary`
+- `http://127.0.0.1:8000/ui/intraday-lab/comparative-study`
+- `http://127.0.0.1:8000/ui/intraday-lab/comparative-study/spy-qqq`
+- `http://127.0.0.1:8000/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure`
 - `http://127.0.0.1:8000/ui/intraday-lab/research-runs`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
@@ -133,6 +136,9 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/history/firstrate/SPY/no-trade-analysis`
 - `http://127.0.0.1:8000/intraday/research-runs`
 - `http://127.0.0.1:8000/intraday/research-runs/latest?symbol=SPY`
+- `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq`
+- `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq/opening-range-failure`
+- `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq/card`
 - `http://127.0.0.1:8000/intraday/history/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
@@ -183,6 +189,13 @@ The saved research run endpoints and `/ui/intraday-lab/research-runs` page store
 summaries in an ignored SQLite database under `data/processed/research_runs/`. They do not store
 raw CSV rows, call external services, or make results actionable. Freshness checks compare saved
 source-file metadata and assumptions against the current ignored local file.
+
+The SPY/QQQ comparative study endpoints and `/ui/intraday-lab/comparative-study` pages compare
+failed early moves across current saved local SPY and QQQ research runs. The technical setup name
+is Opening Range Failure, but the UI explains it as an early move that could not hold. The detail
+comparison may reuse ignored local FirstRate CSV files for per-session evidence, with process-local
+caching to avoid repeated work. The study is a guide for the next controlled experiment only. It
+does not create recommendations, prove an edge, enable paper mode, or approve real-money use.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,
