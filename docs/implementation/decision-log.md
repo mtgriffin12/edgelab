@@ -137,3 +137,13 @@ DEC-033: Phase 7X-2H adds a controlled SPY Early Move Failed variant study so Ed
 DEC-034: Phase 7X-2I adds a generic out-of-sample gate for fixed intraday variants, first applied to SPY Early Move Failed variants. The gate requires current saved local SPY and QQQ research runs, recomputes a fixed time-based discovery versus holdout-style split from ignored local FirstRate files, and does not save gate outputs. The current result must be described as a holdout-style check or first honesty check, not proof, validation, paper-mode readiness, live-signal readiness, or real-money readiness.
 
 DEC-034 also simplifies the Intraday Lab IA around strategy ideas and results. Intraday primary navigation now points to Research, Trading, and Saved Results. FirstRate, SPY vs QQQ, variant, out-of-sample, and symbol-specific pages remain available as detailed evidence pages rather than primary product pages.
+
+## DEC-035: Phase 7X-2J AI-Assisted Strategy Discovery Sprint
+
+DEC-035 adds a local strategy discovery sprint over a fixed first library of intraday idea
+families: Failed Early Move, Gap Fade, Gap Continuation, First 15-Minute Breakout, First 30-Minute
+Breakout, Opening Range Reclaim, Strong Open / Weak Follow-Through, and SPY/QQQ Divergence. The
+sprint reads local historical files, ranks only conservative research next steps, and exposes a
+future AI idea intake schema for locked hypotheses. This phase does not call AI, optimize prompts,
+write saved research runs, create background work, fetch data, promote paper mode, or approve
+real-money use.

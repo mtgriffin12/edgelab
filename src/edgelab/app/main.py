@@ -26,6 +26,7 @@ from edgelab.discovery.schema import DiscoveryLane
 from edgelab.intraday.benchmarks import calculate_opening_benchmarks
 from edgelab.intraday.cards import (
     comparative_study_to_markdown_card,
+    discovery_sprint_to_markdown_card,
     historical_replay_to_markdown_card,
     intraday_simulation_to_markdown_card,
     multi_session_replay_to_markdown_card,
@@ -36,6 +37,7 @@ from edgelab.intraday.cards import (
 from edgelab.intraday.comparative_study import SpyQqqComparativeStudyService
 from edgelab.intraday.comparative_study_schema import ComparativeStudyRequest
 from edgelab.intraday.csv_normalizers import FirstRateLocalCSVHistoricalProvider
+from edgelab.intraday.discovery_sprint import DiscoverySprintService
 from edgelab.intraday.firstrate_replay import (
     CachedFirstRateHistoricalDataProvider,
     FirstHourCompleteness,
@@ -63,8 +65,8 @@ from edgelab.intraday.prop_accounts import sample_prop_account_result
 from edgelab.intraday.replay import HistoricalIntradayReplayEngine
 from edgelab.intraday.replay_schema import HistoricalReplayRequest, HistoricalReplayResult
 from edgelab.intraday.research_view_model import (
-    build_failed_early_move_detail,
     build_intraday_research_rows,
+    build_intraday_strategy_detail,
 )
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
@@ -152,6 +154,7 @@ out_of_sample_gate_service = OutOfSampleGateService(
     provider=firstrate_historical_provider,
     setup_detector=intraday_setup_detector,
 )
+discovery_sprint_service = DiscoverySprintService(provider=firstrate_historical_provider)
 
 
 @dataclass(frozen=True)
@@ -196,7 +199,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2I generic out-of-sample gate",
+        "phase": "Phase 7X-2J AI-assisted strategy discovery sprint",
         "status": "research-only",
     }
 
@@ -1025,6 +1028,60 @@ def read_spy_early_move_failed_out_of_sample_variant(variant_id: str) -> dict[st
     raise HTTPException(status_code=404, detail="Variant not found")
 
 
+@app.get("/intraday/research/strategy-ideas")
+def read_intraday_strategy_ideas() -> dict[str, object]:
+    """Return the current local intraday strategy idea scoreboard."""
+
+    result = discovery_sprint_service.run()
+    return {
+        "strategy_ideas": [
+            strategy_result.model_dump(mode="json") for strategy_result in result.strategy_results
+        ],
+        "research_only_status": result.research_only_status,
+        "real_money_status": result.real_money_status,
+    }
+
+
+@app.get("/intraday/research/strategy-ideas/{strategy_id}")
+def read_intraday_strategy_idea(strategy_id: str) -> dict[str, object]:
+    """Return one local intraday strategy idea result."""
+
+    result = discovery_sprint_service.strategy_result(strategy_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Strategy idea not found")
+    return result.model_dump(mode="json")
+
+
+@app.get("/intraday/research/ai-idea-spec/schema")
+def read_intraday_ai_idea_spec_schema() -> dict[str, object]:
+    """Return the future-facing AI idea intake structure without calling AI."""
+
+    return {
+        "description": (
+            "Future AI ideas can be represented as locked hypotheses. This endpoint does not "
+            "call AI, does not test ideas, and does not tell the user what to do."
+        ),
+        "example": discovery_sprint_service.ai_idea_schema_example(),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/discovery-sprint")
+def read_intraday_discovery_sprint() -> dict[str, object]:
+    """Return the local multi-instrument discovery sprint."""
+
+    return discovery_sprint_service.run().model_dump(mode="json")
+
+
+@app.get("/intraday/discovery-sprint/card", response_class=Response)
+def read_intraday_discovery_sprint_card() -> Response:
+    """Return the local discovery sprint as Markdown."""
+
+    result = discovery_sprint_service.run()
+    return Response(content=discovery_sprint_to_markdown_card(result), media_type="text/plain")
+
+
 @app.get("/intraday/history/{symbol}/sessions")
 def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
     """Return local historical intraday sessions for one symbol."""
@@ -1544,28 +1601,30 @@ def read_ui_intraday_research(request: Request) -> Response:
     """Render the strategy-idea-first intraday research list."""
 
     saved_states = _failed_early_move_saved_states()
-    research_rows = build_intraday_research_rows(saved_states=saved_states)
+    discovery_result = discovery_sprint_service.run()
+    research_rows = build_intraday_research_rows(
+        saved_states=saved_states,
+        discovery_result=discovery_result,
+    )
     return templates.TemplateResponse(
         request=request,
         name="intraday_research.html",
-        context={"research_rows": research_rows},
+        context={"research_rows": research_rows, "discovery_result": discovery_result},
     )
 
 
-@app.get("/ui/intraday-lab/research/failed-early-move", response_class=HTMLResponse)
-def read_ui_failed_early_move_research(request: Request) -> Response:
-    """Render the product-level Failed Early Move research summary."""
+@app.get("/ui/intraday-lab/research/{strategy_id}", response_class=HTMLResponse)
+def read_ui_intraday_strategy_research(request: Request, strategy_id: str) -> Response:
+    """Render one product-level intraday strategy summary."""
 
-    saved_states = _failed_early_move_saved_states()
-    result = out_of_sample_gate_service.run()
-    detail = build_failed_early_move_detail(
-        saved_states=saved_states,
-        out_of_sample_result=result,
-    )
+    strategy_result = discovery_sprint_service.strategy_result(strategy_id)
+    if strategy_result is None:
+        raise HTTPException(status_code=404, detail="Strategy idea not found")
+    detail = build_intraday_strategy_detail(strategy_result)
     return templates.TemplateResponse(
         request=request,
-        name="intraday_research_failed_early_move.html",
-        context={"detail": detail},
+        name="intraday_research_strategy_detail.html",
+        context={"detail": detail, "strategy_result": strategy_result},
     )
 
 

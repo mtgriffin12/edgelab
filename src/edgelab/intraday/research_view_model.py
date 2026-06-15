@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from edgelab.intraday.discovery_sprint_schema import (
+    DiscoverySprintResult,
+    StrategyDiscoveryResult,
+)
 from edgelab.intraday.out_of_sample_gate_schema import (
     OutOfSampleGateConclusion,
     OutOfSampleGateResult,
@@ -20,6 +24,7 @@ class IntradayResearchIdeaRow:
     """One strategy idea in the Intraday Research list."""
 
     strategy_id: str
+    url_slug: str
     strategy_name: str
     securities_tested: str
     tests_run: str
@@ -84,6 +89,7 @@ class FailedEarlyMoveResearchDetail:
     safety_status: str
 
 
+IntradayStrategyResearchDetail = FailedEarlyMoveResearchDetail
 SavedState = tuple[SavedResearchRun | None, ResearchRunFreshness]
 
 
@@ -91,8 +97,26 @@ def build_intraday_research_rows(
     *,
     saved_states: dict[str, SavedState],
     out_of_sample_result: OutOfSampleGateResult | None = None,
+    discovery_result: DiscoverySprintResult | None = None,
 ) -> list[IntradayResearchIdeaRow]:
     """Return strategy-idea rows for the Intraday Research list."""
+
+    if discovery_result is not None:
+        return [
+            IntradayResearchIdeaRow(
+                strategy_id=result.strategy_id.value,
+                url_slug=result.url_slug,
+                strategy_name=result.strategy_name,
+                securities_tested=result.securities_tested,
+                tests_run=result.tests_run,
+                best_current_pattern_candidate=result.best_current_pattern_candidate,
+                current_conclusion=result.current_conclusion,
+                status=result.status,
+                next_research_action=result.next_research_action,
+                last_run_date=discovery_result.date_range,
+            )
+            for result in discovery_result.strategy_results
+        ]
 
     detail = build_failed_early_move_detail(
         saved_states=saved_states,
@@ -101,6 +125,7 @@ def build_intraday_research_rows(
     return [
         IntradayResearchIdeaRow(
             strategy_id="failed-early-move",
+            url_slug="failed-early-move",
             strategy_name=detail.idea_name,
             securities_tested="SPY, QQQ",
             tests_run=(
@@ -117,6 +142,66 @@ def build_intraday_research_rows(
             last_run_date=_latest_run_date(saved_states),
         )
     ]
+
+
+def build_intraday_strategy_detail(
+    strategy_result: StrategyDiscoveryResult,
+) -> IntradayStrategyResearchDetail:
+    """Build a product-level strategy detail from a discovery sprint result."""
+
+    return IntradayStrategyResearchDetail(
+        idea_name=strategy_result.strategy_name,
+        result_summary=(
+            f"EdgeLab tested {strategy_result.strategy_name} across "
+            f"{strategy_result.securities_tested} using fixed local rules."
+        ),
+        securities_tested=tuple(
+            IntradaySecurityResearchRow(
+                symbol=instrument.symbol,
+                latest_saved_result=instrument.plain_english_summary,
+                data_status=instrument.classification_label,
+                last_run_date=f"{instrument.completed_examples} completed examples",
+            )
+            for instrument in strategy_result.instrument_results
+        ),
+        tests_run=(
+            IntradayTestRunRow(
+                test_name="Simple fixed-rule scan",
+                securities=strategy_result.securities_tested,
+                result=strategy_result.tests_run,
+                evidence_href="/intraday/discovery-sprint",
+            ),
+            IntradayTestRunRow(
+                test_name="Checked later in the year",
+                securities=strategy_result.securities_tested,
+                result=strategy_result.current_conclusion,
+                evidence_href="/intraday/discovery-sprint/card",
+            ),
+        ),
+        best_pattern_candidates=(
+            IntradayPatternCandidateRow(
+                candidate_name=strategy_result.best_current_pattern_candidate,
+                evidence_seen=strategy_result.status,
+                later_check=strategy_result.current_conclusion,
+                conclusion=strategy_result.next_research_action,
+            ),
+        ),
+        current_conclusion=strategy_result.current_conclusion,
+        next_research_action=strategy_result.next_research_action,
+        evidence_links=(
+            IntradayEvidenceLink(
+                label="Discovery sprint API",
+                href="/intraday/discovery-sprint",
+                description="Full local research scoreboard with hidden evidence details.",
+            ),
+            IntradayEvidenceLink(
+                label="Discovery sprint card",
+                href="/intraday/discovery-sprint/card",
+                description="Markdown summary of the current local discovery sprint.",
+            ),
+        ),
+        safety_status="Research only · Not live · Real-money status: Not allowed",
+    )
 
 
 def build_failed_early_move_detail(

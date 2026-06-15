@@ -36,6 +36,8 @@ Phase 7X-2H: SPY Early Move Failed controlled variant study, pre-declared and re
 
 Phase 7X-2I: Generic out-of-sample gate, holdout-style and research-only
 
+Phase 7X-2J: AI-assisted strategy discovery sprint, fixed-library and local-only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

@@ -292,3 +292,20 @@ full available sample, the current result is a first honesty check rather than a
 confirmation. A stronger check requires additional historical data or future local data collected
 after the rules are locked. The gate does not create recommendations, promote paper mode, create
 live signals, or approve real-money use. Real-money status remains Not allowed.
+
+## Phase 7X-2J AI-Assisted Strategy Discovery Sprint
+
+Phase 7X-2J adds a local strategy discovery sprint that compares several simple intraday idea
+families across the available ignored local historical files. The first fixed library is Failed
+Early Move, Gap Fade, Gap Continuation, First 15-Minute Breakout, First 30-Minute Breakout,
+Opening Range Reclaim, Strong Open / Weak Follow-Through, and SPY/QQQ Divergence.
+
+The sprint is intentionally deterministic. It uses fixed local rules, a fixed later-period check,
+and a process-local cache keyed by source-file signatures and assumptions. It does not save sprint
+outputs, create saved research runs, call AI, call external APIs, fetch live data, use provider
+SDKs, schedule work, or create processed output files.
+
+The future AI idea intake is only a schema. A future AI helper may propose a locked hypothesis, but
+EdgeLab must reject unsupported rule families, action language, after-the-fact threshold changes,
+and chart-only ideas. Local deterministic code remains responsible for any accepted test. Real-money
+status remains Not allowed.

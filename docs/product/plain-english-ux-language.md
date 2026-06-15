@@ -142,3 +142,8 @@ Warnings should be short and direct:
 - "Securities Tested" should explain SPY and QQQ as tested instruments, not product pages.
 - "Tests Run" should group readiness, comparison, version, and later-period checks.
 - "Next Research Action" should be the final primary answer on intraday research summaries.
+- "Strategy Discovery Sprint" should mean a local fixed-library scan, not live AI reasoning.
+- "Future AI Idea Intake" should say AI may later propose a locked hypothesis, but Phase 7X-2J
+  does not call AI.
+- "Strategy Idea Scoreboard" should lead with what advanced, what did not, and what to test next.
+- "Later Check" should mean a conservative review across later local history, not proof.

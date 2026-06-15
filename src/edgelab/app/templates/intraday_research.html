@@ -4,8 +4,16 @@
   <section class="page-header">
     <h2>Intraday Research</h2>
     <p class="muted">
-      Leading intraday strategy ideas, organized by result instead of by test machinery.
+      A local research scoreboard for simple intraday strategy ideas.
     </p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ discovery_result.bottom_line }}</p>
+    <p><strong>What EdgeLab tested:</strong> {{ discovery_result.what_edgelab_tested }}</p>
+    <p><strong>What EdgeLab found:</strong> {{ discovery_result.what_edgelab_found }}</p>
+    <p><strong>Next research action:</strong> {{ discovery_result.next_research_action }}</p>
   </section>
 
   <section class="section">
@@ -25,7 +33,7 @@
       <tbody>
         {% for row in research_rows %}
           <tr>
-            <td><a href="/ui/intraday-lab/research/{{ row.strategy_id }}">{{ row.strategy_name }}</a></td>
+            <td><a href="/ui/intraday-lab/research/{{ row.url_slug }}">{{ row.strategy_name }}</a></td>
             <td>{{ row.securities_tested }}</td>
             <td>{{ row.tests_run }}</td>
             <td>{{ row.best_current_pattern_candidate }}</td>
@@ -37,5 +45,25 @@
         {% endfor %}
       </tbody>
     </table>
+  </section>
+
+  <section class="section">
+    <h3>Future AI idea intake</h3>
+    <p>
+      AI may propose a locked hypothesis in a structured format later. This page does not call AI.
+      Local deterministic code tests accepted ideas.
+    </p>
+    <p><a href="/intraday/research/ai-idea-spec/schema">Open future AI idea format</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show sprint evidence</summary>
+      <p>Symbols tested: {{ discovery_result.symbols_tested|join(", ") }}</p>
+      <p>Date range: {{ discovery_result.date_range }}</p>
+      <p>Checked later in the year: {{ discovery_result.later_check_range }}</p>
+      <p>Real-money status: {{ discovery_result.real_money_status }}</p>
+    </details>
   </section>
 {% endblock %}

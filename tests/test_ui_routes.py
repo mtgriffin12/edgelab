@@ -266,6 +266,9 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
     assert response.status_code == 200
     for phrase in [
         "Intraday Research",
+        "Bottom line",
+        "What EdgeLab tested",
+        "What EdgeLab found",
         "Strategy idea",
         "Securities tested",
         "Tests run",
@@ -273,13 +276,27 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
         "Current conclusion",
         "Next research action",
         "Failed Early Move",
-        "SPY, QQQ",
-        "Past morning replay",
-        "pattern-version test",
-        "later-period check",
-        "no clear pattern",
+        "Gap Fade",
+        "Gap Continuation",
+        "First 15-Minute Breakout",
+        "First 30-Minute Breakout",
+        "Opening Range Reclaim",
+        "Strong Open / Weak Follow-Through",
+        "SPY/QQQ Divergence",
+        "Future AI idea intake",
+        "does not call AI",
+        "Evidence Details",
+        "Real-money status: Not allowed",
     ]:
         assert phrase in response.text
+    assert "No usable local date range" not in response.text
+    assert "Local data problem blocked the test" not in response.text
+    primary_text = visible_text_before(response.text, "Evidence Details")
+    assert "buy now" not in primary_text
+    assert "sell now" not in primary_text
+    assert "short now" not in primary_text
+    assert "ready for real money" not in response.text.lower()
+    assert "validated edge" not in response.text.lower()
 
 
 def test_failed_early_move_research_detail_summarizes_all_related_tests() -> None:
@@ -293,21 +310,18 @@ def test_failed_early_move_research_detail_summarizes_all_related_tests() -> Non
         "SPY",
         "QQQ",
         "Tests Run",
-        "Historical data readiness",
-        "SPY vs QQQ comparison",
-        "Tested versions of the idea",
-        "Later-year check",
+        "Simple fixed-rule scan",
+        "Checked later in the year",
         "Best Pattern Candidates",
         "Failed push from above",
         "SPY/QQQ disagreement",
         "Current Conclusion",
         "Next Research Action",
         "Evidence Details",
-        "/ui/intraday-lab/firstrate",
-        "/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure",
-        "/ui/intraday-lab/variant-study/spy/early-move-failed",
-        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
-        "/ui/intraday-lab/research-runs",
+        "Discovery sprint API",
+        "Discovery sprint card",
+        "/intraday/discovery-sprint",
+        "/intraday/discovery-sprint/card",
     ]:
         assert phrase in response.text
     primary_text = visible_text_before(response.text, "Evidence Details")
@@ -319,6 +333,32 @@ def test_failed_early_move_research_detail_summarizes_all_related_tests() -> Non
         "Real-money status",
     ]:
         assert phrase.lower() not in primary_text
+
+
+def test_all_fixed_intraday_strategy_detail_pages_return_research_summary() -> None:
+    strategy_slugs = [
+        "failed-early-move",
+        "gap-fade",
+        "gap-continuation",
+        "first-15-minute-breakout",
+        "first-30-minute-breakout",
+        "opening-range-reclaim",
+        "strong-open-weak-follow-through",
+        "spy-qqq-divergence",
+    ]
+
+    for slug in strategy_slugs:
+        response = client.get(f"/ui/intraday-lab/research/{slug}")
+
+        assert response.status_code == 200
+        assert "Result Summary" in response.text
+        assert "Securities Tested" in response.text
+        assert "Current Conclusion" in response.text
+        assert "Next Research Action" in response.text
+        assert "Evidence Details" in response.text
+        assert "Real-money status: Not allowed" in response.text
+        assert "ready for real money" not in response.text.lower()
+        assert "validated edge" not in response.text.lower()
 
 
 def test_intraday_trading_placeholder_is_future_only() -> None:

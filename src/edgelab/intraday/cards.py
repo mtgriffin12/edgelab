@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from edgelab.intraday.comparative_study_schema import ComparativeStudyResult
+from edgelab.intraday.discovery_sprint_schema import DiscoverySprintResult
 from edgelab.intraday.out_of_sample_gate_schema import OutOfSampleGateResult
 from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
@@ -276,7 +277,7 @@ def variant_study_to_markdown_card(result: VariantStudyResult) -> str:
             "",
             "## Real-money status: Not allowed",
             f"- {result.real_money_status}",
-            "- This is local historical research only. It is not live and not a recommendation.",
+            "- This is local historical research only. It is not live and not guidance for action.",
             "",
             "## Evidence details",
             *_bullets(_variant_study_evidence_lines(result)),
@@ -315,6 +316,41 @@ def out_of_sample_gate_to_markdown_card(result: OutOfSampleGateResult) -> str:
             "",
             "## Evidence details",
             *_bullets(_out_of_sample_evidence_lines(result)),
+        ]
+    )
+
+
+def discovery_sprint_to_markdown_card(result: DiscoverySprintResult) -> str:
+    """Render a discovery sprint as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            "# Intraday Strategy Discovery Sprint",
+            "",
+            "## Bottom line",
+            result.bottom_line,
+            "",
+            "## What EdgeLab tested",
+            result.what_edgelab_tested,
+            "",
+            "## What EdgeLab found",
+            result.what_edgelab_found,
+            "",
+            "## What deserves more testing",
+            result.what_deserves_more_testing,
+            "",
+            "## What did not advance",
+            result.what_did_not_advance,
+            "",
+            "## Next research action",
+            result.next_research_action,
+            "",
+            "## Real-money status: Not allowed",
+            f"- {result.real_money_status}",
+            "- This is local historical research only. It is not live and not a recommendation.",
+            "",
+            "## Evidence details",
+            *_bullets(_discovery_sprint_evidence_lines(result)),
         ]
     )
 
@@ -512,6 +548,22 @@ def _out_of_sample_evidence_lines(result: OutOfSampleGateResult) -> list[str]:
     for comparison in result.variant_comparisons:
         lines.append(f"{comparison.plain_english_label}: {comparison.gate_conclusion_translation}")
     lines.extend(warning.message for warning in result.data_quality_warnings)
+    return lines
+
+
+def _discovery_sprint_evidence_lines(result: DiscoverySprintResult) -> list[str]:
+    lines = [
+        f"Symbols tested: {', '.join(result.symbols_tested)}.",
+        f"Date range: {result.date_range}.",
+        f"Later-year check: {result.later_check_range}.",
+        f"Strategy count: {result.strategy_count}.",
+        f"AI idea intake: {result.ai_idea_intake_summary}",
+    ]
+    for strategy_result in result.strategy_results:
+        lines.append(
+            f"{strategy_result.strategy_name}: {strategy_result.status}; "
+            f"{strategy_result.current_conclusion}"
+        )
     return lines
 
 

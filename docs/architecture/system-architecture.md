@@ -162,6 +162,15 @@ saved-result freshness, local file readiness, SPY/QQQ comparison, controlled var
 out-of-sample gate output into one Failed Early Move research summary. It does not add research
 logic, persist results, call external services, or change the underlying evidence services.
 
+## Intraday Strategy Discovery Sprint
+
+Runs a deterministic local sprint across a fixed first library of intraday idea families. Phase
+7X-2J scans available local historical symbols, applies simple rule families, compares earlier and
+later local periods, and returns a plain-English research scoreboard. The future AI boundary is a
+schema for proposed locked hypotheses only. The service does not call AI, call external APIs, write
+saved research runs, persist sprint results, create background jobs, promote paper mode, or produce
+recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.
