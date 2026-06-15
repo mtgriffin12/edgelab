@@ -27,8 +27,80 @@ a {
 
 .topbar a {
   color: #dcecf7;
-  margin-right: 18px;
   text-decoration: none;
+}
+
+.primary-nav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav-parent,
+.nav-menu summary {
+  border: 1px solid rgba(220, 236, 247, 0.24);
+  border-radius: 6px;
+  color: #dcecf7;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px 10px;
+}
+
+.nav-parent:hover,
+.nav-menu summary:hover,
+.nav-menu[open] summary {
+  background: rgba(220, 236, 247, 0.12);
+}
+
+.nav-menu {
+  position: relative;
+}
+
+.nav-menu summary {
+  list-style: none;
+}
+
+.nav-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu summary::after {
+  content: "v";
+  font-size: 11px;
+  margin-left: 7px;
+}
+
+.nav-menu[open] summary::after {
+  content: "^";
+}
+
+.nav-menu-links {
+  background: #22303d;
+  border: 1px solid rgba(220, 236, 247, 0.22);
+  border-radius: 8px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  display: grid;
+  gap: 2px;
+  left: 0;
+  min-width: 220px;
+  padding: 8px;
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 10;
+}
+
+.nav-menu-links a {
+  border-radius: 5px;
+  display: block;
+  font-size: 14px;
+  padding: 8px 9px;
+}
+
+.nav-menu-links a:hover {
+  background: rgba(220, 236, 247, 0.12);
 }
 
 .brand {

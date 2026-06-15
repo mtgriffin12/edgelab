@@ -126,3 +126,8 @@ Warnings should be short and direct:
 - "Too Noisy to Compare" means EdgeLab should slow down, not force an answer.
 - "Early Move Failed" should appear before the technical name "Opening Range Failure."
 - "Opening Range Failure" belongs in Evidence details as the technical setup name.
+- "Controlled Variant Study" means pre-chosen versions of one idea, not optimization.
+- "Broad failed early move" is the comparison group, not a recommendation.
+- "Worth more testing" means another research pass, not paper-mode readiness.
+- Variant pages should explain what looked different before showing counts.
+- Technical variant IDs, internal classifications, and average pretend result belong under Evidence details.

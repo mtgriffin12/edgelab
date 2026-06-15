@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}SPY Failed Early Move Variants{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY Failed Early Move Variants</h2>
+    <p class="muted">Pre-chosen versions of one local research pattern.</p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ result.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>{{ result.what_edgelab_tested }}</p>
+    <p>
+      A failed early move means price pushed outside the first few minutes of the morning, then
+      could not hold that move.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What looked different</h3>
+    <p>{{ result.what_looked_different }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Which version, if any, deserves more testing</h3>
+    <p>{{ result.which_version_deserves_more_testing }}</p>
+    {% if not result.study_available %}
+      <div class="warning">
+        <strong>Saved result needed:</strong>
+        run local analysis for SPY, then return here.
+      </div>
+      <p><a href="/ui/intraday-lab/firstrate/SPY/latest-result">Open SPY saved-result page</a></p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ result.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ result.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>This page is local historical research only. It is not live and not a recommendation.</p>
+  </section>
+
+  {% if result.variant_summaries %}
+    <section class="section">
+      <h3>Variant cards</h3>
+      <div class="grid">
+        {% for summary in result.variant_summaries %}
+          <div class="summary-card">
+            <h4>{{ summary.plain_english_label }}</h4>
+            <p>{{ summary.baseline_comparison.plain_english_summary }}</p>
+            <p>{{ summary.why_it_might_matter }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details open>
+      <summary>Show backup details</summary>
+      <p>Technical setup name: Opening Range Failure.</p>
+      <p>Technical research label: {{ result.classification.value.replace("_", " ") }}.</p>
+      <p>Cache status: {{ result.cache_metadata.get("cache_status", "unknown") }}.</p>
+      <p>
+        Moved as expected means the later local move matched the direction EdgeLab was testing.
+        It does not mean the setup is proven.
+      </p>
+      <div class="grid">
+        {% for summary in result.variant_summaries %}
+          <div class="summary-card">
+            <h4>{{ summary.plain_english_label }}</h4>
+            <ul class="list-clean">
+              <li>Internal variant ID: {{ summary.variant_id }}</li>
+              <li>Internal label: {{ summary.conservative_classification.value }}</li>
+              <li>Possible examples: {{ summary.examples_found }}</li>
+              <li>Finished examples: {{ summary.examples_completed }}</li>
+              <li>Moved as expected: {{ summary.moved_as_expected_count }}</li>
+              <li>Moved against the test: {{ summary.moved_against_test_count }}</li>
+              <li>Did not move enough to matter: {{ summary.did_not_move_enough_count }}</li>
+              <li>What would disprove it: {{ summary.what_would_disprove_it }}</li>
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+      {% if result.quality_issues %}
+        <h4>Reasons to be careful</h4>
+        <ul>
+          {% for issue in result.quality_issues %}
+            <li>{{ issue.message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </details>
+  </section>
+{% endblock %}

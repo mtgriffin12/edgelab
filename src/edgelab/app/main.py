@@ -30,6 +30,7 @@ from edgelab.intraday.cards import (
     intraday_simulation_to_markdown_card,
     multi_session_replay_to_markdown_card,
     prop_account_to_markdown_card,
+    variant_study_to_markdown_card,
 )
 from edgelab.intraday.comparative_study import SpyQqqComparativeStudyService
 from edgelab.intraday.comparative_study_schema import ComparativeStudyRequest
@@ -62,6 +63,8 @@ from edgelab.intraday.replay_schema import HistoricalReplayRequest, HistoricalRe
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
+from edgelab.intraday.variant_study import ControlledVariantStudyService
+from edgelab.intraday.variant_study_schema import VariantStudyRequest
 from edgelab.portfolios.cards import model_portfolio_to_markdown_card
 from edgelab.portfolios.construction import ModelPortfolioEngine
 from edgelab.portfolios.schema import PortfolioStyle
@@ -133,6 +136,11 @@ comparative_study_service = SpyQqqComparativeStudyService(
     provider=firstrate_historical_provider,
     setup_detector=intraday_setup_detector,
 )
+variant_study_service = ControlledVariantStudyService(
+    research_run_service=research_run_service,
+    provider=firstrate_historical_provider,
+    setup_detector=intraday_setup_detector,
+)
 
 
 @dataclass(frozen=True)
@@ -177,7 +185,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2G SPY/QQQ comparative pattern study",
+        "phase": "Phase 7X-2H SPY Early Move Failed variant study",
         "status": "research-only",
     }
 
@@ -904,6 +912,77 @@ def read_spy_qqq_comparative_study_card(
     return Response(content=comparative_study_to_markdown_card(result), media_type="text/plain")
 
 
+@app.get("/intraday/variant-study/spy/early-move-failed")
+def read_spy_early_move_failed_variant_study(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return the local SPY Early Move Failed controlled variant study."""
+
+    request = _variant_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    return variant_study_service.run(request).model_dump(mode="json")
+
+
+@app.get("/intraday/variant-study/spy/early-move-failed/card", response_class=Response)
+def read_spy_early_move_failed_variant_study_card(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> Response:
+    """Return the local SPY Early Move Failed variant study as Markdown."""
+
+    request = _variant_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    result = variant_study_service.run(request)
+    return Response(content=variant_study_to_markdown_card(result), media_type="text/plain")
+
+
+@app.get("/intraday/variant-study/spy/early-move-failed/{variant_id}")
+def read_spy_early_move_failed_variant_detail(
+    variant_id: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> dict[str, object]:
+    """Return one local SPY Early Move Failed controlled variant."""
+
+    request = _variant_study_request(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+    result = variant_study_service.run(request)
+    for summary in result.variant_summaries:
+        if summary.variant_id == variant_id:
+            return {
+                "study_id": result.study_id,
+                "variant": summary.model_dump(mode="json"),
+                "research_only_status": result.research_only_status,
+                "real_money_status": result.real_money_status,
+            }
+    raise HTTPException(status_code=404, detail="Variant not found")
+
+
 @app.get("/intraday/history/{symbol}/sessions")
 def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
     """Return local historical intraday sessions for one symbol."""
@@ -1598,6 +1677,73 @@ def read_ui_spy_qqq_opening_range_failure_study(request: Request) -> Response:
     )
 
 
+@app.get("/ui/intraday-lab/variant-study", response_class=HTMLResponse)
+def read_ui_variant_study_landing(request: Request) -> Response:
+    """Render the controlled variant study landing page without heavy work."""
+
+    spy_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="SPY",
+    )
+    qqq_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="QQQ",
+    )
+    spy_run, spy_freshness = research_run_service.latest_with_freshness(spy_request)
+    qqq_run, qqq_freshness = research_run_service.latest_with_freshness(qqq_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="variant_study_landing.html",
+        context={
+            "saved_states": {
+                "SPY": {"run": spy_run, "freshness": spy_freshness},
+                "QQQ": {"run": qqq_run, "freshness": qqq_freshness},
+            },
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/variant-study/spy", response_class=HTMLResponse)
+def read_ui_spy_variant_study(request: Request) -> Response:
+    """Render the SPY controlled variant study readiness page."""
+
+    spy_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="SPY",
+    )
+    qqq_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="QQQ",
+    )
+    spy_run, spy_freshness = research_run_service.latest_with_freshness(spy_request)
+    qqq_run, qqq_freshness = research_run_service.latest_with_freshness(qqq_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="variant_study_spy.html",
+        context={
+            "saved_states": {
+                "SPY": {"run": spy_run, "freshness": spy_freshness},
+                "QQQ": {"run": qqq_run, "freshness": qqq_freshness},
+            },
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/variant-study/spy/early-move-failed", response_class=HTMLResponse)
+def read_ui_spy_early_move_failed_variant_study(request: Request) -> Response:
+    """Render the SPY Early Move Failed controlled variant study."""
+
+    result = variant_study_service.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="variant_study_early_move_failed.html",
+        context={
+            "result": result,
+            "card": variant_study_to_markdown_card(result),
+        },
+    )
+
+
 @app.get("/ui/intraday-lab/firstrate", response_class=HTMLResponse)
 def read_ui_firstrate_landing(request: Request) -> Response:
     """Render the FirstRate local study landing page."""
@@ -2119,6 +2265,23 @@ def _comparative_study_request(
     commission_per_contract: float = 0,
 ) -> ComparativeStudyRequest:
     return ComparativeStudyRequest(
+        start_date=start_date,
+        end_date=end_date,
+        hold_minutes=hold_minutes,
+        slippage_ticks=slippage_ticks,
+        commission_per_contract=commission_per_contract,
+    )
+
+
+def _variant_study_request(
+    *,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    hold_minutes: int = 5,
+    slippage_ticks: int = 1,
+    commission_per_contract: float = 0,
+) -> VariantStudyRequest:
+    return VariantStudyRequest(
         start_date=start_date,
         end_date=end_date,
         hold_minutes=hold_minutes,

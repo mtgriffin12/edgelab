@@ -127,3 +127,7 @@ DEC-031: Phase 7X-2F adds local saved research runs so expensive FirstRate many-
 ## DEC-032: Phase 7X-2G SPY/QQQ Comparative Pattern Study
 
 DEC-032: Phase 7X-2G adds a SPY/QQQ comparative pattern study so EdgeLab can investigate why failed early moves, technically Opening Range Failure, behaved differently across symbols before generating strategy variants.
+
+## DEC-033: Phase 7X-2H SPY Early Move Failed Controlled Variant Study
+
+DEC-033: Phase 7X-2H adds a controlled SPY Early Move Failed variant study so EdgeLab can compare pre-declared versions of one pattern before generating broader strategy experiments. Variants are fixed before review, no parameter mining or post-result tuning is allowed, and a future experiment ledger is required before broader variant generation.

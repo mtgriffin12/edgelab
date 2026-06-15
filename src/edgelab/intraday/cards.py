@@ -13,6 +13,7 @@ from edgelab.intraday.schema import (
     IntradaySetupType,
     IntradaySimulationResult,
 )
+from edgelab.intraday.variant_study_schema import VariantStudyResult
 
 
 def intraday_setup_to_markdown_card(setup: IntradaySetupCandidate) -> str:
@@ -247,6 +248,41 @@ def comparative_study_to_markdown_card(result: ComparativeStudyResult) -> str:
     )
 
 
+def variant_study_to_markdown_card(result: VariantStudyResult) -> str:
+    """Render a controlled variant study as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            "# Controlled Variant Study",
+            "",
+            "## Bottom line",
+            result.bottom_line,
+            "",
+            "## What EdgeLab tested",
+            result.what_edgelab_tested,
+            "",
+            "## What looked different",
+            result.what_looked_different,
+            "",
+            "## Which version, if any, deserves more testing",
+            result.which_version_deserves_more_testing,
+            "",
+            "## Why this might be misleading",
+            result.why_this_might_be_misleading,
+            "",
+            "## What EdgeLab should test next",
+            result.what_edgelab_should_test_next,
+            "",
+            "## Real-money status: Not allowed",
+            f"- {result.real_money_status}",
+            "- This is local historical research only. It is not live and not a recommendation.",
+            "",
+            "## Evidence details",
+            *_bullets(_variant_study_evidence_lines(result)),
+        ]
+    )
+
+
 def _setup_lines(setups: list[IntradaySetupCandidate]) -> list[str]:
     return [f"- {setup.plain_english_summary}" for setup in setups] or ["- No setup was selected."]
 
@@ -376,6 +412,44 @@ def _comparative_evidence_lines(result: ComparativeStudyResult) -> list[str]:
                 (
                     f"{summary.symbol}: did not move enough to matter "
                     f"{summary.flat_afterward_count} time(s)."
+                ),
+            ]
+        )
+    lines.extend(issue.message for issue in result.quality_issues)
+    return lines
+
+
+def _variant_study_evidence_lines(result: VariantStudyResult) -> list[str]:
+    lines = [
+        f"Technical research label: {result.classification.value.replace('_', ' ')}.",
+        "Technical setup name: Opening Range Failure.",
+        f"Study available: {_yes_no(result.study_available)}.",
+        f"Cache status: {result.cache_metadata.get('cache_status', 'unknown')}.",
+        (
+            "Moved as expected means the later local move matched the direction EdgeLab was "
+            "testing. It does not mean the setup is proven."
+        ),
+    ]
+    for summary in result.variant_summaries:
+        lines.extend(
+            [
+                f"{summary.plain_english_label}: {summary.examples_found} possible examples.",
+                f"{summary.plain_english_label}: {summary.examples_completed} finished examples.",
+                (
+                    f"{summary.plain_english_label}: moved as expected "
+                    f"{summary.moved_as_expected_count} time(s)."
+                ),
+                (
+                    f"{summary.plain_english_label}: moved against the test "
+                    f"{summary.moved_against_test_count} time(s)."
+                ),
+                (
+                    f"{summary.plain_english_label}: did not move enough to matter "
+                    f"{summary.did_not_move_enough_count} time(s)."
+                ),
+                (
+                    f"{summary.plain_english_label}: internal label "
+                    f"{summary.conservative_classification.value.replace('_', ' ')}."
                 ),
             ]
         )

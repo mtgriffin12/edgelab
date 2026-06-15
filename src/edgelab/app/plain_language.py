@@ -223,6 +223,61 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         why_it_matters="Failed early moves may sometimes lead to quick reversals worth studying.",
         caution="This is a research label only, not a signal.",
     ),
+    "failed_early_move": PlainLanguageTerm(
+        technical_key="failed_early_move",
+        plain_label="Failed Early Move",
+        short_explanation="The first push of the morning did not hold.",
+        why_it_matters="It gives EdgeLab one plain pattern name to test carefully.",
+        caution="This is a research label only, not a signal.",
+    ),
+    "controlled_variant": PlainLanguageTerm(
+        technical_key="controlled_variant",
+        plain_label="Controlled Version",
+        short_explanation="One pre-chosen version of a research idea.",
+        why_it_matters="It prevents EdgeLab from changing the test after seeing the result.",
+    ),
+    "broad_baseline": PlainLanguageTerm(
+        technical_key="broad_baseline",
+        plain_label="Broad Comparison Group",
+        short_explanation="The full version used as the comparison point.",
+        why_it_matters="A narrower version should only matter if it improves on the broad group.",
+    ),
+    "failed_push_from_above": PlainLanguageTerm(
+        technical_key="failed_push_from_above",
+        plain_label="Failed Push From Above",
+        short_explanation="Price pushed above the early range, then fell back.",
+        why_it_matters="Upside failures may behave differently from downside failures.",
+    ),
+    "failed_selloff_from_below": PlainLanguageTerm(
+        technical_key="failed_selloff_from_below",
+        plain_label="Failed Selloff From Below",
+        short_explanation="Price pushed below the early range, then recovered.",
+        why_it_matters="Downside failures may behave differently from upside failures.",
+    ),
+    "fast_failure": PlainLanguageTerm(
+        technical_key="fast_failure",
+        plain_label="Failed Quickly",
+        short_explanation="The move failed soon after the open.",
+        why_it_matters="A faster failure may be easier to study than a late first-hour failure.",
+    ),
+    "slow_failure": PlainLanguageTerm(
+        technical_key="slow_failure",
+        plain_label="Failed Later",
+        short_explanation="The move failed later in the first hour.",
+        why_it_matters="Later failures may be noisier and need separate review.",
+    ),
+    "range_width": PlainLanguageTerm(
+        technical_key="range_width",
+        plain_label="Range Width",
+        short_explanation="How wide the first-hour price area was.",
+        why_it_matters="Very narrow or very wide mornings may behave differently.",
+    ),
+    "too_noisy": PlainLanguageTerm(
+        technical_key="too_noisy",
+        plain_label="Too Noisy",
+        short_explanation="The result is too mixed to learn from confidently.",
+        why_it_matters="It stops EdgeLab from overreading a messy local sample.",
+    ),
     "failed_early_push": PlainLanguageTerm(
         technical_key="failed_early_push",
         plain_label="Failed Early Push",
@@ -423,9 +478,9 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
     ),
     "baseline_comparison": PlainLanguageTerm(
         technical_key="baseline_comparison",
-        plain_label="Simpler Comparison",
-        short_explanation="The simpler idea that a more complex idea must improve on.",
-        why_it_matters="Complexity should only survive when it adds evidence.",
+        plain_label="Baseline Comparison",
+        short_explanation="How this version compares with the broad version.",
+        why_it_matters="A narrower version should only survive when it teaches something clearer.",
     ),
     "top_research_candidate": PlainLanguageTerm(
         technical_key="top_research_candidate",
@@ -1072,7 +1127,7 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
     "worth_more_testing": PlainLanguageTerm(
         technical_key="worth_more_testing",
         plain_label="Worth More Testing",
-        short_explanation="The pattern has enough local support to study further.",
+        short_explanation="Interesting enough for another controlled research pass.",
         why_it_matters="It marks a research next step, not a recommendation.",
     ),
     "what_usually_happened": PlainLanguageTerm(

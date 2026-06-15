@@ -31,6 +31,9 @@
 <section class="section">
   <h3>What EdgeLab should test next</h3>
   <p>{{ result.what_edgelab_should_test_next }}</p>
+  {% if result.comparison_available %}
+    <p><a href="/ui/intraday-lab/variant-study/spy/early-move-failed">Open SPY controlled variants</a></p>
+  {% endif %}
   {% if not result.comparison_available %}
     <div class="warning">
       <strong>Saved results needed:</strong>

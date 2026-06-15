@@ -13,22 +13,44 @@
           <h1>EdgeLab</h1>
           <span class="mode">Plain-English research cockpit</span>
         </div>
-        <nav aria-label="Primary">
-          <a href="/ui">Cockpit</a>
-          <a href="/ui/discovery-lab">Discovery Lab</a>
-          <a href="/ui/rankings">Rankings</a>
-          <a href="/ui/candidates">Candidates</a>
-          <a href="/ui/portfolios">Portfolio Tests</a>
-          <a href="/ui/intraday-lab">Intraday Lab</a>
-          <a href="/ui/intraday-lab/firstrate">FirstRate Study</a>
-          <a href="/ui/intraday-lab/comparative-study">SPY vs QQQ Study</a>
-          <a href="/ui/intraday-lab/research-runs">Saved Runs</a>
-          <a href="/ui/lab-bench">Lab Bench</a>
-          <a href="/ui/evidence-board">Evidence Board</a>
-          <a href="/ui/sentiment-lens">Sentiment Lens</a>
-          <a href="/ui/risk-sentinel">Risk Sentinel</a>
-          <a href="/ui/journal">Journal</a>
-          <a href="/ui/reports">Reports</a>
+        <nav class="primary-nav" aria-label="Primary">
+          <a class="nav-parent" href="/ui">Cockpit</a>
+          <details class="nav-menu">
+            <summary>Research</summary>
+            <div class="nav-menu-links">
+              <a href="/ui/discovery-lab">Discovery Lab</a>
+              <a href="/ui/rankings">Rankings</a>
+              <a href="/ui/candidates">Candidates</a>
+              <a href="/ui/lab-bench">Lab Bench</a>
+            </div>
+          </details>
+          <details class="nav-menu">
+            <summary>Intraday Lab</summary>
+            <div class="nav-menu-links">
+              <a href="/ui/intraday-lab">Intraday Lab overview</a>
+              <a href="/ui/intraday-lab/firstrate">FirstRate Study</a>
+              <a href="/ui/intraday-lab/comparative-study">SPY vs QQQ Study</a>
+              <a href="/ui/intraday-lab/variant-study">Variant Study</a>
+              <a href="/ui/intraday-lab/research-runs">Saved Runs</a>
+              <a href="/ui/intraday-lab/replay">Past Morning Practice</a>
+            </div>
+          </details>
+          <details class="nav-menu">
+            <summary>Evidence</summary>
+            <div class="nav-menu-links">
+              <a href="/ui/evidence-board">Evidence Board</a>
+              <a href="/ui/sentiment-lens">Sentiment Lens</a>
+              <a href="/ui/risk-sentinel">Risk Sentinel</a>
+              <a href="/ui/journal">Journal</a>
+            </div>
+          </details>
+          <details class="nav-menu">
+            <summary>Portfolio</summary>
+            <div class="nav-menu-links">
+              <a href="/ui/portfolios">Portfolio Tests</a>
+            </div>
+          </details>
+          <a class="nav-parent" href="/ui/reports">Reports</a>
         </nav>
       </header>
       <main>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Controlled Variant Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Controlled Variant Study</h2>
+    <p class="muted">Pre-chosen versions of one research idea, compared before broader experiments.</p>
+  </section>
+
+  <section class="warning section">
+    <strong>Real-money status: Not allowed.</strong>
+    This is local historical research only. It is not live and not a recommendation.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      EdgeLab is ready to review controlled versions of SPY failed early moves after the saved
+      local SPY result is current.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>
+      The next study compares pre-chosen versions of one pattern instead of searching for a best
+      setting.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What looked different</h3>
+    <p>
+      The previous SPY vs QQQ study suggested SPY deserved the next controlled research pass.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Which version, if any, deserves more testing</h3>
+    <p>
+      No version is selected from this landing page. Open the SPY study after the saved result is
+      current.
+    </p>
+    <p><a href="/ui/intraday-lab/variant-study/spy">Open SPY variant readiness</a></p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>
+      Smaller groups can look cleaner by chance, so variants must stay fixed before reviewing the
+      result.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      Run or refresh local SPY analysis if needed, then review the fixed failed early move versions.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <ul>
+        {% for symbol, state in saved_states.items() %}
+          <li>
+            {{ symbol }} saved result:
+            {% if state.freshness.status.value == "fresh" %}
+              current for the local file
+            {% else %}
+              {{ state.freshness.status.value.replace("_", " ") }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}SPY Variant Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY Failed Early Move Study</h2>
+    <p class="muted">A readiness check before reviewing controlled versions.</p>
+  </section>
+
+  <section class="warning section">
+    <strong>Real-money status: Not allowed.</strong>
+    This is local historical research only. It is not live and not a recommendation.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    {% if saved_states.SPY.freshness.status.value == "fresh" %}
+      <p>SPY has a current saved local result, so EdgeLab can review controlled variants.</p>
+    {% else %}
+      <p>SPY needs a current saved local result before EdgeLab compares variants.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>
+      EdgeLab checks whether local saved results still match the ignored source files before
+      comparing variants.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What looked different</h3>
+    <p>
+      SPY is the first controlled study because the prior comparison made it look more useful for
+      follow-up research than QQQ.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Which version, if any, deserves more testing</h3>
+    <p>
+      The detail page compares the fixed versions. This readiness page does not pick one.
+    </p>
+    {% if saved_states.SPY.freshness.status.value == "fresh" %}
+      <p><a href="/ui/intraday-lab/variant-study/spy/early-move-failed">Open failed early move variants</a></p>
+    {% else %}
+      <p><a href="/ui/intraday-lab/firstrate/SPY/latest-result">Open SPY saved-result page</a></p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>
+      A stale saved result could mix old source files with current local data and make the
+      comparison unfair.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      Keep the variant definitions fixed, then compare them against the broad SPY failed early
+      move group.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <ul>
+        {% for symbol, state in saved_states.items() %}
+          <li>{{ symbol }} saved result: {{ state.freshness.status.value.replace("_", " ") }}</li>
+          <li>{{ symbol }} saved result message: {{ state.freshness.message }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

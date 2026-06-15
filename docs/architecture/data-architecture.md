@@ -145,3 +145,14 @@ time.
 
 No raw FirstRate rows, saved research database files, or processed outputs are committed. The study
 does not call external APIs or fetch live data.
+
+## Phase 7X-2H Controlled Variant Study Data Use
+
+Phase 7X-2H uses current saved-run freshness as a source-file gate, then recomputes controlled
+variant evidence from ignored local FirstRate files. SPY is the first instrument; QQQ is read only
+for the SPY/QQQ disagreement variant. Variant-study results are not saved to SQLite or written to
+processed files. Repeat detail-page loads use process-local cache keyed by source-file signatures,
+symbols, replay assumptions, variant spec version, and code version.
+
+No real downloaded data, ignored saved-run database files, or processed outputs are committed. The
+study does not call external APIs, fetch live data, add provider SDKs, or create recommendations.

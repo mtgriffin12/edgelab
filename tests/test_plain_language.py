@@ -150,6 +150,15 @@ def test_required_plain_language_terms_exist() -> None:
         "interesting_but_unproven",
         "weak_or_inconsistent",
         "worth_more_testing",
+        "controlled_variant",
+        "failed_early_move",
+        "broad_baseline",
+        "failed_push_from_above",
+        "failed_selloff_from_below",
+        "fast_failure",
+        "slow_failure",
+        "range_width",
+        "too_noisy",
         "what_usually_happened",
         "what_edgelab_avoided",
         "what_edgelab_missed",
@@ -214,6 +223,12 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("sit_out") == "Sit Out"
     assert plain_label("keep_watching") == "Keep Watching"
     assert plain_label("spy_vs_qqq_pattern_study") == "SPY vs QQQ Pattern Study"
+    assert plain_label("controlled_variant") == "Controlled Version"
+    assert plain_label("failed_early_move") == "Failed Early Move"
+    assert plain_label("broad_baseline") == "Broad Comparison Group"
+    assert plain_label("fast_failure") == "Failed Quickly"
+    assert plain_label("slow_failure") == "Failed Later"
+    assert plain_label("baseline_comparison") == "Baseline Comparison"
 
 
 def test_missing_plain_language_term_raises_key_error() -> None:

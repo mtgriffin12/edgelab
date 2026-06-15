@@ -32,6 +32,8 @@ Phase 7X-2F: Saved research runs and fast latest-result views for local FirstRat
 
 Phase 7X-2G: SPY/QQQ comparative pattern study for failed early moves, local and research-only
 
+Phase 7X-2H: SPY Early Move Failed controlled variant study, pre-declared and research-only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

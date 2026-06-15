@@ -257,3 +257,19 @@ The goal is to choose the next controlled research question, such as whether ope
 first-hour range width explains a SPY/QQQ difference. The study does not optimize settings,
 generate variants, enable paper mode, produce recommendations, or prove that any pattern works.
 Real-money status remains Not allowed.
+
+## Phase 7X-2H Controlled Variant Study
+
+Phase 7X-2H adds a local controlled variant study for SPY's failed early move pattern. The variant
+framework is pre-declared and reusable: SPY is the first instrument because current local evidence
+points there, not because the framework is permanently SPY-only.
+
+The active variants are the broad baseline, failed push from above, failed selloff from below,
+failed quickly, failed later, and SPY/QQQ disagreement. Opening gap and range-width checks are
+readiness checks, not optimized variants. If opening gap context is missing or range splits are too
+thin, EdgeLab says so instead of forcing a conclusion.
+
+This phase explicitly avoids parameter mining, best-setting searches, and tuning after seeing
+results. A future experiment ledger and out-of-sample testing are required before broader variant
+generation. The study does not save variant outputs, enable paper mode, create live signals, or
+approve real-money use. Real-money status remains Not allowed.

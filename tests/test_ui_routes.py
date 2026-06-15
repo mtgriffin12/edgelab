@@ -1,4 +1,5 @@
 import re
+from html.parser import HTMLParser
 
 from fastapi.testclient import TestClient
 
@@ -14,6 +15,59 @@ def test_ui_home_returns_research_cockpit() -> None:
     assert "Research Cockpit" in response.text
     assert "No live trading enabled" in response.text
     assert "Synthetic Sample Data" in response.text
+
+
+def test_primary_navigation_uses_grouped_parent_areas() -> None:
+    response = client.get("/ui")
+
+    assert response.status_code == 200
+    parser = PrimaryNavParser()
+    parser.feed(response.text)
+
+    assert parser.direct_links == ["/ui", "/ui/reports"]
+    assert parser.parent_labels == ["Research", "Intraday Lab", "Evidence", "Portfolio"]
+    for label in ["Cockpit", "Research", "Intraday Lab", "Evidence", "Portfolio", "Reports"]:
+        assert label in parser.visible_nav_text
+
+    expected_links = {
+        "/ui/discovery-lab": "Discovery Lab",
+        "/ui/rankings": "Rankings",
+        "/ui/candidates": "Candidates",
+        "/ui/lab-bench": "Lab Bench",
+        "/ui/evidence-board": "Evidence Board",
+        "/ui/sentiment-lens": "Sentiment Lens",
+        "/ui/risk-sentinel": "Risk Sentinel",
+        "/ui/journal": "Journal",
+        "/ui/portfolios": "Portfolio Tests",
+    }
+    for href, label in expected_links.items():
+        assert href in parser.all_links
+        assert label in parser.visible_nav_text
+
+
+def test_intraday_navigation_group_keeps_key_destinations_reachable() -> None:
+    response = client.get("/ui/intraday-lab/variant-study/spy/early-move-failed")
+
+    assert response.status_code == 200
+    parser = PrimaryNavParser()
+    parser.feed(response.text)
+
+    expected_intraday_links = {
+        "/ui/intraday-lab": "Intraday Lab overview",
+        "/ui/intraday-lab/firstrate": "FirstRate Study",
+        "/ui/intraday-lab/comparative-study": "SPY vs QQQ Study",
+        "/ui/intraday-lab/variant-study": "Variant Study",
+        "/ui/intraday-lab/research-runs": "Saved Runs",
+        "/ui/intraday-lab/replay": "Past Morning Practice",
+    }
+    for href, label in expected_intraday_links.items():
+        assert href in parser.all_links
+        assert label in parser.visible_nav_text
+
+    assert "/ui/intraday-lab/firstrate" not in parser.direct_links
+    assert "/ui/intraday-lab/comparative-study" not in parser.direct_links
+    assert "/ui/intraday-lab/variant-study" not in parser.direct_links
+    assert "/ui/intraday-lab/research-runs" not in parser.direct_links
 
 
 def test_lab_bench_returns_strategy_names() -> None:
@@ -191,6 +245,7 @@ def test_intraday_lab_returns_research_spike_page() -> None:
     assert "Sit-Out Review" in response.text
     assert "Saved Research Runs" in response.text
     assert "SPY vs QQQ Pattern Study" in response.text
+    assert "Controlled Variant Study" in response.text
 
 
 def test_comparative_study_ui_routes_return_plain_english_sections() -> None:
@@ -236,6 +291,40 @@ def test_comparative_study_ui_routes_return_plain_english_sections() -> None:
             assert "Moved as expected" in response.text
             assert "Moved against the test" in response.text
             assert "Did not move enough to matter" in response.text
+
+
+def test_variant_study_ui_routes_return_plain_english_sections() -> None:
+    routes = [
+        "/ui/intraday-lab/variant-study",
+        "/ui/intraday-lab/variant-study/spy",
+        "/ui/intraday-lab/variant-study/spy/early-move-failed",
+    ]
+
+    for route in routes:
+        response = client.get(route)
+        assert response.status_code == 200
+        assert "Variant" in response.text or "Failed Early Move" in response.text
+        for phrase in [
+            "Bottom line",
+            "What EdgeLab tested",
+            "What looked different",
+            "Which version, if any, deserves more testing",
+            "Why this might be misleading",
+            "What EdgeLab should test next",
+            "Real-money status: Not allowed",
+            "Evidence details",
+        ]:
+            assert phrase in response.text
+        primary_text = visible_text_before(response.text, "Evidence details")
+        assert "Opening Range Failure" not in primary_text
+        assert "worth_more_testing" not in primary_text
+        assert "interesting_but_unproven" not in primary_text
+        assert "trade button" not in response.text.lower()
+        assert "buy now" not in response.text.lower()
+        assert "sell now" not in response.text.lower()
+        assert "short now" not in response.text.lower()
+        assert "ready for real money" not in response.text.lower()
+        assert "validated edge" not in response.text.lower()
 
 
 def test_intraday_symbol_page_returns_generic_fixture_view() -> None:
@@ -522,6 +611,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/intraday-lab/multi-session-summary",
         "/ui/intraday-lab/pattern-results",
         "/ui/intraday-lab/no-trade-analysis",
+        "/ui/intraday-lab/variant-study",
+        "/ui/intraday-lab/variant-study/spy",
+        "/ui/intraday-lab/variant-study/spy/early-move-failed",
         "/ui/journal",
         "/ui/reports",
     ]
@@ -551,3 +643,63 @@ def visible_text_before(html: str, marker: str) -> str:
     """Return visible-ish text before a marker, ignoring attributes such as href IDs."""
 
     return re.sub(r"<[^>]+>", " ", html.split(marker)[0]).lower()
+
+
+class PrimaryNavParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.in_nav = False
+        self.nav_depth = 0
+        self.direct_links: list[str] = []
+        self.all_links: set[str] = set()
+        self.parent_labels: list[str] = []
+        self._capture_summary = False
+        self._nav_text: list[str] = []
+
+    @property
+    def visible_nav_text(self) -> str:
+        return " ".join(self._nav_text)
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_map = dict(attrs)
+        if tag == "nav" and "primary-nav" in attr_map.get("class", ""):
+            self.in_nav = True
+            self.nav_depth = 0
+            return
+
+        if not self.in_nav:
+            return
+
+        if tag == "a":
+            href = attr_map.get("href")
+            if href:
+                self.all_links.add(href)
+                if self.nav_depth == 0:
+                    self.direct_links.append(href)
+        if tag == "summary" and self.nav_depth == 1:
+            self._capture_summary = True
+        self.nav_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if not self.in_nav:
+            return
+
+        if tag == "nav" and self.nav_depth == 0:
+            self.in_nav = False
+            return
+
+        if tag == "summary":
+            self._capture_summary = False
+        self.nav_depth = max(0, self.nav_depth - 1)
+
+    def handle_data(self, data: str) -> None:
+        if not self.in_nav:
+            return
+
+        text = data.strip()
+        if not text:
+            return
+
+        self._nav_text.append(text)
+        if self._capture_summary:
+            self.parent_labels.append(text)

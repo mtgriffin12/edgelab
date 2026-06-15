@@ -103,6 +103,8 @@ class ReplaySessionOutcome(BaseModel):
     session_readiness: HistoricalIntradayReadiness
     setup_type: IntradaySetupType | None = None
     setup_direction: IntradaySetupDirection | None = None
+    signal_bar_timestamp: Any | None = None
+    regular_open_timestamp: Any | None = None
     setup_found: bool
     sat_out: bool
     data_skipped: bool

@@ -136,6 +136,16 @@ and uses process-local caching keyed by source-file signatures and replay assump
 create saved runs on page load, write processed outputs, call external services, create strategy
 variants, promote paper mode, or produce recommendations.
 
+## Controlled Variant Study
+
+Compares a fixed set of pre-declared failed-early-move variants against a broad local baseline.
+Phase 7X-2H uses SPY first, while keeping the service/request structure generic enough for future
+supported instruments. The service requires current saved local research context, recomputes
+variant evidence from ignored local files, and caches results by source-file signatures,
+assumptions, variant spec version, and code version. It does not tune thresholds after results,
+persist variant outputs, create background work, call external services, promote paper mode, or
+produce recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

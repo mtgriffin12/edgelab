@@ -197,6 +197,13 @@ comparison may reuse ignored local FirstRate CSV files for per-session evidence,
 caching to avoid repeated work. The study is a guide for the next controlled experiment only. It
 does not create recommendations, prove an edge, enable paper mode, or approve real-money use.
 
+The controlled variant study endpoints and `/ui/intraday-lab/variant-study` pages compare
+pre-declared versions of SPY's failed early move pattern against the broad baseline. The framework
+is not permanently SPY-only; SPY is simply the first local instrument reviewed. Variants are fixed
+before results are read, no parameters are mined or tuned afterward, and gap/range context checks
+can block thin or incomplete splits. The study does not save variant results, create broader
+strategy experiments, promote paper mode, or imply real-money readiness.
+
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,
 generating setup or sit-out candidates, and calculating one hypothetical short-hold result when

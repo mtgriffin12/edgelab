@@ -30,6 +30,7 @@ from edgelab.intraday.replay_schema import (
     HistoricalReplayRequest,
     HistoricalReplayResult,
     HistoricalReplayStatus,
+    HistoricalReplayStepType,
 )
 from edgelab.intraday.schema import (
     IntradayHypotheticalTrade,
@@ -200,6 +201,8 @@ def _outcome_from_replay(
         session_readiness=result.session_readiness,
         setup_type=setup.setup_type if setup else None,
         setup_direction=setup.direction if setup else None,
+        signal_bar_timestamp=setup.signal_bar_timestamp if setup else None,
+        regular_open_timestamp=_regular_open_timestamp(result),
         setup_found=setup_found,
         sat_out=sat_out,
         data_skipped=data_skipped,
@@ -215,6 +218,17 @@ def _outcome_from_replay(
         opening_range_width_bucket=_opening_range_width_bucket(setup),
         quality_issue_count=len(result.quality_issues),
         plain_english_summary=_outcome_summary(result, setup, trade, sat_out, data_skipped),
+    )
+
+
+def _regular_open_timestamp(result: HistoricalReplayResult) -> object | None:
+    return next(
+        (
+            step.replay_time_utc
+            for step in result.steps
+            if step.step_type == HistoricalReplayStepType.REGULAR_OPEN
+        ),
+        None,
     )
 
 
