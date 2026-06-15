@@ -25,8 +25,8 @@ def test_primary_navigation_uses_grouped_parent_areas() -> None:
     parser.feed(response.text)
 
     assert parser.direct_links == ["/ui", "/ui/reports"]
-    assert parser.parent_labels == ["Research", "Intraday Lab", "Evidence", "Portfolio"]
-    for label in ["Cockpit", "Research", "Intraday Lab", "Evidence", "Portfolio", "Reports"]:
+    assert parser.parent_labels == ["Research", "Intraday", "Evidence", "Portfolio"]
+    for label in ["Cockpit", "Research", "Intraday", "Evidence", "Portfolio", "Reports"]:
         assert label in parser.visible_nav_text
 
     expected_links = {
@@ -43,30 +43,39 @@ def test_primary_navigation_uses_grouped_parent_areas() -> None:
     for href, label in expected_links.items():
         assert href in parser.all_links
         assert label in parser.visible_nav_text
+    assert 'document.querySelectorAll(".nav-menu[open]")' in response.text
 
 
 def test_intraday_navigation_group_keeps_key_destinations_reachable() -> None:
-    response = client.get("/ui/intraday-lab/variant-study/spy/early-move-failed")
+    response = client.get("/ui/intraday-lab/research/failed-early-move")
 
     assert response.status_code == 200
     parser = PrimaryNavParser()
     parser.feed(response.text)
 
     expected_intraday_links = {
-        "/ui/intraday-lab": "Intraday Lab overview",
-        "/ui/intraday-lab/firstrate": "FirstRate Study",
-        "/ui/intraday-lab/comparative-study": "SPY vs QQQ Study",
-        "/ui/intraday-lab/variant-study": "Variant Study",
-        "/ui/intraday-lab/research-runs": "Saved Runs",
-        "/ui/intraday-lab/replay": "Past Morning Practice",
+        "/ui/intraday-lab/research": "Research",
+        "/ui/intraday-lab/trading": "Trading",
+        "/ui/intraday-lab/research-runs": "Saved Results",
     }
     for href, label in expected_intraday_links.items():
         assert href in parser.all_links
         assert label in parser.visible_nav_text
 
+    for label in [
+        "FirstRate Study",
+        "SPY vs QQQ Study",
+        "Variant Study",
+        "Out-of-Sample Check",
+        "SPY",
+        "QQQ",
+    ]:
+        assert label not in parser.visible_nav_text
+
     assert "/ui/intraday-lab/firstrate" not in parser.direct_links
     assert "/ui/intraday-lab/comparative-study" not in parser.direct_links
     assert "/ui/intraday-lab/variant-study" not in parser.direct_links
+    assert "/ui/intraday-lab/out-of-sample" not in parser.direct_links
     assert "/ui/intraday-lab/research-runs" not in parser.direct_links
 
 
@@ -230,22 +239,96 @@ def test_portfolio_detail_returns_plain_english_card() -> None:
         assert phrase not in primary_text
 
 
-def test_intraday_lab_returns_research_spike_page() -> None:
+def test_intraday_lab_returns_simple_product_hub() -> None:
     response = client.get("/ui/intraday-lab")
 
     assert response.status_code == 200
     assert "Intraday Lab" in response.text
-    assert "synthetic intraday sample data" in response.text.lower()
-    assert "not live" in response.text
-    assert "not a signal system" in response.text
-    assert "not a recommendation" in response.text
-    assert "GEN_SYN" in response.text
-    assert "Many-Morning Practice Test" in response.text
-    assert "Repeated Pattern Results" in response.text
-    assert "Sit-Out Review" in response.text
-    assert "Saved Research Runs" in response.text
-    assert "SPY vs QQQ Pattern Study" in response.text
-    assert "Controlled Variant Study" in response.text
+    assert "Intraday Research" in response.text
+    assert "Intraday Trading" in response.text
+    assert "/ui/intraday-lab/research" in response.text
+    assert "/ui/intraday-lab/trading" in response.text
+    for phrase in [
+        "FirstRate SPY/QQQ Study",
+        "SPY vs QQQ Pattern Study",
+        "Controlled Variant Study",
+        "Out-of-Sample Check",
+        "GEN_SYN",
+        "Repeated Pattern Results",
+        "Sit-Out Review",
+    ]:
+        assert phrase not in response.text
+
+
+def test_intraday_research_list_returns_strategy_idea_table() -> None:
+    response = client.get("/ui/intraday-lab/research")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Intraday Research",
+        "Strategy idea",
+        "Securities tested",
+        "Tests run",
+        "Best current pattern candidate",
+        "Current conclusion",
+        "Next research action",
+        "Failed Early Move",
+        "SPY, QQQ",
+        "Past morning replay",
+        "pattern-version test",
+        "later-period check",
+        "no clear pattern",
+    ]:
+        assert phrase in response.text
+
+
+def test_failed_early_move_research_detail_summarizes_all_related_tests() -> None:
+    response = client.get("/ui/intraday-lab/research/failed-early-move")
+
+    assert response.status_code == 200
+    for phrase in [
+        "Failed Early Move",
+        "Result Summary",
+        "Securities Tested",
+        "SPY",
+        "QQQ",
+        "Tests Run",
+        "Historical data readiness",
+        "SPY vs QQQ comparison",
+        "Tested versions of the idea",
+        "Later-year check",
+        "Best Pattern Candidates",
+        "Failed push from above",
+        "SPY/QQQ disagreement",
+        "Current Conclusion",
+        "Next Research Action",
+        "Evidence Details",
+        "/ui/intraday-lab/firstrate",
+        "/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure",
+        "/ui/intraday-lab/variant-study/spy/early-move-failed",
+        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
+        "/ui/intraday-lab/research-runs",
+    ]:
+        assert phrase in response.text
+    primary_text = visible_text_before(response.text, "Evidence Details")
+    for phrase in [
+        "FirstRate",
+        "variant",
+        "holdout",
+        "out-of-sample",
+        "Real-money status",
+    ]:
+        assert phrase.lower() not in primary_text
+
+
+def test_intraday_trading_placeholder_is_future_only() -> None:
+    response = client.get("/ui/intraday-lab/trading")
+
+    assert response.status_code == 200
+    assert "No strategy has passed the research gates yet" in response.text
+    assert "Live monitoring, broker connections, and trading are not available" in response.text
+    assert "<button" not in response.text.lower()
+    assert "ready for real money" not in response.text.lower()
 
 
 def test_comparative_study_ui_routes_return_plain_english_sections() -> None:
@@ -325,6 +408,60 @@ def test_variant_study_ui_routes_return_plain_english_sections() -> None:
         assert "short now" not in response.text.lower()
         assert "ready for real money" not in response.text.lower()
         assert "validated edge" not in response.text.lower()
+
+
+def test_out_of_sample_ui_routes_return_plain_english_sections() -> None:
+    routes = [
+        "/ui/intraday-lab/out-of-sample",
+        "/ui/intraday-lab/out-of-sample/spy",
+        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
+    ]
+
+    for route in routes:
+        response = client.get(route)
+        assert response.status_code == 200
+        assert "Out-of-Sample Check" in response.text or "first honesty check" in response.text
+        for phrase in [
+            "Bottom line",
+            "What EdgeLab checked",
+            "What changed on later data",
+            "What this means",
+            "What EdgeLab should test next",
+            "Why this might be misleading",
+            "Real-money status: Not allowed",
+            "Evidence details",
+        ]:
+            assert phrase in response.text
+        assert "holdout-style check" in response.text.lower()
+        assert "not proof" in response.text.lower()
+        primary_text = visible_text_before(response.text, "Evidence details")
+        assert "Opening Range Failure" not in primary_text
+        assert "too noisy" not in primary_text
+        assert "trade button" not in response.text.lower()
+        assert "buy now" not in response.text.lower()
+        assert "sell now" not in response.text.lower()
+        assert "short now" not in response.text.lower()
+        assert "ready for real money" not in response.text.lower()
+        assert "validated edge" not in response.text.lower()
+        assert "paper-mode readiness" not in response.text.lower()
+
+
+def test_intraday_legacy_evidence_routes_remain_available() -> None:
+    routes = [
+        "/ui/intraday-lab/firstrate",
+        "/ui/intraday-lab/comparative-study",
+        "/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure",
+        "/ui/intraday-lab/variant-study",
+        "/ui/intraday-lab/variant-study/spy/early-move-failed",
+        "/ui/intraday-lab/out-of-sample",
+        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
+        "/ui/intraday-lab/research-runs",
+    ]
+
+    for route in routes:
+        response = client.get(route)
+        assert response.status_code == 200
+        assert "Detailed evidence page for Failed Early Move research" in response.text
 
 
 def test_intraday_symbol_page_returns_generic_fixture_view() -> None:
@@ -570,6 +707,9 @@ def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
     for path in [
         "/ui/risk-sentinel",
         "/ui/intraday-lab",
+        "/ui/intraday-lab/research",
+        "/ui/intraday-lab/research/failed-early-move",
+        "/ui/intraday-lab/trading",
         "/ui/intraday-lab/GEN_SYN",
         "/ui/intraday-lab/prop-account-scaling",
         "/ui/intraday-lab/replay",
@@ -577,6 +717,9 @@ def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
         "/ui/intraday-lab/multi-session-summary",
         "/ui/intraday-lab/pattern-results",
         "/ui/intraday-lab/no-trade-analysis",
+        "/ui/intraday-lab/out-of-sample",
+        "/ui/intraday-lab/out-of-sample/spy",
+        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
     ]:
         response = client.get(path)
 
@@ -604,6 +747,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/portfolios",
         "/ui/portfolios/core-research-portfolio",
         "/ui/intraday-lab",
+        "/ui/intraday-lab/research",
+        "/ui/intraday-lab/research/failed-early-move",
+        "/ui/intraday-lab/trading",
         "/ui/intraday-lab/GEN_SYN",
         "/ui/intraday-lab/prop-account-scaling",
         "/ui/intraday-lab/replay",
@@ -614,6 +760,9 @@ def test_ui_pages_do_not_contain_action_instruction_phrases() -> None:
         "/ui/intraday-lab/variant-study",
         "/ui/intraday-lab/variant-study/spy",
         "/ui/intraday-lab/variant-study/spy/early-move-failed",
+        "/ui/intraday-lab/out-of-sample",
+        "/ui/intraday-lab/out-of-sample/spy",
+        "/ui/intraday-lab/out-of-sample/spy/early-move-failed",
         "/ui/journal",
         "/ui/reports",
     ]

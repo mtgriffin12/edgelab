@@ -103,6 +103,12 @@ No-trade days should be visible and respected. The page should make clear that i
 500-style and Nasdaq-style fixtures are examples only, and that the system is designed for other
 fixture-backed symbols once suitable intraday data and assumptions exist.
 
+As the intraday work expands, primary UI must be organized around strategy ideas and results, not
+implementation milestones. The first-level intraday experience should show research ideas,
+securities tested, tests run, best current pattern candidates, current conclusion, and next
+research action. Vendor names, symbol-specific pages, variant pages, and later-period checks belong
+under Evidence Details unless the user is deliberately drilling into evidence.
+
 ## Phase 7X-2B Past Morning Practice Test UX
 
 The user-facing page should lead with "Past Morning Practice Test," not technical replay wording.
@@ -125,3 +131,15 @@ The default user-facing story should be conservative: tiny local fixtures are wo
 and "Not enough examples yet" is the honest headline until many more clean mornings exist.
 Technical terms such as win rate, expectancy, distribution, statistical significance, sample size,
 slippage, and cost assumptions belong in Evidence details if they appear at all.
+
+## Phase 7X-2I Out-of-Sample Gate UX
+
+The out-of-sample gate should feel like a first honesty check, not a proof screen or a statistics
+dashboard. It should lead with the bottom line, what EdgeLab checked, what changed on later data,
+what the result means, what to test next, why the check might mislead, and real-money status.
+
+Primary copy should use "Out-of-Sample Check," "Discovery Period," "Later Check Period," and
+"holdout-style check." Technical names such as Opening Range Failure, internal variant IDs, split
+strategy names, cache metadata, and average pretend result belong in Evidence details. The page
+must not imply proof, validation, paper-mode readiness, live-signal readiness, or real-money
+readiness.

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}SPY Out-of-Sample Check{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY Out-of-Sample Check</h2>
+    <p class="muted">A readiness page before the holdout-style variant check.</p>
+  </section>
+  {% include "_intraday_evidence_banner.html" %}
+
+  <section class="warning section">
+    <strong>Real-money status: Not allowed.</strong>
+    This is local historical research only. It is not live, not a signal, and not a recommendation.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    {% if saved_states.SPY.freshness.status.value == "fresh" and saved_states.QQQ.freshness.status.value == "fresh" %}
+      <p>SPY and QQQ have current saved local results, so EdgeLab can run the holdout-style check.</p>
+    {% else %}
+      <p>SPY and QQQ need current saved local results before EdgeLab can run the check fairly.</p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab checked</h3>
+    <p>
+      EdgeLab checks saved-result freshness before comparing earlier and later local periods.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What changed on later data</h3>
+    <p>
+      The detail page compares fixed SPY failed early move versions against a later period.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>
+      This can show whether an idea became mixed, weakened, or stayed worth studying. It does not
+      approve paper mode.
+    </p>
+    {% if saved_states.SPY.freshness.status.value == "fresh" and saved_states.QQQ.freshness.status.value == "fresh" %}
+      <p><a href="/ui/intraday-lab/out-of-sample/spy/early-move-failed">Open SPY failed early move check</a></p>
+    {% else %}
+      <p><a href="/ui/intraday-lab/research-runs">Open saved research runs</a></p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      If the fixed versions do not hold up, EdgeLab should collect more history before testing
+      broader experiments.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>
+      This is a first honesty check, not proof.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <ul>
+        {% for symbol, state in saved_states.items() %}
+          <li>{{ symbol }} saved result: {{ state.freshness.status.value.replace("_", " ") }}</li>
+          <li>{{ symbol }} saved result message: {{ state.freshness.message }}</li>
+        {% endfor %}
+      </ul>
+      <p>
+        This is not a pure untouched-data test because the current variants were identified after
+        reviewing the full local sample.
+      </p>
+    </details>
+  </section>
+{% endblock %}

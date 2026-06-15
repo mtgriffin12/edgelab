@@ -25,14 +25,11 @@
             </div>
           </details>
           <details class="nav-menu">
-            <summary>Intraday Lab</summary>
+            <summary>Intraday</summary>
             <div class="nav-menu-links">
-              <a href="/ui/intraday-lab">Intraday Lab overview</a>
-              <a href="/ui/intraday-lab/firstrate">FirstRate Study</a>
-              <a href="/ui/intraday-lab/comparative-study">SPY vs QQQ Study</a>
-              <a href="/ui/intraday-lab/variant-study">Variant Study</a>
-              <a href="/ui/intraday-lab/research-runs">Saved Runs</a>
-              <a href="/ui/intraday-lab/replay">Past Morning Practice</a>
+              <a href="/ui/intraday-lab/research">Research</a>
+              <a href="/ui/intraday-lab/trading">Trading</a>
+              <a href="/ui/intraday-lab/research-runs">Saved Results</a>
             </div>
           </details>
           <details class="nav-menu">
@@ -61,5 +58,19 @@
         </p>
       </main>
     </div>
+    <script>
+      document.querySelectorAll(".nav-menu").forEach((menu) => {
+        menu.addEventListener("toggle", () => {
+          if (!menu.open) {
+            return;
+          }
+          document.querySelectorAll(".nav-menu[open]").forEach((openMenu) => {
+            if (openMenu !== menu) {
+              openMenu.removeAttribute("open");
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>

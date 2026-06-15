@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2G SPY/QQQ Comparative Pattern Study**.
+Current phase: **Phase 7X-2I Generic Out-of-Sample Gate**.
 
 No live trading functionality exists.
 
@@ -54,6 +54,9 @@ Then visit:
 - `http://127.0.0.1:8000/ui/candidates`
 - `http://127.0.0.1:8000/ui/portfolios`
 - `http://127.0.0.1:8000/ui/intraday-lab`
+- `http://127.0.0.1:8000/ui/intraday-lab/research`
+- `http://127.0.0.1:8000/ui/intraday-lab/research/failed-early-move`
+- `http://127.0.0.1:8000/ui/intraday-lab/trading`
 - `http://127.0.0.1:8000/ui/intraday-lab/replay`
 - `http://127.0.0.1:8000/ui/intraday-lab/replay/RPLAY/replay-breakout-complete`
 - `http://127.0.0.1:8000/ui/intraday-lab/multi-session-summary`
@@ -67,6 +70,12 @@ Then visit:
 - `http://127.0.0.1:8000/ui/intraday-lab/comparative-study`
 - `http://127.0.0.1:8000/ui/intraday-lab/comparative-study/spy-qqq`
 - `http://127.0.0.1:8000/ui/intraday-lab/comparative-study/spy-qqq/opening-range-failure`
+- `http://127.0.0.1:8000/ui/intraday-lab/variant-study`
+- `http://127.0.0.1:8000/ui/intraday-lab/variant-study/spy`
+- `http://127.0.0.1:8000/ui/intraday-lab/variant-study/spy/early-move-failed`
+- `http://127.0.0.1:8000/ui/intraday-lab/out-of-sample`
+- `http://127.0.0.1:8000/ui/intraday-lab/out-of-sample/spy`
+- `http://127.0.0.1:8000/ui/intraday-lab/out-of-sample/spy/early-move-failed`
 - `http://127.0.0.1:8000/ui/intraday-lab/research-runs`
 - `http://127.0.0.1:8000/ui/intraday-lab/GEN_SYN`
 - `http://127.0.0.1:8000/ui/intraday-lab/prop-account-scaling`
@@ -139,6 +148,10 @@ Then visit:
 - `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq`
 - `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq/opening-range-failure`
 - `http://127.0.0.1:8000/intraday/comparative-study/spy-qqq/card`
+- `http://127.0.0.1:8000/intraday/variant-study/spy/early-move-failed`
+- `http://127.0.0.1:8000/intraday/variant-study/spy/early-move-failed/card`
+- `http://127.0.0.1:8000/intraday/out-of-sample/spy/early-move-failed`
+- `http://127.0.0.1:8000/intraday/out-of-sample/spy/early-move-failed/card`
 - `http://127.0.0.1:8000/intraday/history/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions`
 - `http://127.0.0.1:8000/intraday/history/SPY/sessions/spy-2024-01-02-historical`
@@ -190,6 +203,13 @@ summaries in an ignored SQLite database under `data/processed/research_runs/`. T
 raw CSV rows, call external services, or make results actionable. Freshness checks compare saved
 source-file metadata and assumptions against the current ignored local file.
 
+The Intraday Lab UI is organized around strategy ideas, not vendor files, symbols, or test-type
+pages. `/ui/intraday-lab/research` lists leading intraday ideas, and
+`/ui/intraday-lab/research/failed-early-move` summarizes the current SPY/QQQ Failed Early Move
+work in one result-first page. Legacy FirstRate, comparison, variant, out-of-sample, and saved-run
+pages remain available as Evidence Details links, but they are no longer primary navigation items.
+`/ui/intraday-lab/trading` is a future-only placeholder; no live monitoring or trading is enabled.
+
 The SPY/QQQ comparative study endpoints and `/ui/intraday-lab/comparative-study` pages compare
 failed early moves across current saved local SPY and QQQ research runs. The technical setup name
 is Opening Range Failure, but the UI explains it as an early move that could not hold. The detail
@@ -203,6 +223,13 @@ is not permanently SPY-only; SPY is simply the first local instrument reviewed. 
 before results are read, no parameters are mined or tuned afterward, and gap/range context checks
 can block thin or incomplete splits. The study does not save variant results, create broader
 strategy experiments, promote paper mode, or imply real-money readiness.
+
+The out-of-sample gate endpoints and `/ui/intraday-lab/out-of-sample` pages add a first
+time-based stability check for the fixed SPY failed early move variants. EdgeLab requires current
+saved local SPY and QQQ research runs, then recomputes the earlier discovery period and later
+holdout-style period from ignored local FirstRate files in memory. It does not create saved runs on
+page load, save gate results, call external services, promote paper mode, or call the result proof.
+Real-money status remains Not allowed.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,

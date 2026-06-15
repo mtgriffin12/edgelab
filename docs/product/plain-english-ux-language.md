@@ -131,3 +131,14 @@ Warnings should be short and direct:
 - "Worth more testing" means another research pass, not paper-mode readiness.
 - Variant pages should explain what looked different before showing counts.
 - Technical variant IDs, internal classifications, and average pretend result belong under Evidence details.
+- "Out-of-Sample Check" should mean a first honesty check across time, not proof.
+- "Discovery Period" should mean the earlier local examples.
+- "Later Check Period" should mean the later local examples.
+- "Held up in first check" still means interesting but unproven.
+- "Became unclear" should replace technical or dismissive labels such as "too noisy" in primary UI.
+- "Why This Is Not Proof" should appear before any technical split details.
+- Out-of-sample pages should say this is not a pure untouched-data test when the variants came from the same reviewed file family.
+- "Strategy Idea" should lead intraday research lists before vendor, symbol, or test names.
+- "Securities Tested" should explain SPY and QQQ as tested instruments, not product pages.
+- "Tests Run" should group readiness, comparison, version, and later-period checks.
+- "Next Research Action" should be the final primary answer on intraday research summaries.

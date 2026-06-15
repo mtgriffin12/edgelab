@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Failed Early Move Research{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ detail.idea_name }}</h2>
+    <p class="muted">SPY and QQQ research summary for one intraday strategy idea.</p>
+  </section>
+
+  <section class="section">
+    <h3>Result Summary</h3>
+    <p>{{ detail.result_summary }}</p>
+    <p><strong>Current conclusion:</strong> {{ detail.current_conclusion }}</p>
+    <p><strong>Next research action:</strong> {{ detail.next_research_action }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Securities Tested</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Security</th>
+          <th>Latest saved result</th>
+          <th>Data status</th>
+          <th>Last run date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for security in detail.securities_tested %}
+          <tr>
+            <td>{{ security.symbol }}</td>
+            <td>{{ security.latest_saved_result }}</td>
+            <td>{{ security.data_status }}</td>
+            <td>{{ security.last_run_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Tests Run</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>Securities</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for test in detail.tests_run %}
+          <tr>
+            <td>{{ test.test_name }}</td>
+            <td>{{ test.securities }}</td>
+            <td>{{ test.result }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Best Pattern Candidates</h3>
+    <div class="grid">
+      {% for candidate in detail.best_pattern_candidates %}
+        <div class="summary-card">
+          <h4>{{ candidate.candidate_name }}</h4>
+          <p>{{ candidate.evidence_seen }}</p>
+          <p>{{ candidate.later_check }}</p>
+          <p>{{ candidate.conclusion }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Current Conclusion</h3>
+    <p>{{ detail.current_conclusion }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Next Research Action</h3>
+    <p>{{ detail.next_research_action }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show detailed evidence pages</summary>
+      <p>{{ detail.safety_status }}</p>
+      <ul>
+        {% for link in detail.evidence_links %}
+          <li>
+            <a href="{{ link.href }}">{{ link.label }}</a>:
+            {{ link.description }}
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}

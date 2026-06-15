@@ -273,3 +273,22 @@ This phase explicitly avoids parameter mining, best-setting searches, and tuning
 results. A future experiment ledger and out-of-sample testing are required before broader variant
 generation. The study does not save variant outputs, enable paper mode, create live signals, or
 approve real-money use. Real-money status remains Not allowed.
+
+## Phase 7X-2I Generic Out-of-Sample Gate
+
+Phase 7X-2I adds a generic out-of-sample gate and first applies it to SPY's failed early move
+variants. The current split is time-based: the discovery period runs from the earliest local SPY
+session through the last local session before 2023 Q1, and the holdout-style period runs from the
+first local SPY session on or after 2023-01-01 through the latest local session.
+
+The gate requires current saved local SPY and QQQ research runs before it recomputes evidence from
+ignored local FirstRate files. It does not auto-create saved runs on page load and does not save
+gate results. The process-local cache key includes the symbols, paired symbol, pattern family,
+variant IDs, split strategy and dates, replay assumptions, source-file signatures, and gate code
+version.
+
+This is a holdout-style check, not proof. Because the variants were identified after reviewing the
+full available sample, the current result is a first honesty check rather than a pure untouched-data
+confirmation. A stronger check requires additional historical data or future local data collected
+after the rules are locked. The gate does not create recommendations, promote paper mode, create
+live signals, or approve real-money use. Real-money status remains Not allowed.

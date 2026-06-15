@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Intraday Research{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Intraday Research</h2>
+    <p class="muted">
+      Leading intraday strategy ideas, organized by result instead of by test machinery.
+    </p>
+  </section>
+
+  <section class="section">
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy idea</th>
+          <th>Securities tested</th>
+          <th>Tests run</th>
+          <th>Best current pattern candidate</th>
+          <th>Current conclusion</th>
+          <th>Status</th>
+          <th>Next research action</th>
+          <th>Last run date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in research_rows %}
+          <tr>
+            <td><a href="/ui/intraday-lab/research/{{ row.strategy_id }}">{{ row.strategy_name }}</a></td>
+            <td>{{ row.securities_tested }}</td>
+            <td>{{ row.tests_run }}</td>
+            <td>{{ row.best_current_pattern_candidate }}</td>
+            <td>{{ row.current_conclusion }}</td>
+            <td><span class="status status-warn">{{ row.status }}</span></td>
+            <td>{{ row.next_research_action }}</td>
+            <td>{{ row.last_run_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

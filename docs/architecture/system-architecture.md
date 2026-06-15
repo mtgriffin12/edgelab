@@ -146,6 +146,22 @@ assumptions, variant spec version, and code version. It does not tune thresholds
 persist variant outputs, create background work, call external services, promote paper mode, or
 produce recommendations.
 
+## Out-of-Sample Gate
+
+Runs a generic time-based stability check for fixed intraday variants. Phase 7X-2I first uses it
+for SPY failed early move variants with QQQ as paired context. The service requires current saved
+full-symbol research runs, recomputes discovery and holdout-style evidence from ignored local files
+in memory, and caches by symbol pair, variant IDs, split dates, replay assumptions, file
+signatures, and code version. It does not create saved runs on page load, persist gate outputs,
+call external services, promote paper mode, or produce recommendations.
+
+## Intraday Research View Model
+
+Presents intraday work by strategy idea rather than by implementation page. The view model rolls up
+saved-result freshness, local file readiness, SPY/QQQ comparison, controlled variant study, and
+out-of-sample gate output into one Failed Early Move research summary. It does not add research
+logic, persist results, call external services, or change the underlying evidence services.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

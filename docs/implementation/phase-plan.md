@@ -34,6 +34,8 @@ Phase 7X-2G: SPY/QQQ comparative pattern study for failed early moves, local and
 
 Phase 7X-2H: SPY Early Move Failed controlled variant study, pre-declared and research-only
 
+Phase 7X-2I: Generic out-of-sample gate, holdout-style and research-only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

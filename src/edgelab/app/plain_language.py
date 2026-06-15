@@ -236,6 +236,108 @@ PLAIN_LANGUAGE_TERMS: dict[str, PlainLanguageTerm] = {
         short_explanation="One pre-chosen version of a research idea.",
         why_it_matters="It prevents EdgeLab from changing the test after seeing the result.",
     ),
+    "out_of_sample_check": PlainLanguageTerm(
+        technical_key="out_of_sample_check",
+        plain_label="Out-of-Sample Check",
+        short_explanation=(
+            "A first honesty check that compares earlier local examples with later local examples."
+        ),
+        why_it_matters=(
+            "It helps EdgeLab see whether a fixed idea stayed interesting after the discovery "
+            "period."
+        ),
+        caution="This is not proof and not a real-money permission step.",
+    ),
+    "discovery_period": PlainLanguageTerm(
+        technical_key="discovery_period",
+        plain_label="Discovery Period",
+        short_explanation="The earlier local history where an idea first looked worth studying.",
+        why_it_matters="It separates the period that inspired the idea from the later check.",
+    ),
+    "holdout_period": PlainLanguageTerm(
+        technical_key="holdout_period",
+        plain_label="Later Check Period",
+        short_explanation="The later local history used for the first stability check.",
+        why_it_matters="It shows whether the idea stayed interesting after the earlier period.",
+    ),
+    "holdout_style_check": PlainLanguageTerm(
+        technical_key="holdout_style_check",
+        plain_label="Holdout-Style Check",
+        short_explanation=(
+            "A later-period check that is useful but not as strong as brand-new untouched data."
+        ),
+        why_it_matters="It adds honesty without overstating what the current file can prove.",
+    ),
+    "time_based_stability_check": PlainLanguageTerm(
+        technical_key="time_based_stability_check",
+        plain_label="Time-Based Stability Check",
+        short_explanation=(
+            "A check that asks whether the idea held together in a later time window."
+        ),
+        why_it_matters="Stable behavior over time is more useful than one lucky cluster.",
+    ),
+    "held_up_in_first_check": PlainLanguageTerm(
+        technical_key="held_up_in_first_check",
+        plain_label="Held Up in First Check",
+        short_explanation="The later examples still looked interesting, but remain unproven.",
+        why_it_matters="It helps choose what deserves more research without implying readiness.",
+    ),
+    "became_unclear": PlainLanguageTerm(
+        technical_key="became_unclear",
+        plain_label="Became Unclear",
+        short_explanation="The later examples were mixed, so EdgeLab did not get a clean answer.",
+        why_it_matters="It stops a weak later result from being treated as confirmation.",
+    ),
+    "not_enough_holdout_examples": PlainLanguageTerm(
+        technical_key="not_enough_holdout_examples",
+        plain_label="Not Enough Later Examples",
+        short_explanation="The later period had too few examples for a fair check.",
+        why_it_matters="A tiny later sample can make ordinary noise look meaningful.",
+    ),
+    "weaker_on_holdout": PlainLanguageTerm(
+        technical_key="weaker_on_holdout",
+        plain_label="Weaker in the Later Period",
+        short_explanation="The later period looked worse than the earlier period.",
+        why_it_matters="It warns EdgeLab not to chase an idea that faded in the later sample.",
+    ),
+    "proof_limitations": PlainLanguageTerm(
+        technical_key="proof_limitations",
+        plain_label="Why This Is Not Proof",
+        short_explanation=(
+            "The current check uses the same local file family where the idea was first reviewed."
+        ),
+        why_it_matters="EdgeLab needs stricter future checks before trusting the idea.",
+    ),
+    "intraday_strategy_idea": PlainLanguageTerm(
+        technical_key="intraday_strategy_idea",
+        plain_label="Strategy Idea",
+        short_explanation="One intraday idea EdgeLab is researching across securities and tests.",
+        why_it_matters="It keeps the UI focused on results instead of internal test pages.",
+    ),
+    "securities_tested": PlainLanguageTerm(
+        technical_key="securities_tested",
+        plain_label="Securities Tested",
+        short_explanation="The equities or funds EdgeLab used to research the idea.",
+        why_it_matters="SPY and QQQ are evidence inputs, not permanent product pages.",
+    ),
+    "tests_run": PlainLanguageTerm(
+        technical_key="tests_run",
+        plain_label="Tests Run",
+        short_explanation="The research checks EdgeLab has already applied to the idea.",
+        why_it_matters="It shows what supports the conclusion before technical details.",
+    ),
+    "best_current_pattern_candidate": PlainLanguageTerm(
+        technical_key="best_current_pattern_candidate",
+        plain_label="Best Current Pattern Candidate",
+        short_explanation="The version that looked most worth inspecting so far.",
+        why_it_matters="It highlights what might deserve more research without implying trust.",
+    ),
+    "next_research_action": PlainLanguageTerm(
+        technical_key="next_research_action",
+        plain_label="Next Research Action",
+        short_explanation="The next local research step EdgeLab should take.",
+        why_it_matters="It turns a mixed result into a clear research workflow.",
+    ),
     "broad_baseline": PlainLanguageTerm(
         technical_key="broad_baseline",
         plain_label="Broad Comparison Group",

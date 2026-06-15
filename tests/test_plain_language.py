@@ -151,6 +151,21 @@ def test_required_plain_language_terms_exist() -> None:
         "weak_or_inconsistent",
         "worth_more_testing",
         "controlled_variant",
+        "out_of_sample_check",
+        "discovery_period",
+        "holdout_period",
+        "holdout_style_check",
+        "time_based_stability_check",
+        "held_up_in_first_check",
+        "became_unclear",
+        "not_enough_holdout_examples",
+        "weaker_on_holdout",
+        "proof_limitations",
+        "intraday_strategy_idea",
+        "securities_tested",
+        "tests_run",
+        "best_current_pattern_candidate",
+        "next_research_action",
         "failed_early_move",
         "broad_baseline",
         "failed_push_from_above",
@@ -224,6 +239,11 @@ def test_key_technical_terms_map_to_plain_labels() -> None:
     assert plain_label("keep_watching") == "Keep Watching"
     assert plain_label("spy_vs_qqq_pattern_study") == "SPY vs QQQ Pattern Study"
     assert plain_label("controlled_variant") == "Controlled Version"
+    assert plain_label("out_of_sample_check") == "Out-of-Sample Check"
+    assert plain_label("holdout_style_check") == "Holdout-Style Check"
+    assert plain_label("held_up_in_first_check") == "Held Up in First Check"
+    assert plain_label("intraday_strategy_idea") == "Strategy Idea"
+    assert plain_label("securities_tested") == "Securities Tested"
     assert plain_label("failed_early_move") == "Failed Early Move"
     assert plain_label("broad_baseline") == "Broad Comparison Group"
     assert plain_label("fast_failure") == "Failed Quickly"

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from edgelab.intraday.comparative_study_schema import ComparativeStudyResult
+from edgelab.intraday.out_of_sample_gate_schema import OutOfSampleGateResult
 from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
 from edgelab.intraday.replay_schema import HistoricalReplayResult
@@ -283,6 +284,41 @@ def variant_study_to_markdown_card(result: VariantStudyResult) -> str:
     )
 
 
+def out_of_sample_gate_to_markdown_card(result: OutOfSampleGateResult) -> str:
+    """Render an out-of-sample gate as plain-English Markdown."""
+
+    return "\n".join(
+        [
+            "# Out-of-Sample Check",
+            "",
+            "## Bottom line",
+            result.bottom_line,
+            "",
+            "## What EdgeLab checked",
+            result.what_edgelab_checked,
+            "",
+            "## What changed on later data",
+            result.what_changed_on_later_data,
+            "",
+            "## What this means",
+            result.what_this_means,
+            "",
+            "## What EdgeLab should test next",
+            result.what_edgelab_should_test_next,
+            "",
+            "## Why this might be misleading",
+            result.why_this_might_be_misleading,
+            "",
+            "## Real-money status: Not allowed",
+            f"- {result.real_money_status}",
+            "- This is local historical research only. It is not live and not a recommendation.",
+            "",
+            "## Evidence details",
+            *_bullets(_out_of_sample_evidence_lines(result)),
+        ]
+    )
+
+
 def _setup_lines(setups: list[IntradaySetupCandidate]) -> list[str]:
     return [f"- {setup.plain_english_summary}" for setup in setups] or ["- No setup was selected."]
 
@@ -454,6 +490,28 @@ def _variant_study_evidence_lines(result: VariantStudyResult) -> list[str]:
             ]
         )
     lines.extend(issue.message for issue in result.quality_issues)
+    return lines
+
+
+def _out_of_sample_evidence_lines(result: OutOfSampleGateResult) -> list[str]:
+    lines = [
+        f"Gate conclusion: {result.gate_conclusion.value.replace('_', ' ')}.",
+        f"Split strategy: {result.split_strategy.value.replace('_', ' ')}.",
+        f"Proof limitation: {result.proof_limitations}",
+    ]
+    if result.discovery_period is not None:
+        lines.append(
+            "Discovery period: "
+            f"{result.discovery_period.start_date} through {result.discovery_period.end_date}."
+        )
+    if result.holdout_period is not None:
+        lines.append(
+            f"Holdout period: {result.holdout_period.start_date} "
+            f"through {result.holdout_period.end_date}."
+        )
+    for comparison in result.variant_comparisons:
+        lines.append(f"{comparison.plain_english_label}: {comparison.gate_conclusion_translation}")
+    lines.extend(warning.message for warning in result.data_quality_warnings)
     return lines
 
 

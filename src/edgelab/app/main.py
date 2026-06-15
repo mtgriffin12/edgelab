@@ -29,6 +29,7 @@ from edgelab.intraday.cards import (
     historical_replay_to_markdown_card,
     intraday_simulation_to_markdown_card,
     multi_session_replay_to_markdown_card,
+    out_of_sample_gate_to_markdown_card,
     prop_account_to_markdown_card,
     variant_study_to_markdown_card,
 )
@@ -52,6 +53,7 @@ from edgelab.intraday.historical_schema import (
     HistoricalIntradaySession,
     utc_now,
 )
+from edgelab.intraday.out_of_sample_gate import OutOfSampleGateService
 from edgelab.intraday.pattern_results import MultiSessionPatternRunner
 from edgelab.intraday.pattern_results_schema import (
     MultiSessionReplayRequest,
@@ -60,6 +62,10 @@ from edgelab.intraday.pattern_results_schema import (
 from edgelab.intraday.prop_accounts import sample_prop_account_result
 from edgelab.intraday.replay import HistoricalIntradayReplayEngine
 from edgelab.intraday.replay_schema import HistoricalReplayRequest, HistoricalReplayResult
+from edgelab.intraday.research_view_model import (
+    build_failed_early_move_detail,
+    build_intraday_research_rows,
+)
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
@@ -141,6 +147,11 @@ variant_study_service = ControlledVariantStudyService(
     provider=firstrate_historical_provider,
     setup_detector=intraday_setup_detector,
 )
+out_of_sample_gate_service = OutOfSampleGateService(
+    research_run_service=research_run_service,
+    provider=firstrate_historical_provider,
+    setup_detector=intraday_setup_detector,
+)
 
 
 @dataclass(frozen=True)
@@ -185,7 +196,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2H SPY Early Move Failed variant study",
+        "phase": "Phase 7X-2I generic out-of-sample gate",
         "status": "research-only",
     }
 
@@ -983,6 +994,37 @@ def read_spy_early_move_failed_variant_detail(
     raise HTTPException(status_code=404, detail="Variant not found")
 
 
+@app.get("/intraday/out-of-sample/spy/early-move-failed")
+def read_spy_early_move_failed_out_of_sample_gate() -> dict[str, object]:
+    """Return the local SPY Early Move Failed holdout-style gate."""
+
+    return out_of_sample_gate_service.run().model_dump(mode="json")
+
+
+@app.get("/intraday/out-of-sample/spy/early-move-failed/card", response_class=Response)
+def read_spy_early_move_failed_out_of_sample_gate_card() -> Response:
+    """Return the SPY Early Move Failed holdout-style gate as Markdown."""
+
+    result = out_of_sample_gate_service.run()
+    return Response(content=out_of_sample_gate_to_markdown_card(result), media_type="text/plain")
+
+
+@app.get("/intraday/out-of-sample/spy/early-move-failed/{variant_id}")
+def read_spy_early_move_failed_out_of_sample_variant(variant_id: str) -> dict[str, object]:
+    """Return one variant from the local out-of-sample gate."""
+
+    result = out_of_sample_gate_service.run()
+    for comparison in result.variant_comparisons:
+        if comparison.variant_id == variant_id:
+            return {
+                "gate_id": result.gate_id,
+                "variant": comparison.model_dump(mode="json"),
+                "research_only_status": result.research_only_status,
+                "real_money_status": result.real_money_status,
+            }
+    raise HTTPException(status_code=404, detail="Variant not found")
+
+
 @app.get("/intraday/history/{symbol}/sessions")
 def read_historical_intraday_symbol_sessions(symbol: str) -> dict[str, object]:
     """Return local historical intraday sessions for one symbol."""
@@ -1488,16 +1530,53 @@ def read_ui_portfolio_detail(request: Request, portfolio_id: str) -> Response:
 
 @app.get("/ui/intraday-lab", response_class=HTMLResponse)
 def read_ui_intraday_lab(request: Request) -> Response:
-    """Render the local intraday research spike landing page."""
+    """Render the simplified intraday product hub."""
 
     return templates.TemplateResponse(
         request=request,
         name="intraday_lab.html",
-        context={
-            "instruments": intraday_fixture_provider.list_instruments(),
-            "sessions": intraday_fixture_provider.list_available_sessions(),
-            "firstrate_dry_run": firstrate_historical_provider.dry_run(),
-        },
+        context={},
+    )
+
+
+@app.get("/ui/intraday-lab/research", response_class=HTMLResponse)
+def read_ui_intraday_research(request: Request) -> Response:
+    """Render the strategy-idea-first intraday research list."""
+
+    saved_states = _failed_early_move_saved_states()
+    research_rows = build_intraday_research_rows(saved_states=saved_states)
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_research.html",
+        context={"research_rows": research_rows},
+    )
+
+
+@app.get("/ui/intraday-lab/research/failed-early-move", response_class=HTMLResponse)
+def read_ui_failed_early_move_research(request: Request) -> Response:
+    """Render the product-level Failed Early Move research summary."""
+
+    saved_states = _failed_early_move_saved_states()
+    result = out_of_sample_gate_service.run()
+    detail = build_failed_early_move_detail(
+        saved_states=saved_states,
+        out_of_sample_result=result,
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_research_failed_early_move.html",
+        context={"detail": detail},
+    )
+
+
+@app.get("/ui/intraday-lab/trading", response_class=HTMLResponse)
+def read_ui_intraday_trading(request: Request) -> Response:
+    """Render the future-only intraday trading placeholder."""
+
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_trading.html",
+        context={},
     )
 
 
@@ -1740,6 +1819,73 @@ def read_ui_spy_early_move_failed_variant_study(request: Request) -> Response:
         context={
             "result": result,
             "card": variant_study_to_markdown_card(result),
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/out-of-sample", response_class=HTMLResponse)
+def read_ui_out_of_sample_landing(request: Request) -> Response:
+    """Render the out-of-sample gate landing page without heavy work."""
+
+    spy_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="SPY",
+    )
+    qqq_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="QQQ",
+    )
+    spy_run, spy_freshness = research_run_service.latest_with_freshness(spy_request)
+    qqq_run, qqq_freshness = research_run_service.latest_with_freshness(qqq_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="out_of_sample_landing.html",
+        context={
+            "saved_states": {
+                "SPY": {"run": spy_run, "freshness": spy_freshness},
+                "QQQ": {"run": qqq_run, "freshness": qqq_freshness},
+            },
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/out-of-sample/spy", response_class=HTMLResponse)
+def read_ui_spy_out_of_sample_gate(request: Request) -> Response:
+    """Render the SPY out-of-sample readiness page."""
+
+    spy_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="SPY",
+    )
+    qqq_request = _research_run_request(
+        run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+        symbol="QQQ",
+    )
+    spy_run, spy_freshness = research_run_service.latest_with_freshness(spy_request)
+    qqq_run, qqq_freshness = research_run_service.latest_with_freshness(qqq_request)
+    return templates.TemplateResponse(
+        request=request,
+        name="out_of_sample_spy.html",
+        context={
+            "saved_states": {
+                "SPY": {"run": spy_run, "freshness": spy_freshness},
+                "QQQ": {"run": qqq_run, "freshness": qqq_freshness},
+            },
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/out-of-sample/spy/early-move-failed", response_class=HTMLResponse)
+def read_ui_spy_early_move_failed_out_of_sample_gate(request: Request) -> Response:
+    """Render the SPY Early Move Failed holdout-style gate."""
+
+    result = out_of_sample_gate_service.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="out_of_sample_early_move_failed.html",
+        context={
+            "result": result,
+            "card": out_of_sample_gate_to_markdown_card(result),
         },
     )
 
@@ -2254,6 +2400,19 @@ def _research_run_request(
         slippage_ticks=slippage_ticks,
         commission_per_contract=commission_per_contract,
     )
+
+
+def _failed_early_move_saved_states() -> dict[
+    str, tuple[SavedResearchRun | None, ResearchRunFreshness]
+]:
+    states: dict[str, tuple[SavedResearchRun | None, ResearchRunFreshness]] = {}
+    for symbol in ("SPY", "QQQ"):
+        run_request = _research_run_request(
+            run_type=ResearchRunType.FIRSTRATE_MANY_MORNING_REPLAY,
+            symbol=symbol,
+        )
+        states[symbol] = research_run_service.latest_with_freshness(run_request)
+    return states
 
 
 def _comparative_study_request(

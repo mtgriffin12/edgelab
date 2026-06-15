@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Out-of-Sample Check{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Out-of-Sample Check</h2>
+    <p class="muted">A later-period check for fixed research ideas.</p>
+  </section>
+  {% include "_intraday_evidence_banner.html" %}
+
+  <section class="warning section">
+    <strong>Real-money status: Not allowed.</strong>
+    This is local historical research only. It is not live, not a signal, and not a recommendation.
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      EdgeLab can check whether fixed ideas still look similar on a later local period after saved
+      SPY and QQQ results are current.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab checked</h3>
+    <p>
+      This page only checks readiness. It does not run the heavier later-period comparison.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What changed on later data</h3>
+    <p>
+      Open the SPY page to run the holdout-style check for fixed failed early move versions.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>
+      A later-period check can reduce overconfidence, but it does not make an idea ready for paper
+      mode.
+    </p>
+    <p><a href="/ui/intraday-lab/out-of-sample/spy">Open SPY readiness</a></p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>
+      Keep variant rules fixed, then test them on more local history or future locked-rule data.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>
+      This is a first honesty check, not proof.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details>
+      <summary>Show backup details</summary>
+      <ul>
+        {% for symbol, state in saved_states.items() %}
+          <li>
+            {{ symbol }} saved result:
+            {% if state.freshness.status.value == "fresh" %}
+              current for the local file
+            {% else %}
+              {{ state.freshness.status.value.replace("_", " ") }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <p>
+        The current SPY check uses the same local file where the interesting variants were first
+        noticed, so it is a holdout-style check rather than a pure untouched-data test.
+      </p>
+    </details>
+  </section>
+{% endblock %}

@@ -156,3 +156,18 @@ symbols, replay assumptions, variant spec version, and code version.
 
 No real downloaded data, ignored saved-run database files, or processed outputs are committed. The
 study does not call external APIs, fetch live data, add provider SDKs, or create recommendations.
+
+## Phase 7X-2I Out-of-Sample Gate Data Use
+
+Phase 7X-2I uses current saved-run freshness as a prerequisite, then recomputes the out-of-sample
+gate directly from ignored local FirstRate files. The split is fixed before the check: earlier
+local SPY sessions are the discovery period and local SPY sessions on or after 2023-01-01 are the
+holdout-style period. QQQ is required as paired local context for disagreement variants.
+
+Gate outputs are not saved to SQLite or written under `data/processed/`. Repeat loads use
+process-local cache keyed by symbols, paired symbol, pattern family, variant IDs, split strategy and
+dates, replay assumptions, source-file signatures, and gate code version.
+
+No real downloaded data, ignored saved-run database files, or processed outputs are committed. The
+gate does not call external APIs, fetch live data, add provider SDKs, promote paper mode, create
+signals, or create recommendations.

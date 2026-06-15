@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}SPY Failed Early Move Out-of-Sample Check{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY Failed Early Move Out-of-Sample Check</h2>
+    <p class="muted">A time-based stability check for fixed local research variants.</p>
+  </section>
+  {% include "_intraday_evidence_banner.html" %}
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ result.bottom_line }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab checked</h3>
+    <p>{{ result.what_edgelab_checked }}</p>
+    {% if result.discovery_period and result.holdout_period %}
+      <p>
+        Earlier period: {{ result.discovery_period.start_date }} through {{ result.discovery_period.end_date }}.
+        Later period: {{ result.holdout_period.start_date }} through {{ result.holdout_period.end_date }}.
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="section">
+    <h3>What changed on later data</h3>
+    <p>{{ result.what_changed_on_later_data }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What this means</h3>
+    <p>{{ result.what_this_means }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab should test next</h3>
+    <p>{{ result.what_edgelab_should_test_next }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Why this might be misleading</h3>
+    <p>{{ result.why_this_might_be_misleading }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Real-money status: Not allowed</h3>
+    <p>
+      This page is local historical research only. It is not live, not a signal, not a
+      recommendation, and not a paper-mode approval.
+    </p>
+  </section>
+
+  {% if result.variant_comparisons %}
+    <section class="section">
+      <h3>Version checks</h3>
+      <div class="grid">
+        {% for comparison in result.variant_comparisons %}
+          <div class="summary-card">
+            <h4>{{ comparison.plain_english_label }}</h4>
+            <p>{{ comparison.gate_conclusion_translation }}</p>
+            <p>{{ comparison.comparison_result }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="section">
+    <h3>Evidence details</h3>
+    <details open>
+      <summary>Show backup details</summary>
+      <p>Internal gate conclusion: {{ result.gate_conclusion.value.replace("_", " ") }}.</p>
+      <p>Split strategy: {{ result.split_strategy.value.replace("_", " ") }}.</p>
+      <p>Cache status: {{ result.cache_metadata.get("cache_status", "unknown") }}.</p>
+      <p>Proof limitation: {{ result.proof_limitations }}</p>
+      {% if result.data_quality_warnings %}
+        <h4>Warnings</h4>
+        <ul>
+          {% for warning in result.data_quality_warnings %}
+            <li>{{ warning.message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <div class="grid">
+        {% for comparison in result.variant_comparisons %}
+          <div class="summary-card">
+            <h4>{{ comparison.plain_english_label }}</h4>
+            <ul class="list-clean">
+              <li>Internal variant ID: {{ comparison.variant_id }}</li>
+              <li>Discovery examples: {{ comparison.discovery_result.examples_completed }}</li>
+              <li>Holdout examples: {{ comparison.holdout_result.examples_completed }}</li>
+              <li>Moved as expected in holdout: {{ comparison.holdout_result.moved_as_expected_count }}</li>
+              <li>Moved against the test in holdout: {{ comparison.holdout_result.moved_against_test_count }}</li>
+              <li>Conclusion: {{ comparison.gate_conclusion.value.replace("_", " ") }}</li>
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    </details>
+  </section>
+{% endblock %}

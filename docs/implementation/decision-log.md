@@ -131,3 +131,9 @@ DEC-032: Phase 7X-2G adds a SPY/QQQ comparative pattern study so EdgeLab can inv
 ## DEC-033: Phase 7X-2H SPY Early Move Failed Controlled Variant Study
 
 DEC-033: Phase 7X-2H adds a controlled SPY Early Move Failed variant study so EdgeLab can compare pre-declared versions of one pattern before generating broader strategy experiments. Variants are fixed before review, no parameter mining or post-result tuning is allowed, and a future experiment ledger is required before broader variant generation.
+
+## DEC-034: Phase 7X-2I Generic Out-of-Sample Gate
+
+DEC-034: Phase 7X-2I adds a generic out-of-sample gate for fixed intraday variants, first applied to SPY Early Move Failed variants. The gate requires current saved local SPY and QQQ research runs, recomputes a fixed time-based discovery versus holdout-style split from ignored local FirstRate files, and does not save gate outputs. The current result must be described as a holdout-style check or first honesty check, not proof, validation, paper-mode readiness, live-signal readiness, or real-money readiness.
+
+DEC-034 also simplifies the Intraday Lab IA around strategy ideas and results. Intraday primary navigation now points to Research, Trading, and Saved Results. FirstRate, SPY vs QQQ, variant, out-of-sample, and symbol-specific pages remain available as detailed evidence pages rather than primary product pages.
