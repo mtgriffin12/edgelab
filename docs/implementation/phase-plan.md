@@ -38,6 +38,8 @@ Phase 7X-2I: Generic out-of-sample gate, holdout-style and research-only
 
 Phase 7X-2J: AI-assisted strategy discovery sprint, fixed-library and local-only
 
+Phase 7X-2K: Expanded free FirstRate universe, strategy-first and research-only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

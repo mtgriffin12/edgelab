@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2J AI-Assisted Strategy Discovery Sprint**.
+Current phase: **Phase 7X-2K Expanded Free FirstRate Universe**.
 
 No live trading functionality exists.
 
@@ -239,11 +239,11 @@ page load, save gate results, call external services, promote paper mode, or cal
 Real-money status remains Not allowed.
 
 The discovery sprint endpoints and `/ui/intraday-lab/research` page run a local fixed-library
-scan across eight simple intraday idea families: Failed Early Move, Gap Fade, Gap Continuation,
-First 15-Minute Breakout, First 30-Minute Breakout, Opening Range Reclaim, Strong Open / Weak
-Follow-Through, and SPY/QQQ Divergence. The "AI-assisted" part is limited to a future-safe schema
-for locked hypotheses; Phase 7X-2J does not call AI, optimize prompts, save sprint outputs, fetch
-data, create recommendations, promote paper mode, or approve real-money use.
+scan across every matching ignored FirstRate sample file EdgeLab can find. General ideas run across
+the expanded local universe, while SPY/QQQ Divergence stays scoped to SPY and QQQ. The
+"AI-assisted" part is limited to a future-safe schema for locked hypotheses; Phase 7X-2K does not
+call AI, optimize prompts, save sprint outputs, fetch data, create recommendations, promote paper
+mode, or approve real-money use.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,

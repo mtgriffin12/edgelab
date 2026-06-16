@@ -269,6 +269,8 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
         "Bottom line",
         "What EdgeLab tested",
         "What EdgeLab found",
+        "Best candidate if any",
+        "Current conclusion",
         "Strategy idea",
         "Securities tested",
         "Tests run",
@@ -283,6 +285,8 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
         "Opening Range Reclaim",
         "Strong Open / Weak Follow-Through",
         "SPY/QQQ Divergence",
+        "AAPL, AMZN, DIA, EEM, META, MSFT, QQQ, SPY, TSLA, VXX",
+        "VXX_1min_firstratedata.csv",
         "Future AI idea intake",
         "does not call AI",
         "Evidence Details",
@@ -295,6 +299,7 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
     assert "buy now" not in primary_text
     assert "sell now" not in primary_text
     assert "short now" not in primary_text
+    assert "too noisy" not in response.text.lower()
     assert "ready for real money" not in response.text.lower()
     assert "validated edge" not in response.text.lower()
 
@@ -305,16 +310,24 @@ def test_failed_early_move_research_detail_summarizes_all_related_tests() -> Non
     assert response.status_code == 200
     for phrase in [
         "Failed Early Move",
+        "What this strategy tests",
+        "What EdgeLab is testing",
+        "EdgeLab checks mornings where price made an early push but could not hold it.",
+        "What counts as an example",
+        "A morning counts when price moves outside the early range, then falls back inside it.",
+        "What would count as a useful result",
+        "What would count as a failed or unclear result",
         "Result Summary",
         "Securities Tested",
         "SPY",
         "QQQ",
+        "AAPL",
+        "AMZN",
         "Tests Run",
-        "Simple fixed-rule scan",
+        "Expanded local universe scan",
         "Checked later in the year",
         "Best Pattern Candidates",
-        "Failed push from above",
-        "SPY/QQQ disagreement",
+        "No strong candidate yet",
         "Current Conclusion",
         "Next Research Action",
         "Evidence Details",
@@ -322,6 +335,8 @@ def test_failed_early_move_research_detail_summarizes_all_related_tests() -> Non
         "Discovery sprint card",
         "/intraday/discovery-sprint",
         "/intraday/discovery-sprint/card",
+        "Examples are mornings where this setup appeared.",
+        "Completed examples are examples where EdgeLab could see what happened afterward.",
     ]:
         assert phrase in response.text
     primary_text = visible_text_before(response.text, "Evidence Details")
@@ -333,6 +348,41 @@ def test_failed_early_move_research_detail_summarizes_all_related_tests() -> Non
         "Real-money status",
     ]:
         assert phrase.lower() not in primary_text
+    symbol_route = client.get("/ui/intraday-lab/research/AAPL")
+    assert symbol_route.status_code == 404
+
+
+def test_strategy_detail_pages_explain_examples_and_current_results() -> None:
+    first_15 = client.get("/ui/intraday-lab/research/first-15-minute-breakout")
+    reclaim = client.get("/ui/intraday-lab/research/opening-range-reclaim")
+
+    assert first_15.status_code == 200
+    assert reclaim.status_code == 200
+    for response in [first_15, reclaim]:
+        assert "<summary>What this strategy tests</summary>" in response.text
+        assert "What EdgeLab is testing" in response.text
+        assert "What counts as an example" in response.text
+        assert "What would count as a useful result" in response.text
+        assert "What would count as a failed or unclear result" in response.text
+        assert "How to read the current result" in response.text
+        assert "Examples are mornings where this setup appeared." in response.text
+        assert (
+            "Completed examples are examples where EdgeLab could see what happened afterward."
+            in response.text
+        )
+        assert (
+            "The test had both helpful and unhelpful follow-through, so EdgeLab could not "
+            "identify a clear pattern."
+        ) in response.text
+
+    assert (
+        "A morning counts when price breaks above or below the first 15-minute range."
+        in first_15.text
+    )
+    assert (
+        "A morning counts when price moves outside the early range, then returns through that "
+        "range."
+    ) in reclaim.text
 
 
 def test_all_fixed_intraday_strategy_detail_pages_return_research_summary() -> None:
@@ -351,12 +401,14 @@ def test_all_fixed_intraday_strategy_detail_pages_return_research_summary() -> N
         response = client.get(f"/ui/intraday-lab/research/{slug}")
 
         assert response.status_code == 200
+        assert "What this strategy tests" in response.text
         assert "Result Summary" in response.text
         assert "Securities Tested" in response.text
         assert "Current Conclusion" in response.text
         assert "Next Research Action" in response.text
         assert "Evidence Details" in response.text
         assert "Real-money status: Not allowed" in response.text
+        assert "too noisy" not in response.text.lower()
         assert "ready for real money" not in response.text.lower()
         assert "validated edge" not in response.text.lower()
 

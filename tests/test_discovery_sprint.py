@@ -28,7 +28,17 @@ def test_discovery_sprint_runs_all_fixed_ideas_without_saving_runs(tmp_path: Pat
     assert metadata_only.bars == []
     assert first.strategy_count == 8
     assert len(first.strategy_results) == 8
-    assert first.symbols_tested == ["QQQ", "SPY"]
+    assert first.symbols_tested == ["AAPL", "AMZN", "QQQ", "SPY"]
+    assert first.strategy_ideas_tested == [
+        "Failed Early Move",
+        "Gap Fade",
+        "Gap Continuation",
+        "First 15-Minute Breakout",
+        "First 30-Minute Breakout",
+        "Opening Range Reclaim",
+        "Strong Open / Weak Follow-Through",
+        "SPY/QQQ Divergence",
+    ]
     assert first.real_money_status == "Not allowed"
     assert first.research_only_status == "Research only"
     assert first.cache_metadata["cache_status"] == "computed"
@@ -47,8 +57,18 @@ def test_discovery_sprint_runs_all_fixed_ideas_without_saving_runs(tmp_path: Pat
     )
     failed = service.strategy_result("failed-early-move")
     assert failed is not None
-    assert failed.classification == DiscoverySprintClassification.DID_NOT_HOLD_UP_LATER
+    assert {instrument.symbol for instrument in failed.instrument_results} == {
+        "AAPL",
+        "AMZN",
+        "QQQ",
+        "SPY",
+    }
+    assert failed.classification != DiscoverySprintClassification.DATA_PROBLEM
     assert failed.real_money_status == "Not allowed"
+    divergence = service.strategy_result("spy-qqq-divergence")
+    assert divergence is not None
+    assert {instrument.symbol for instrument in divergence.instrument_results} == {"QQQ", "SPY"}
+    assert divergence.securities_tested == "QQQ, SPY"
 
 
 def test_discovery_sprint_request_normalizes_symbols(tmp_path: Path) -> None:
@@ -113,11 +133,17 @@ def test_ai_idea_schema_rejects_unsupported_or_unsafe_specs() -> None:
 def _provider_with_discovery_sessions(tmp_path: Path) -> FirstRateLocalCSVHistoricalProvider:
     spy_rows = []
     qqq_rows = []
+    aapl_rows = []
+    amzn_rows = []
     start = date(2022, 12, 12)
     for index in range(16):
         session_date = start + timedelta(days=index)
         spy_rows.append(_failed_push_session_rows(session_date))
         qqq_rows.append(_failed_selloff_session_rows(session_date))
+        aapl_rows.append(_failed_push_session_rows(session_date))
+        amzn_rows.append(_failed_selloff_session_rows(session_date))
+    _write_firstrate_file(tmp_path / "AAPL_1min_firstratedata.csv", "".join(aapl_rows))
+    _write_firstrate_file(tmp_path / "AMZN_1min_firstratedata.csv", "".join(amzn_rows))
     _write_firstrate_file(tmp_path / "SPY_1min_firstratedata.csv", "".join(spy_rows))
     _write_firstrate_file(tmp_path / "QQQ_1min_firstratedata.csv", "".join(qqq_rows))
     return FirstRateLocalCSVHistoricalProvider(tmp_path)

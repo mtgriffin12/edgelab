@@ -75,11 +75,25 @@ class IntradayEvidenceLink:
 
 
 @dataclass(frozen=True)
+class IntradayStrategyExplanation:
+    """Plain-English explanation for one strategy detail page."""
+
+    strategy_idea: str
+    what_edgelab_is_testing: str
+    what_counts_as_an_example: str
+    useful_result: str
+    failed_or_unclear_result: str
+    how_to_read_current_result: str
+
+
+@dataclass(frozen=True)
 class FailedEarlyMoveResearchDetail:
     """Product-level summary for the first intraday strategy idea."""
 
     idea_name: str
     result_summary: str
+    strategy_explanation: IntradayStrategyExplanation
+    examples_note: str
     securities_tested: tuple[IntradaySecurityResearchRow, ...]
     tests_run: tuple[IntradayTestRunRow, ...]
     best_pattern_candidates: tuple[IntradayPatternCandidateRow, ...]
@@ -155,6 +169,18 @@ def build_intraday_strategy_detail(
             f"EdgeLab tested {strategy_result.strategy_name} across "
             f"{strategy_result.securities_tested} using fixed local rules."
         ),
+        strategy_explanation=IntradayStrategyExplanation(
+            strategy_idea=strategy_result.plain_english_summary,
+            what_edgelab_is_testing=strategy_result.what_is_tested,
+            what_counts_as_an_example=strategy_result.example_definition,
+            useful_result=strategy_result.useful_result_definition,
+            failed_or_unclear_result=strategy_result.failed_or_unclear_definition,
+            how_to_read_current_result=strategy_result.current_result_interpretation,
+        ),
+        examples_note=(
+            "Examples are mornings where this setup appeared. Completed examples are examples "
+            "where EdgeLab could see what happened afterward."
+        ),
         securities_tested=tuple(
             IntradaySecurityResearchRow(
                 symbol=instrument.symbol,
@@ -218,6 +244,32 @@ def build_failed_early_move_detail(
         result_summary=(
             "EdgeLab tested whether the first strong move of the morning failed often enough "
             "to become a useful research idea across SPY and QQQ."
+        ),
+        strategy_explanation=IntradayStrategyExplanation(
+            strategy_idea=(
+                "A failed early move is a morning where price pushes outside an early range but "
+                "cannot stay there."
+            ),
+            what_edgelab_is_testing=(
+                "EdgeLab checks mornings where price made an early push but could not hold it."
+            ),
+            what_counts_as_an_example=(
+                "A morning counts when price moves outside the early range, then falls back "
+                "inside it."
+            ),
+            useful_result=(
+                "Useful would mean the same kind of failed move is often followed by a similar "
+                "next move."
+            ),
+            failed_or_unclear_result=(
+                "Unclear means the next move was split between helpful and unhelpful outcomes, "
+                "so EdgeLab could not learn a clear rule."
+            ),
+            how_to_read_current_result=_mixed_result_explanation(),
+        ),
+        examples_note=(
+            "Examples are mornings where this setup appeared. Completed examples are examples "
+            "where EdgeLab could see what happened afterward."
         ),
         securities_tested=(
             _security_row("SPY", saved_states.get("SPY")),
@@ -315,6 +367,13 @@ def _later_period_result(result: OutOfSampleGateResult | None) -> str:
     if result is None:
         return "Not run on this page yet."
     return result.gate_conclusion_translation
+
+
+def _mixed_result_explanation() -> str:
+    return (
+        "The test had both helpful and unhelpful follow-through, so EdgeLab could not identify "
+        "a clear pattern."
+    )
 
 
 def _freshness_label(freshness: ResearchRunFreshness) -> str:

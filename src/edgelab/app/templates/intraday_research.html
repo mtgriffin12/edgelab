@@ -11,6 +11,8 @@
   <section class="section">
     <h3>Bottom line</h3>
     <p>{{ discovery_result.bottom_line }}</p>
+    <p><strong>Best candidate if any:</strong> {{ discovery_result.best_candidate_if_any }}</p>
+    <p><strong>Current conclusion:</strong> {{ discovery_result.current_conclusion }}</p>
     <p><strong>What EdgeLab tested:</strong> {{ discovery_result.what_edgelab_tested }}</p>
     <p><strong>What EdgeLab found:</strong> {{ discovery_result.what_edgelab_found }}</p>
     <p><strong>Next research action:</strong> {{ discovery_result.next_research_action }}</p>
@@ -61,8 +63,35 @@
     <details>
       <summary>Show sprint evidence</summary>
       <p>Symbols tested: {{ discovery_result.symbols_tested|join(", ") }}</p>
+      <p>Strategy ideas tested: {{ discovery_result.strategy_ideas_tested|join(", ") }}</p>
       <p>Date range: {{ discovery_result.date_range }}</p>
       <p>Checked later in the year: {{ discovery_result.later_check_range }}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Security</th>
+            <th>File</th>
+            <th>Rows</th>
+            <th>Sessions</th>
+            <th>Ready</th>
+            <th>Completeness</th>
+            <th>Quality issues</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in discovery_result.evidence_details.data_quality_by_symbol %}
+            <tr>
+              <td>{{ item.symbol }}</td>
+              <td>{{ item.filename }}</td>
+              <td>{{ item.approximate_rows }}</td>
+              <td>{{ item.sessions }}</td>
+              <td>{{ item.ready_sessions }}</td>
+              <td>{{ item.first_hour_completeness_summary }}</td>
+              <td>{{ item.quality_issues }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
       <p>Real-money status: {{ discovery_result.real_money_status }}</p>
     </details>
   </section>

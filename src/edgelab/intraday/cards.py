@@ -5,7 +5,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from edgelab.intraday.comparative_study_schema import ComparativeStudyResult
-from edgelab.intraday.discovery_sprint_schema import DiscoverySprintResult
+from edgelab.intraday.discovery_sprint_schema import (
+    DiscoverySprintClassification,
+    DiscoverySprintResult,
+)
 from edgelab.intraday.out_of_sample_gate_schema import OutOfSampleGateResult
 from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
@@ -323,34 +326,71 @@ def out_of_sample_gate_to_markdown_card(result: OutOfSampleGateResult) -> str:
 def discovery_sprint_to_markdown_card(result: DiscoverySprintResult) -> str:
     """Render a discovery sprint as plain-English Markdown."""
 
+    mixed = _discovery_strategy_names(
+        result,
+        {
+            DiscoverySprintClassification.NO_CLEAR_PATTERN,
+            DiscoverySprintClassification.DID_NOT_HOLD_UP_LATER,
+        },
+    )
+    needs_examples = _discovery_strategy_names(
+        result,
+        {DiscoverySprintClassification.NOT_ENOUGH_EXAMPLES},
+    )
+    rejected = _discovery_strategy_names(
+        result,
+        {DiscoverySprintClassification.REJECT_FOR_NOW},
+    )
+    best = _discovery_strategy_names(
+        result,
+        {
+            DiscoverySprintClassification.WORTH_MORE_TESTING,
+            DiscoverySprintClassification.HELD_UP_ON_LATER_CHECK,
+        },
+    )
     return "\n".join(
         [
             "# Intraday Strategy Discovery Sprint",
             "",
-            "## Bottom line",
+            "## Headline",
+            (
+                f"EdgeLab tested {result.strategy_count} intraday ideas across "
+                f"{len(result.symbols_tested)} local symbols. {result.current_conclusion}"
+            ),
+            "",
+            "## Securities tested",
+            ", ".join(result.symbols_tested),
+            "",
+            "## Strategies tested",
+            ", ".join(result.strategy_ideas_tested),
+            "",
+            "## Main result",
             result.bottom_line,
             "",
-            "## What EdgeLab tested",
-            result.what_edgelab_tested,
+            "## Best candidates",
+            best or result.best_candidate_if_any,
             "",
-            "## What EdgeLab found",
-            result.what_edgelab_found,
+            "## Ideas to reject for now",
+            rejected or "None from this pass.",
             "",
-            "## What deserves more testing",
-            result.what_deserves_more_testing,
+            "## Ideas needing more examples",
+            needs_examples or "None from this pass.",
             "",
-            "## What did not advance",
-            result.what_did_not_advance,
+            "## Mixed results / no clear answer",
+            mixed or "None from this pass.",
             "",
             "## Next research action",
-            result.next_research_action,
+            (
+                "Try structured local ideas against this free universe, or add more free symbols "
+                "before considering paid data."
+            ),
             "",
             "## Real-money status: Not allowed",
             f"- {result.real_money_status}",
-            "- This is local historical research only. It is not live and not a recommendation.",
+            "- This is local historical research only. It is not live and not guidance for action.",
             "",
             "## Evidence details",
-            *_bullets(_discovery_sprint_evidence_lines(result)),
+            "- Full evidence remains in the JSON endpoint at /intraday/discovery-sprint.",
         ]
     )
 
@@ -554,17 +594,35 @@ def _out_of_sample_evidence_lines(result: OutOfSampleGateResult) -> list[str]:
 def _discovery_sprint_evidence_lines(result: DiscoverySprintResult) -> list[str]:
     lines = [
         f"Symbols tested: {', '.join(result.symbols_tested)}.",
+        f"Strategy ideas tested: {', '.join(result.strategy_ideas_tested)}.",
         f"Date range: {result.date_range}.",
         f"Later-year check: {result.later_check_range}.",
         f"Strategy count: {result.strategy_count}.",
         f"AI idea intake: {result.ai_idea_intake_summary}",
     ]
+    for item in result.evidence_details.get("data_quality_by_symbol", []):
+        lines.append(
+            f"{item['symbol']} data: {item['first_hour_completeness_summary']} "
+            f"Quality issues: {item['quality_issues']}."
+        )
     for strategy_result in result.strategy_results:
         lines.append(
             f"{strategy_result.strategy_name}: {strategy_result.status}; "
             f"{strategy_result.current_conclusion}"
         )
     return lines
+
+
+def _discovery_strategy_names(
+    result: DiscoverySprintResult,
+    classifications: set[DiscoverySprintClassification],
+) -> str:
+    names = [
+        strategy.strategy_name
+        for strategy in result.strategy_results
+        if strategy.classification in classifications
+    ]
+    return ", ".join(names)
 
 
 def _bullets(items: Iterable[str]) -> list[str]:

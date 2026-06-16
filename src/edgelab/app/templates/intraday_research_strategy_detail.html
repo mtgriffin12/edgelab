@@ -7,6 +7,26 @@
   </section>
 
   <section class="section">
+    <details>
+      <summary>What this strategy tests</summary>
+      <dl class="evidence-list">
+        <dt>Strategy idea</dt>
+        <dd>{{ detail.strategy_explanation.strategy_idea }}</dd>
+        <dt>What EdgeLab is testing</dt>
+        <dd>{{ detail.strategy_explanation.what_edgelab_is_testing }}</dd>
+        <dt>What counts as an example</dt>
+        <dd>{{ detail.strategy_explanation.what_counts_as_an_example }}</dd>
+        <dt>What would count as a useful result</dt>
+        <dd>{{ detail.strategy_explanation.useful_result }}</dd>
+        <dt>What would count as a failed or unclear result</dt>
+        <dd>{{ detail.strategy_explanation.failed_or_unclear_result }}</dd>
+        <dt>How to read the current result</dt>
+        <dd>{{ detail.strategy_explanation.how_to_read_current_result }}</dd>
+      </dl>
+    </details>
+  </section>
+
+  <section class="section">
     <h3>Result Summary</h3>
     <p>{{ detail.result_summary }}</p>
     <p><strong>Current conclusion:</strong> {{ detail.current_conclusion }}</p>
@@ -35,6 +55,7 @@
         {% endfor %}
       </tbody>
     </table>
+    <p class="muted">{{ detail.examples_note }}</p>
   </section>
 
   <section class="section">

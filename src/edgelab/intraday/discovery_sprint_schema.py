@@ -12,8 +12,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from edgelab.intraday.pattern_results_schema import OVERCONFIDENT_RESEARCH_PHRASES
 from edgelab.intraday.schema import normalize_symbol, reject_action_instructions
 
-DISCOVERY_SPRINT_SCHEMA_VERSION = "phase_7x_2j_v1"
-DISCOVERY_SPRINT_CODE_VERSION = "phase_7x_2j"
+DISCOVERY_SPRINT_SCHEMA_VERSION = "phase_7x_2k_v1"
+DISCOVERY_SPRINT_CODE_VERSION = "phase_7x_2k"
 
 DISCOVERY_SPRINT_FORBIDDEN_PHRASES = [
     *OVERCONFIDENT_RESEARCH_PHRASES,
@@ -68,7 +68,13 @@ class StrategyIdeaDefinition(BaseModel):
     strategy_id: SupportedRuleFamily
     url_slug: str = Field(min_length=1)
     name: str = Field(min_length=1)
+    plain_english_summary: str = Field(min_length=1)
     plain_english_rule: str = Field(min_length=1)
+    what_is_tested: str = Field(min_length=1)
+    example_definition: str = Field(min_length=1)
+    useful_result_definition: str = Field(min_length=1)
+    failed_or_unclear_definition: str = Field(min_length=1)
+    current_result_interpretation_template: str = Field(min_length=1)
     required_data: str = Field(min_length=1)
     useful_first_result: str = Field(min_length=1)
     unclear_or_failed_result: str = Field(min_length=1)
@@ -85,7 +91,13 @@ class StrategyIdeaDefinition(BaseModel):
             " ".join(
                 [
                     self.name,
+                    self.plain_english_summary,
                     self.plain_english_rule,
+                    self.what_is_tested,
+                    self.example_definition,
+                    self.useful_result_definition,
+                    self.failed_or_unclear_definition,
+                    self.current_result_interpretation_template,
                     self.required_data,
                     self.useful_first_result,
                     self.unclear_or_failed_result,
@@ -248,6 +260,12 @@ class StrategyDiscoveryResult(BaseModel):
     strategy_id: SupportedRuleFamily
     url_slug: str = Field(min_length=1)
     strategy_name: str = Field(min_length=1)
+    plain_english_summary: str = Field(min_length=1)
+    what_is_tested: str = Field(min_length=1)
+    example_definition: str = Field(min_length=1)
+    useful_result_definition: str = Field(min_length=1)
+    failed_or_unclear_definition: str = Field(min_length=1)
+    current_result_interpretation: str = Field(min_length=1)
     securities_tested: str = Field(min_length=1)
     tests_run: str = Field(min_length=1)
     best_current_pattern_candidate: str = Field(min_length=1)
@@ -269,6 +287,12 @@ class StrategyDiscoveryResult(BaseModel):
             " ".join(
                 [
                     self.strategy_name,
+                    self.plain_english_summary,
+                    self.what_is_tested,
+                    self.example_definition,
+                    self.useful_result_definition,
+                    self.failed_or_unclear_definition,
+                    self.current_result_interpretation,
                     self.securities_tested,
                     self.tests_run,
                     self.best_current_pattern_candidate,
@@ -289,10 +313,13 @@ class DiscoverySprintResult(BaseModel):
 
     sprint_id: str = Field(min_length=1)
     symbols_tested: list[str]
+    strategy_ideas_tested: list[str]
     strategy_count: int = Field(ge=0)
     date_range: str = Field(min_length=1)
     later_check_range: str = Field(min_length=1)
     bottom_line: str = Field(min_length=1)
+    best_candidate_if_any: str = Field(min_length=1)
+    current_conclusion: str = Field(min_length=1)
     what_edgelab_tested: str = Field(min_length=1)
     what_edgelab_found: str = Field(min_length=1)
     what_deserves_more_testing: str = Field(min_length=1)
@@ -316,6 +343,8 @@ class DiscoverySprintResult(BaseModel):
             " ".join(
                 [
                     self.bottom_line,
+                    self.best_candidate_if_any,
+                    self.current_conclusion,
                     self.what_edgelab_tested,
                     self.what_edgelab_found,
                     self.what_deserves_more_testing,

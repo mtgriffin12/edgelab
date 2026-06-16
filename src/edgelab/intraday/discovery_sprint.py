@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from time import perf_counter
+from typing import Any
 
 from edgelab.intraday.benchmarks import calculate_opening_benchmarks
 from edgelab.intraday.csv_normalizers import FirstRateLocalCSVHistoricalProvider
@@ -127,22 +128,24 @@ class DiscoverySprintService:
                 in {
                     DiscoverySprintClassification.WORTH_MORE_TESTING,
                     DiscoverySprintClassification.HELD_UP_ON_LATER_CHECK,
-                    DiscoverySprintClassification.LOOKED_BETTER_AT_FIRST,
                 }
             ],
             key=lambda result: result.evidence_score,
             reverse=True,
         )
         result = DiscoverySprintResult(
-            sprint_id="phase-7x-2j-local-strategy-discovery-sprint",
+            sprint_id="phase-7x-2k-expanded-free-firstrate-universe",
             symbols_tested=list(symbols),
+            strategy_ideas_tested=[result.strategy_name for result in results],
             strategy_count=len(results),
             date_range=_date_range_label(sessions_by_symbol),
             later_check_range=_later_check_label(sessions_by_symbol, request),
             bottom_line=_bottom_line(ranked),
+            best_candidate_if_any=_best_sprint_candidate(ranked),
+            current_conclusion=_sprint_conclusion(ranked),
             what_edgelab_tested=(
-                "EdgeLab tested fixed simple intraday ideas across the available local "
-                "historical symbols."
+                "EdgeLab tested fixed simple intraday ideas across every matching local "
+                "FirstRate file it could find."
             ),
             what_edgelab_found=_what_found(results),
             what_deserves_more_testing=_worth_more_testing_summary(ranked),
@@ -162,6 +165,11 @@ class DiscoverySprintService:
             },
             evidence_details={
                 "symbols": list(symbols),
+                "strategy_ideas_tested": [result.strategy_name for result in results],
+                "data_quality_by_symbol": _data_quality_by_symbol(
+                    self.provider,
+                    sessions_by_symbol,
+                ),
                 "file_signature": [list(item) for item in cache_key.file_signature],
                 "assumptions": {
                     "hold_minutes": request.hold_minutes,
@@ -265,6 +273,97 @@ def _file_signature(
     return ()
 
 
+def _data_quality_by_symbol(
+    provider: HistoricalIntradayDataProvider,
+    sessions_by_symbol: dict[str, list[SessionBars]],
+) -> list[dict[str, object]]:
+    if isinstance(provider, FirstRateLocalCSVHistoricalProvider):
+        dry_run = provider.dry_run()
+        files_by_symbol = {summary.symbol: summary for summary in dry_run.files}
+        return [
+            _first_rate_symbol_quality(symbol, files_by_symbol.get(symbol), sessions)
+            for symbol, sessions in sorted(sessions_by_symbol.items())
+        ]
+    return [
+        _session_symbol_quality(symbol, sessions)
+        for symbol, sessions in sorted(sessions_by_symbol.items())
+    ]
+
+
+def _first_rate_symbol_quality(
+    symbol: str,
+    file_summary: Any | None,
+    sessions: list[SessionBars],
+) -> dict[str, object]:
+    if file_summary is None:
+        quality = _session_symbol_quality(symbol, sessions)
+        return {**quality, "file_found": False, "filename": "No local FirstRate file found"}
+    ready = int(file_summary.readiness_counts.get("ready_for_replay", 0))
+    total = int(file_summary.session_count)
+    unusable = int(file_summary.readiness_counts.get("unusable", 0))
+    return {
+        "symbol": symbol,
+        "file_found": True,
+        "filename": file_summary.filename,
+        "approximate_rows": file_summary.row_count,
+        "date_range": f"{file_summary.start_date} through {file_summary.end_date}",
+        "sessions": total,
+        "ready_sessions": ready,
+        "first_hour_completeness_summary": _first_hour_completeness_summary(
+            ready_sessions=ready,
+            total_sessions=total,
+            unusable_sessions=unusable,
+        ),
+        "quality_issues": file_summary.quality_issue_count,
+    }
+
+
+def _session_symbol_quality(symbol: str, sessions: list[SessionBars]) -> dict[str, object]:
+    total = len(sessions)
+    ready = sum(
+        session.readiness == HistoricalIntradayReadiness.READY_FOR_REPLAY for session in sessions
+    )
+    unusable = sum(
+        session.readiness == HistoricalIntradayReadiness.UNUSABLE for session in sessions
+    )
+    dates = [session.session_date for session in sessions]
+    return {
+        "symbol": symbol,
+        "file_found": bool(sessions),
+        "filename": "Provider session data",
+        "approximate_rows": None,
+        "date_range": (
+            f"{min(dates).isoformat()} through {max(dates).isoformat()}"
+            if dates
+            else "No local dates"
+        ),
+        "sessions": total,
+        "ready_sessions": ready,
+        "first_hour_completeness_summary": _first_hour_completeness_summary(
+            ready_sessions=ready,
+            total_sessions=total,
+            unusable_sessions=unusable,
+        ),
+        "quality_issues": sum(session.quality_issue_count for session in sessions),
+    }
+
+
+def _first_hour_completeness_summary(
+    *,
+    ready_sessions: int,
+    total_sessions: int,
+    unusable_sessions: int,
+) -> str:
+    if total_sessions == 0:
+        return "No local first-hour sessions found."
+    if unusable_sessions == 0 and ready_sessions == total_sessions:
+        return f"{ready_sessions} of {total_sessions} sessions ready for replay."
+    return (
+        f"{ready_sessions} of {total_sessions} sessions ready for replay; "
+        f"{unusable_sessions} sessions blocked by local data quality."
+    )
+
+
 def _load_symbol_sessions(
     provider: HistoricalIntradayDataProvider,
     symbol: str,
@@ -310,9 +409,10 @@ def _run_strategy(
     if idea is None:
         raise ValueError(f"unknown strategy idea: {strategy_id}")
 
+    applicable_sessions = _applicable_sessions(strategy_id, sessions_by_symbol)
     instrument_results = [
         _instrument_result(strategy_id, symbol, sessions, request)
-        for symbol, sessions in sorted(sessions_by_symbol.items())
+        for symbol, sessions in sorted(applicable_sessions.items())
     ]
     classification = _strategy_classification(strategy_id, instrument_results)
     score = _evidence_score(classification, instrument_results)
@@ -320,9 +420,22 @@ def _run_strategy(
         strategy_id=strategy_id,
         url_slug=idea.url_slug,
         strategy_name=idea.name,
-        securities_tested=", ".join(sorted(sessions_by_symbol)) or "No local symbols",
+        plain_english_summary=idea.plain_english_summary,
+        what_is_tested=idea.what_is_tested,
+        example_definition=idea.example_definition,
+        useful_result_definition=idea.useful_result_definition,
+        failed_or_unclear_definition=idea.failed_or_unclear_definition,
+        current_result_interpretation=_current_result_interpretation(
+            idea.current_result_interpretation_template,
+            classification,
+        ),
+        securities_tested=", ".join(sorted(applicable_sessions)) or "No matching local symbols",
         tests_run=_tests_run_label(strategy_id),
-        best_current_pattern_candidate=_best_candidate(strategy_id, classification),
+        best_current_pattern_candidate=_best_candidate(
+            strategy_id,
+            classification,
+            instrument_results,
+        ),
         current_conclusion=_current_conclusion(strategy_id, classification),
         status=_status_label(classification),
         next_research_action=_strategy_next_action(classification),
@@ -334,28 +447,24 @@ def _run_strategy(
             "strategy_library_version": STRATEGY_LIBRARY_VERSION,
             "simple_rule": idea.plain_english_rule,
             "required_data": idea.required_data,
+            "all_discovered_symbols": sorted(sessions_by_symbol),
+            "symbols_used_for_this_idea": sorted(applicable_sessions),
         },
     )
-    if strategy_id == SupportedRuleFamily.FAILED_EARLY_MOVE and {"SPY", "QQQ"}.issubset(
-        sessions_by_symbol
-    ):
-        return result.model_copy(
-            update={
-                "best_current_pattern_candidate": (
-                    "Failed push from above and SPY/QQQ disagreement looked better at first."
-                ),
-                "current_conclusion": (
-                    "Those candidates did not clearly hold up later in the year."
-                ),
-                "status": "no clear pattern to advance",
-                "next_research_action": (
-                    "Get more SPY/QQQ history or test a different pattern family."
-                ),
-                "classification": DiscoverySprintClassification.DID_NOT_HOLD_UP_LATER,
-                "evidence_score": min(score, 45),
-            }
-        )
     return result
+
+
+def _applicable_sessions(
+    strategy_id: SupportedRuleFamily,
+    sessions_by_symbol: dict[str, list[SessionBars]],
+) -> dict[str, list[SessionBars]]:
+    if strategy_id == SupportedRuleFamily.SPY_QQQ_DIVERGENCE:
+        return {
+            symbol: sessions_by_symbol[symbol]
+            for symbol in ("QQQ", "SPY")
+            if symbol in sessions_by_symbol
+        }
+    return sessions_by_symbol
 
 
 def _instrument_result(
@@ -604,8 +713,8 @@ def _strategy_classification(
     strategy_id: SupportedRuleFamily,
     instrument_results: list[InstrumentDiscoveryResult],
 ) -> DiscoverySprintClassification:
-    if strategy_id == SupportedRuleFamily.FAILED_EARLY_MOVE:
-        return DiscoverySprintClassification.DID_NOT_HOLD_UP_LATER
+    if not instrument_results:
+        return DiscoverySprintClassification.DATA_PROBLEM
     if any(
         result.classification == DiscoverySprintClassification.DATA_PROBLEM
         for result in instrument_results
@@ -717,22 +826,33 @@ def _data_warnings(
 
 
 def _tests_run_label(strategy_id: SupportedRuleFamily) -> str:
-    if strategy_id == SupportedRuleFamily.FAILED_EARLY_MOVE:
-        return "SPY/QQQ comparison, tested versions, checked later in the year"
-    return "Simple fixed-rule scan, SPY/QQQ comparison, checked later in the year"
+    if strategy_id == SupportedRuleFamily.SPY_QQQ_DIVERGENCE:
+        return "SPY/QQQ pair-only check, fixed-rule scan, checked later in the year"
+    return "Expanded local universe scan, fixed-rule check, checked later in the year"
 
 
 def _best_candidate(
     strategy_id: SupportedRuleFamily,
     classification: DiscoverySprintClassification,
+    instrument_results: list[InstrumentDiscoveryResult],
 ) -> str:
-    if strategy_id == SupportedRuleFamily.FAILED_EARLY_MOVE:
-        return "Failed push from above and SPY/QQQ disagreement looked better at first."
     if classification in {
         DiscoverySprintClassification.WORTH_MORE_TESTING,
         DiscoverySprintClassification.HELD_UP_ON_LATER_CHECK,
         DiscoverySprintClassification.LOOKED_BETTER_AT_FIRST,
     }:
+        candidates = [
+            result.symbol
+            for result in instrument_results
+            if result.classification
+            in {
+                DiscoverySprintClassification.WORTH_MORE_TESTING,
+                DiscoverySprintClassification.HELD_UP_ON_LATER_CHECK,
+                DiscoverySprintClassification.LOOKED_BETTER_AT_FIRST,
+            }
+        ]
+        if candidates:
+            return f"{', '.join(candidates[:4])} had the clearest first read."
         idea = strategy_by_id_or_slug(strategy_id.value)
         return f"{idea.name if idea else strategy_id.value} had the clearest first read."
     return "No strong candidate yet."
@@ -742,9 +862,27 @@ def _current_conclusion(
     strategy_id: SupportedRuleFamily,
     classification: DiscoverySprintClassification,
 ) -> str:
-    if strategy_id == SupportedRuleFamily.FAILED_EARLY_MOVE:
-        return "Those candidates did not clearly hold up later in the year."
     return classification_label(classification)
+
+
+def _current_result_interpretation(
+    template: str,
+    classification: DiscoverySprintClassification,
+) -> str:
+    if classification == DiscoverySprintClassification.NO_CLEAR_PATTERN:
+        return (
+            "The test had both helpful and unhelpful follow-through, so EdgeLab could not "
+            "identify a clear pattern."
+        )
+    if classification == DiscoverySprintClassification.NOT_ENOUGH_EXAMPLES:
+        return "There were not enough local mornings for EdgeLab to judge this idea yet."
+    if classification == DiscoverySprintClassification.REJECT_FOR_NOW:
+        return "The current local result is weak enough that EdgeLab should focus elsewhere."
+    if classification == DiscoverySprintClassification.DATA_PROBLEM:
+        return "Local data quality blocked a fair read of this idea."
+    if classification == DiscoverySprintClassification.DID_NOT_HOLD_UP_LATER:
+        return "The idea looked better earlier but did not clearly hold up in the later check."
+    return template
 
 
 def _status_label(classification: DiscoverySprintClassification) -> str:
@@ -782,6 +920,18 @@ def _bottom_line(ranked: list[StrategyDiscoveryResult]) -> str:
     if not ranked:
         return "No strategy idea clearly advanced in this local discovery sprint."
     return f"{ranked[0].strategy_name} is the clearest idea to test on more history."
+
+
+def _best_sprint_candidate(ranked: list[StrategyDiscoveryResult]) -> str:
+    if not ranked:
+        return "No strong candidate yet."
+    return ranked[0].best_current_pattern_candidate
+
+
+def _sprint_conclusion(ranked: list[StrategyDiscoveryResult]) -> str:
+    if not ranked:
+        return "No strategy idea clearly earned more history yet."
+    return f"{ranked[0].strategy_name} is worth testing on more history."
 
 
 def _what_found(results: list[StrategyDiscoveryResult]) -> str:

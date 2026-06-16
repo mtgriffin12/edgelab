@@ -1034,9 +1034,15 @@ def read_intraday_strategy_ideas() -> dict[str, object]:
 
     result = discovery_sprint_service.run()
     return {
+        "symbols_tested": result.symbols_tested,
+        "strategy_ideas_tested": result.strategy_ideas_tested,
+        "best_candidate_if_any": result.best_candidate_if_any,
+        "current_conclusion": result.current_conclusion,
+        "next_action": result.next_research_action,
         "strategy_ideas": [
             strategy_result.model_dump(mode="json") for strategy_result in result.strategy_results
         ],
+        "evidence_details": result.evidence_details,
         "research_only_status": result.research_only_status,
         "real_money_status": result.real_money_status,
     }
@@ -1049,7 +1055,13 @@ def read_intraday_strategy_idea(strategy_id: str) -> dict[str, object]:
     result = discovery_sprint_service.strategy_result(strategy_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Strategy idea not found")
-    return result.model_dump(mode="json")
+    return {
+        **result.model_dump(mode="json"),
+        "symbols_tested": [instrument.symbol for instrument in result.instrument_results],
+        "strategy_ideas_tested": [result.strategy_name],
+        "best_candidate_if_any": result.best_current_pattern_candidate,
+        "next_action": result.next_research_action,
+    }
 
 
 @app.get("/intraday/research/ai-idea-spec/schema")

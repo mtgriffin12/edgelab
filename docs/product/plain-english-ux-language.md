@@ -139,11 +139,14 @@ Warnings should be short and direct:
 - "Why This Is Not Proof" should appear before any technical split details.
 - Out-of-sample pages should say this is not a pure untouched-data test when the variants came from the same reviewed file family.
 - "Strategy Idea" should lead intraday research lists before vendor, symbol, or test names.
-- "Securities Tested" should explain SPY and QQQ as tested instruments, not product pages.
+- "Securities Tested" should explain the discovered local symbols as tested instruments, not
+  product pages.
 - "Tests Run" should group readiness, comparison, version, and later-period checks.
 - "Next Research Action" should be the final primary answer on intraday research summaries.
 - "Strategy Discovery Sprint" should mean a local fixed-library scan, not live AI reasoning.
 - "Future AI Idea Intake" should say AI may later propose a locked hypothesis, but Phase 7X-2J
-  does not call AI.
+  and Phase 7X-2K do not call AI.
 - "Strategy Idea Scoreboard" should lead with what advanced, what did not, and what to test next.
 - "Later Check" should mean a conservative review across later local history, not proof.
+- "Expanded Free FirstRate Universe" should mean ignored local sample files discovered by the
+  app, not a live data feed or a provider integration.

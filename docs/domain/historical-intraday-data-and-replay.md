@@ -309,3 +309,23 @@ The future AI idea intake is only a schema. A future AI helper may propose a loc
 EdgeLab must reject unsupported rule families, action language, after-the-fact threshold changes,
 and chart-only ideas. Local deterministic code remains responsible for any accepted test. Real-money
 status remains Not allowed.
+
+## Phase 7X-2K Expanded Free FirstRate Universe
+
+Phase 7X-2K expands the discovery sprint from the first SPY/QQQ sample pair to every matching
+ignored FirstRate sample file available locally. General single-security strategy ideas run across
+all discovered symbols. SPY/QQQ Divergence remains pair-specific unless a future phase adds a
+generic pair-divergence framework.
+
+The Intraday Research scoreboard remains strategy-first. It shows strategy idea, securities tested,
+tests run, best current pattern candidate, current conclusion, status, and next research action. It
+does not create pages per symbol or per test type.
+
+The sprint reports local data quality by symbol, including file found, row count, date range,
+session count, ready sessions, first-hour completeness, and quality issues. Local data problems are
+reported as research evidence rather than hidden.
+
+AI idea intake remains only a structured future-safe format. EdgeLab currently tests a fixed
+library of deterministic local ideas across the expanded free universe. It does not call AI, fetch
+live data, call vendors, save sprint outputs, create recommendations, promote paper mode, or approve
+real-money use.

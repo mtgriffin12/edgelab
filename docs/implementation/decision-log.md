@@ -147,3 +147,12 @@ sprint reads local historical files, ranks only conservative research next steps
 future AI idea intake schema for locked hypotheses. This phase does not call AI, optimize prompts,
 write saved research runs, create background work, fetch data, promote paper mode, or approve
 real-money use.
+
+## DEC-036: Phase 7X-2K Expanded Free FirstRate Universe
+
+DEC-036 expands the local discovery sprint to every matching ignored FirstRate sample file available
+under the local raw-data folder. General strategy ideas run across the discovered free universe,
+while SPY/QQQ Divergence remains specific to SPY and QQQ. The research scoreboard stays
+strategy-first and reports data quality by symbol so local file problems are visible. This phase
+does not commit CSV data, call AI, call external APIs, write saved sprint results, create symbol
+page sprawl, promote paper mode, or approve real-money use.

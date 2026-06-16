@@ -165,11 +165,12 @@ logic, persist results, call external services, or change the underlying evidenc
 ## Intraday Strategy Discovery Sprint
 
 Runs a deterministic local sprint across a fixed first library of intraday idea families. Phase
-7X-2J scans available local historical symbols, applies simple rule families, compares earlier and
-later local periods, and returns a plain-English research scoreboard. The future AI boundary is a
-schema for proposed locked hypotheses only. The service does not call AI, call external APIs, write
-saved research runs, persist sprint results, create background jobs, promote paper mode, or produce
-recommendations.
+7X-2K scans every matching ignored FirstRate sample file available locally, applies simple rule
+families, compares earlier and later local periods, and returns a plain-English research scoreboard.
+General ideas run across the expanded local universe; SPY/QQQ Divergence remains scoped to SPY and
+QQQ. The future AI boundary is a schema for proposed locked hypotheses only. The service does not
+call AI, call external APIs, write saved research runs, persist sprint results, create background
+jobs, promote paper mode, or produce recommendations.
 
 ## Paper Trading Simulator
 
