@@ -349,3 +349,10 @@ the test, and Reject for now. Batch results are computed on demand with process-
 are not saved to the research-run DB in this phase. Current local data can show whether an idea
 deserves another research pass, but it cannot prove a trade, approve paper mode, or approve
 real-money use.
+
+Phase 7X-2M makes that workflow usable inside EdgeLab. A user can paste a JSON idea batch into
+`/ui/intraday-lab/research/idea-batches/new`, validate it, see accepted, rejected, unsupported, and
+safety-error groups, then run supported ideas locally. The page shows the current schema and a
+copyable example so the user does not have to guess the format. Pasted runs are temporary and are
+not saved to the research-run DB. EdgeLab still does not call AI, call external APIs, fetch live
+data, use credentials, or create recommendations.

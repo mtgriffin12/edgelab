@@ -1,5 +1,6 @@
 """Minimal FastAPI app for EdgeLab."""
 
+import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -7,9 +8,10 @@ from time import perf_counter
 from typing import cast
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 
 from edgelab.app.plain_language import explain, plain_label, why_it_matters, yes_no
 from edgelab.backtesting.engine import BacktestEngine
@@ -57,6 +59,7 @@ from edgelab.intraday.historical_schema import (
     utc_now,
 )
 from edgelab.intraday.idea_batch_runner import IdeaBatchRunner
+from edgelab.intraday.idea_batch_schema import idea_batch_schema_help
 from edgelab.intraday.out_of_sample_gate import OutOfSampleGateService
 from edgelab.intraday.pattern_results import MultiSessionPatternRunner
 from edgelab.intraday.pattern_results_schema import (
@@ -202,7 +205,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2L structured AI idea batch testing",
+        "phase": "Phase 7X-2M idea batch paste runner",
         "status": "research-only",
     }
 
@@ -1069,16 +1072,17 @@ def read_intraday_strategy_idea(strategy_id: str) -> dict[str, object]:
 
 @app.get("/intraday/research/ai-idea-spec/schema")
 def read_intraday_ai_idea_spec_schema() -> dict[str, object]:
-    """Return the future-facing AI idea intake structure without calling AI."""
+    """Return the structured idea-batch format without calling AI."""
 
+    schema = idea_batch_schema_help()
     return {
         "description": (
-            "Future AI ideas can be represented as locked hypotheses. This endpoint does not "
-            "call AI, does not test ideas, and does not tell the user what to do."
+            "Paste a structured JSON idea batch. EdgeLab validates the ideas, rejects unsafe "
+            "or unsupported ones, and runs supported ideas against local historical data. "
+            "This endpoint does not call AI."
         ),
+        **schema,
         "example": discovery_sprint_service.ai_idea_schema_example(),
-        "research_only_status": "Research only",
-        "real_money_status": "Not allowed",
     }
 
 
@@ -1120,6 +1124,70 @@ def read_intraday_idea_batches() -> dict[str, object]:
     }
 
 
+@app.post("/intraday/research/idea-batches/validate")
+async def validate_intraday_idea_batch(request: Request) -> JSONResponse:
+    """Validate one pasted structured idea batch without saving or running it."""
+
+    payload, error = await _read_pasted_json(request)
+    if error is not None:
+        return _idea_batch_error_response(error)
+    try:
+        result = idea_batch_runner.validate_batch_payload(payload)
+    except ValidationError as exc:
+        return _idea_batch_error_response(_friendly_validation_errors(exc))
+    except ValueError as exc:
+        return _idea_batch_error_response([str(exc)])
+    return JSONResponse(content=result)
+
+
+@app.post("/intraday/research/idea-batches/run")
+async def run_intraday_idea_batch(request: Request) -> JSONResponse:
+    """Run one pasted structured idea batch locally without saving it."""
+
+    payload, error = await _read_pasted_json(request)
+    if error is not None:
+        return _idea_batch_error_response(error)
+    try:
+        validation = idea_batch_runner.validate_batch_payload(payload)
+        result = idea_batch_runner.run_batch_payload(payload)
+    except ValidationError as exc:
+        return _idea_batch_error_response(_friendly_validation_errors(exc))
+    except ValueError as exc:
+        return _idea_batch_error_response([str(exc)])
+    return JSONResponse(
+        content={
+            "batch_name": result.batch_name,
+            "securities_tested": result.securities_tested,
+            "ideas_submitted": result.ideas_submitted,
+            "accepted_ideas": validation["accepted_ideas"],
+            "rejected_ideas": validation["rejected_ideas"],
+            "unsupported_ideas": validation["unsupported_ideas"],
+            "ideas_tested": result.ideas_tested,
+            "best_idea_if_any": result.best_idea_if_any,
+            "ideas_needing_more_examples": result.ideas_needing_more_examples,
+            "ideas_mixed_results": result.ideas_mixed_results,
+            "ideas_rejected_for_now": result.ideas_rejected_for_now,
+            "ranked_results": [item.model_dump(mode="json") for item in result.ranked_results],
+            "scoreboard": [
+                {
+                    "idea": item.plain_english_name,
+                    "result": item.classification_label,
+                    "securities_tested": item.securities_tested,
+                    "next_action": item.next_action,
+                }
+                for item in [*result.ranked_results, *result.rejected_ideas]
+            ],
+            "current_conclusion": result.current_conclusion,
+            "next_action": result.next_action,
+            "this_run_is_temporary": True,
+            "does_not_call_ai": True,
+            "does_not_save_results": True,
+            "research_only_status": result.research_only_status,
+            "real_money_status": result.real_money_status,
+        }
+    )
+
+
 @app.get("/intraday/research/idea-batches/{batch_id}")
 def read_intraday_idea_batch(batch_id: str) -> dict[str, object]:
     """Return validation-only details for one structured idea batch."""
@@ -1151,6 +1219,52 @@ def read_intraday_idea_batch_card(batch_id: str) -> Response:
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Idea batch not found") from exc
     return Response(content=idea_batch_to_markdown_card(result), media_type="text/plain")
+
+
+async def _read_pasted_json(request: Request) -> tuple[object | None, list[str] | None]:
+    body = await request.body()
+    if not body.strip():
+        return None, ["Invalid JSON: paste a structured idea batch before validating."]
+    try:
+        return json.loads(body), None
+    except json.JSONDecodeError:
+        return None, ["Invalid JSON: check for a missing comma or bracket."]
+
+
+def _idea_batch_error_response(errors: list[str]) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={
+            "validation_status": "Needs changes before EdgeLab can use this batch.",
+            "errors": errors,
+            "accepted_ideas": [],
+            "rejected_ideas": [],
+            "unsupported_ideas": [],
+            "safety_errors": errors,
+            "can_run": False,
+            "research_only_status": "Research only",
+            "real_money_status": "Not allowed",
+            "does_not_call_ai": True,
+            "does_not_save_results": True,
+        },
+    )
+
+
+def _friendly_validation_errors(exc: ValidationError) -> list[str]:
+    messages: list[str] = []
+    for error in exc.errors():
+        loc = ".".join(str(part) for part in error.get("loc", ())) or "batch"
+        error_type = str(error.get("type", ""))
+        message = str(error.get("msg", ""))
+        if error_type == "missing":
+            messages.append(f"Missing required field: {loc}.")
+        elif "must not contain action instructions" in message:
+            messages.append("Unsafe language found: buy/sell/short instruction.")
+        elif "unsafe research language" in message:
+            messages.append("Unsafe language found: proof, readiness, or result claim.")
+        else:
+            messages.append(f"{loc}: {message}.")
+    return messages or ["EdgeLab could not validate this idea batch."]
 
 
 @app.get("/intraday/discovery-sprint")
@@ -1713,6 +1827,21 @@ def read_ui_intraday_idea_batches(request: Request) -> Response:
         request=request,
         name="intraday_idea_batches.html",
         context={"idea_batch_descriptions": descriptions},
+    )
+
+
+@app.get("/ui/intraday-lab/research/idea-batches/new", response_class=HTMLResponse)
+def read_ui_new_intraday_idea_batch(request: Request) -> Response:
+    """Render the local paste runner for structured idea batches."""
+
+    schema = idea_batch_schema_help()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_idea_batch_new.html",
+        context={
+            "schema": schema,
+            "example_json": json.dumps(schema["minimal_valid_example"], indent=2),
+        },
     )
 
 

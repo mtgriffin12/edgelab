@@ -165,3 +165,11 @@ does not call AI, connect to a live model, or let AI judge whether an idea advan
 rule families, unsafe wording, action language, proof or readiness claims, and threshold changes
 after results are rejected before testing. Supported ideas run locally against ignored FirstRate
 files, with results computed on demand and not saved in this phase.
+
+## DEC-038: Phase 7X-2M Idea Batch Paste Runner
+
+DEC-038 adds a paste runner so users can validate and run structured idea batch JSON from the
+EdgeLab UI without Codex. The page exposes the required schema, allowed local rule families,
+forbidden language categories, and a copyable example. Pasted batches run temporarily against local
+historical data only. This phase does not save pasted batches or results, call AI, call external
+APIs, fetch live data, promote paper mode, or approve real-money use.

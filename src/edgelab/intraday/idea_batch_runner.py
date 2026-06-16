@@ -124,6 +124,69 @@ class IdeaBatchRunner:
         """Run one idea batch through local deterministic checks."""
 
         batch = self.load_batch(batch_id)
+        return self.run_batch_payload(batch)
+
+    def validate_batch_payload(self, payload: object) -> dict[str, Any]:
+        """Validate one pasted idea batch without saving or running it."""
+
+        batch = _payload_to_batch(payload)
+        accepted_ideas, rejected_idea_results = self._validate_ideas(batch)
+        unsupported_results = [
+            self._unsupported_result(idea)
+            for idea in accepted_ideas
+            if not self._is_testable_rule(idea.supported_rule_family)
+        ]
+        testable_ideas = [
+            idea for idea in accepted_ideas if self._is_testable_rule(idea.supported_rule_family)
+        ]
+        rejected_only = [
+            result
+            for result in rejected_idea_results
+            if result.classification != IdeaBatchResultLabel.UNSUPPORTED_RULE
+        ]
+        unsupported_only = [
+            result
+            for result in [*rejected_idea_results, *unsupported_results]
+            if result.classification == IdeaBatchResultLabel.UNSUPPORTED_RULE
+        ]
+        return {
+            "batch_id": batch.batch_id,
+            "batch_name": batch.batch_name,
+            "created_for": batch.created_for,
+            "ideas_submitted": len(batch.ideas),
+            "accepted_ideas": [
+                {
+                    "idea_id": idea.idea_id,
+                    "plain_english_name": idea.plain_english_name,
+                    "supported_rule_family": idea.supported_rule_family.value,
+                    "instruments_to_test": list(self._symbols_for_idea(idea)),
+                }
+                for idea in testable_ideas
+            ],
+            "rejected_ideas": [result.model_dump(mode="json") for result in rejected_only],
+            "unsupported_ideas": [result.model_dump(mode="json") for result in unsupported_only],
+            "safety_errors": [
+                result.rejection_reason
+                for result in rejected_only
+                if result.rejection_reason is not None
+            ],
+            "can_run": bool(testable_ideas),
+            "validation_status": (
+                "Ready to run supported local ideas."
+                if testable_ideas
+                else "No supported local ideas are ready to run."
+            ),
+            "this_run_is_temporary": True,
+            "research_only_status": "Research only",
+            "real_money_status": "Not allowed",
+            "does_not_call_ai": True,
+            "does_not_save_results": True,
+        }
+
+    def run_batch_payload(self, payload: object) -> IdeaBatchResult:
+        """Run one pasted idea batch without saving it."""
+
+        batch = _payload_to_batch(payload)
         cache_key = self._cache_key(batch)
         cached = _IDEA_BATCH_CACHE.get(cache_key)
         if cached is not None:
@@ -386,15 +449,20 @@ def _next_action_for_classification(classification: IdeaBatchResultLabel) -> str
 
 
 def _validation_rejection(raw_idea: dict[str, Any], exc: ValidationError) -> IdeaBatchIdeaResult:
+    missing_fields = [
+        str(error.get("loc", ("field",))[-1])
+        for error in exc.errors()
+        if error.get("type") == "missing"
+    ]
     classification = (
         IdeaBatchResultLabel.UNSUPPORTED_RULE
         if any("supported_rule_family" in str(error.get("loc", ())) for error in exc.errors())
         else IdeaBatchResultLabel.REJECT_FOR_NOW
     )
-    reason = (
-        "EdgeLab cannot test this rule family with current local rules."
-        if classification == IdeaBatchResultLabel.UNSUPPORTED_RULE
-        else "EdgeLab rejected this idea because its wording was unsafe for research output."
+    reason = _validation_rejection_reason(
+        exc,
+        classification=classification,
+        missing_fields=missing_fields,
     )
     return _rejected_result(
         idea_id=_safe_raw_value(raw_idea.get("idea_id"), "rejected_idea"),
@@ -403,6 +471,32 @@ def _validation_rejection(raw_idea: dict[str, Any], exc: ValidationError) -> Ide
         classification=classification,
         reason=reason,
     )
+
+
+def _validation_rejection_reason(
+    exc: ValidationError,
+    *,
+    classification: IdeaBatchResultLabel,
+    missing_fields: list[str],
+) -> str:
+    if missing_fields:
+        return f"Missing required field: {', '.join(missing_fields)}."
+    messages = " ".join(str(error.get("msg", "")) for error in exc.errors()).lower()
+    if classification == IdeaBatchResultLabel.UNSUPPORTED_RULE:
+        return "Unsupported rule family: EdgeLab cannot test this idea with current local rules."
+    if "action instructions" in messages:
+        return "Unsafe language found: buy/sell/short instruction."
+    if "unsafe research language" in messages:
+        return "Unsafe language found: proof, readiness, or result claim."
+    return "EdgeLab rejected this idea because its wording was unsafe for research output."
+
+
+def _payload_to_batch(payload: object) -> IdeaBatch:
+    if isinstance(payload, IdeaBatch):
+        return payload
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid JSON: the batch must be a JSON object.")
+    return IdeaBatch.model_validate(payload)
 
 
 def _rejected_result(

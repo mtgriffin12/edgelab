@@ -219,6 +219,42 @@ td {
   white-space: pre-wrap;
 }
 
+.json-textarea {
+  background: #fff;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  color: #1d2733;
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 8px;
+  max-width: 100%;
+  padding: 12px;
+  width: 100%;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.action-row button {
+  background: #185d8a;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 9px 13px;
+}
+
+.action-row button:hover {
+  background: #10496f;
+}
+
 .facts {
   display: grid;
   gap: 10px;

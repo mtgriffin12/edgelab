@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Paste Idea Batch{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>Paste Idea Batch</h2>
+    <p class="muted">
+      Paste a structured JSON idea batch. EdgeLab will validate the ideas, reject unsafe or
+      unsupported ones, and run supported ideas against local historical data.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>
+      This run is temporary. Copy your JSON somewhere if you want to keep it.
+      No AI call is made.
+    </p>
+    <p>Real-money status: Not allowed</p>
+  </section>
+
+  <section class="section">
+    <h3>Paste idea batch</h3>
+    <label for="idea-batch-json">Structured JSON</label>
+    <textarea id="idea-batch-json" class="json-textarea" rows="22">{{ example_json }}</textarea>
+    <div class="action-row">
+      <button type="button" id="validate-idea-batch">Validate Batch</button>
+      <button type="button" id="run-idea-batch">Run Local Test</button>
+    </div>
+    <p id="idea-batch-status" class="muted">Paste JSON, then validate it before running.</p>
+  </section>
+
+  <section class="section" id="idea-batch-validation" hidden>
+    <h3>Validation result summary</h3>
+    <div id="validation-summary"></div>
+    <h4>Accepted ideas</h4>
+    <ul id="accepted-ideas"></ul>
+    <h4>Rejected ideas</h4>
+    <ul id="rejected-ideas"></ul>
+    <h4>Unsupported ideas</h4>
+    <ul id="unsupported-ideas"></ul>
+    <h4>Safety errors</h4>
+    <ul id="safety-errors"></ul>
+  </section>
+
+  <section class="section" id="idea-batch-results" hidden>
+    <h3>Results</h3>
+    <div id="result-summary"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Idea</th>
+          <th>Result</th>
+          <th>Securities tested</th>
+          <th>Next action</th>
+        </tr>
+      </thead>
+      <tbody id="scoreboard-body"></tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <details>
+      <summary>Idea batch JSON format</summary>
+      <h3>Required top-level fields</h3>
+      <ul>
+        {% for field in schema.required_top_level_fields %}
+          <li><code>{{ field }}</code></li>
+        {% endfor %}
+      </ul>
+
+      <h3>Required fields for each idea</h3>
+      <ul>
+        {% for field in schema.required_idea_fields %}
+          <li><code>{{ field }}</code></li>
+        {% endfor %}
+      </ul>
+
+      <h3>Allowed rule families</h3>
+      <ul>
+        {% for rule in schema.allowed_rule_families %}
+          <li><code>{{ rule }}</code></li>
+        {% endfor %}
+      </ul>
+
+      <h3>Forbidden language categories</h3>
+      <ul>
+        {% for category in schema.forbidden_language_categories %}
+          <li>{{ category }}</li>
+        {% endfor %}
+      </ul>
+
+      <h3>Copyable example JSON</h3>
+      <textarea class="json-textarea" rows="22" readonly>{{ example_json }}</textarea>
+    </details>
+  </section>
+
+  <script>
+    const input = document.getElementById("idea-batch-json");
+    const statusLine = document.getElementById("idea-batch-status");
+    const validationSection = document.getElementById("idea-batch-validation");
+    const resultsSection = document.getElementById("idea-batch-results");
+
+    function listItems(id, values, formatter) {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      if (!values || values.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "None";
+        list.appendChild(item);
+        return;
+      }
+      values.forEach((value) => {
+        const item = document.createElement("li");
+        item.textContent = formatter ? formatter(value) : value;
+        list.appendChild(item);
+      });
+    }
+
+    function showValidation(data) {
+      validationSection.hidden = false;
+      document.getElementById("validation-summary").textContent =
+        data.validation_status || "Validation complete.";
+      listItems("accepted-ideas", data.accepted_ideas, (idea) =>
+        `${idea.plain_english_name} (${idea.supported_rule_family})`
+      );
+      listItems("rejected-ideas", data.rejected_ideas, (idea) =>
+        `${idea.plain_english_name}: ${idea.rejection_reason || idea.classification_label}`
+      );
+      listItems("unsupported-ideas", data.unsupported_ideas, (idea) =>
+        `${idea.plain_english_name}: ${idea.rejection_reason || idea.classification_label}`
+      );
+      listItems("safety-errors", data.safety_errors);
+    }
+
+    function showResults(data) {
+      resultsSection.hidden = false;
+      document.getElementById("result-summary").textContent =
+        `${data.current_conclusion} Next: ${data.next_action}`;
+      const body = document.getElementById("scoreboard-body");
+      body.innerHTML = "";
+      data.scoreboard.forEach((row) => {
+        const tr = document.createElement("tr");
+        ["idea", "result", "securities_tested", "next_action"].forEach((field) => {
+          const td = document.createElement("td");
+          const value = row[field];
+          td.textContent = Array.isArray(value) ? value.join(", ") : value;
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    async function postBatch(path) {
+      statusLine.textContent = "Checking local JSON...";
+      const response = await fetch(path, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: input.value
+      });
+      const data = await response.json();
+      showValidation(data);
+      if (!response.ok) {
+        statusLine.textContent = "This batch needs changes before it can run.";
+        resultsSection.hidden = true;
+        return null;
+      }
+      statusLine.textContent = data.can_run === false
+        ? "No supported local ideas are ready to run."
+        : "Supported local ideas are ready.";
+      return data;
+    }
+
+    document.getElementById("validate-idea-batch").addEventListener("click", async () => {
+      await postBatch("/intraday/research/idea-batches/validate");
+    });
+
+    document.getElementById("run-idea-batch").addEventListener("click", async () => {
+      const data = await postBatch("/intraday/research/idea-batches/run");
+      if (data) {
+        showResults(data);
+      }
+    });
+  </script>
+{% endblock %}

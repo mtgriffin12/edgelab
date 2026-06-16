@@ -310,16 +310,19 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
 def test_intraday_idea_batch_pages_return_concise_scoreboard() -> None:
     list_response = client.get("/ui/intraday-lab/research/idea-batches")
     detail_response = client.get("/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001")
+    new_response = client.get("/ui/intraday-lab/research/idea-batches/new")
     symbol_sprawl_response = client.get(
         "/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001/SPY"
     )
 
     assert list_response.status_code == 200
     assert detail_response.status_code == 200
+    assert new_response.status_code == 200
     assert symbol_sprawl_response.status_code == 404
     for phrase in [
         "Idea Batches",
         "Structured idea specs that EdgeLab can test locally.",
+        "Paste Idea Batch",
         "Demo Structured Intraday Ideas",
         "Accepted ideas",
         "Rejected ideas",
@@ -356,6 +359,42 @@ def test_intraday_idea_batch_pages_return_concise_scoreboard() -> None:
         "too noisy",
     ]:
         assert forbidden not in primary_text.lower()
+    for phrase in [
+        "Paste Idea Batch",
+        "<textarea",
+        "Validate Batch",
+        "Run Local Test",
+        "Idea batch JSON format",
+        "Required top-level fields",
+        "batch_id",
+        "batch_name",
+        "created_for",
+        "ideas",
+        "research_only_status",
+        "real_money_status",
+        "Required fields for each idea",
+        "plain_english_name",
+        "supported_rule_family",
+        "fixed_parameters",
+        "Allowed rule families",
+        "first_range_breakout",
+        "gap_fade",
+        "reject_unsupported",
+        "Copyable example JSON",
+        "This run is temporary",
+        "No AI call is made.",
+    ]:
+        assert phrase in new_response.text
+    paste_primary_text = visible_text_before(new_response.text, "Idea batch JSON format")
+    for forbidden in [
+        "Execute",
+        "Signal",
+        "Trade button",
+        "ready for real money",
+        "validated edge",
+        "too noisy",
+    ]:
+        assert forbidden not in paste_primary_text
 
 
 def test_failed_early_move_research_detail_summarizes_all_related_tests() -> None:

@@ -46,6 +46,46 @@ IDEA_BATCH_FORBIDDEN_PHRASES = [
     "should work",
 ]
 
+IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS = [
+    "batch_id",
+    "batch_name",
+    "created_for",
+    "ideas",
+    "research_only_status",
+    "real_money_status",
+]
+
+IDEA_BATCH_REQUIRED_IDEA_FIELDS = [
+    "idea_id",
+    "plain_english_name",
+    "hypothesis",
+    "supported_rule_family",
+    "instruments_to_test",
+    "required_data",
+    "exact_rule_definition",
+    "fixed_parameters",
+    "why_test_this",
+    "useful_result_definition",
+    "failed_or_unclear_result_definition",
+    "expected_failure_modes",
+    "safety_notes",
+]
+
+IDEA_BATCH_FORBIDDEN_LANGUAGE_CATEGORIES = [
+    "buy/sell/short instructions",
+    "trade recommendations",
+    "profit claims",
+    "proof claims",
+    "guaranteed",
+    "reliable",
+    "validated edge",
+    "live trading language",
+    "paper-mode readiness",
+    "real-money readiness",
+    "threshold tuning after seeing results",
+    "language implying the idea already works",
+]
+
 
 class IdeaBatchRuleFamily(StrEnum):
     """Rule families EdgeLab can accept or reject deterministically."""
@@ -59,6 +99,76 @@ class IdeaBatchRuleFamily(StrEnum):
     SYMBOL_DIVERGENCE = "symbol_divergence"
     VOLUME_OR_RANGE_FILTER = "volume_or_range_filter"
     REJECT_UNSUPPORTED = "reject_unsupported"
+
+
+def idea_batch_minimal_example() -> dict[str, Any]:
+    """Return a minimal local idea batch that matches the current schema."""
+
+    return {
+        "batch_id": "my_intraday_ideas_001",
+        "batch_name": "My Intraday Idea Batch",
+        "created_for": "local research",
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+        "ideas": [
+            {
+                "idea_id": "gap_down_reclaim_001",
+                "plain_english_name": "Gap Down Reclaim",
+                "hypothesis": (
+                    "When a symbol opens lower and quickly returns inside the early range, "
+                    "the recovery can be checked with fixed local rules."
+                ),
+                "supported_rule_family": "reclaim",
+                "instruments_to_test": ["AAPL", "AMZN", "MSFT", "META", "TSLA", "SPY", "QQQ"],
+                "required_data": "1-minute bars and the first-hour price range",
+                "exact_rule_definition": (
+                    "Find mornings where price opens weak, moves below the early range, "
+                    "then returns back inside the early range."
+                ),
+                "fixed_parameters": {
+                    "range_minutes": 15,
+                    "test_horizon_minutes": 10,
+                },
+                "why_test_this": (
+                    "A quick recovery after early weakness may be worth checking locally."
+                ),
+                "useful_result_definition": (
+                    "Useful would mean enough examples moved in the tested direction "
+                    "more often than they moved against it."
+                ),
+                "failed_or_unclear_result_definition": (
+                    "Unclear would mean there were too few examples or the outcomes were split."
+                ),
+                "expected_failure_modes": [
+                    "too few examples",
+                    "mixed results / no clear answer",
+                    "local data problem",
+                ],
+                "safety_notes": "Research only. Local history check only.",
+            }
+        ],
+    }
+
+
+def idea_batch_schema_help() -> dict[str, Any]:
+    """Return copyable schema help for local structured idea batches."""
+
+    return {
+        "description": (
+            "Paste a structured JSON idea batch. EdgeLab validates the ideas, rejects unsafe "
+            "or unsupported ones, and runs supported ideas against local historical data. "
+            "This endpoint does not call AI."
+        ),
+        "required_top_level_fields": IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS,
+        "required_idea_fields": IDEA_BATCH_REQUIRED_IDEA_FIELDS,
+        "allowed_rule_families": [item.value for item in IdeaBatchRuleFamily],
+        "forbidden_language_categories": IDEA_BATCH_FORBIDDEN_LANGUAGE_CATEGORIES,
+        "minimal_valid_example": idea_batch_minimal_example(),
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+        "does_not_call_ai": True,
+        "does_not_save_results": True,
+    }
 
 
 class IdeaBatchResultLabel(StrEnum):

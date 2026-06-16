@@ -254,6 +254,12 @@ declare success. Unsupported ideas and unsafe wording are rejected before local 
 results are computed in memory, not saved to the research-run DB, and remain research-only with
 real-money status Not allowed.
 
+`/ui/intraday-lab/research/idea-batches/new` lets a user paste a structured JSON idea batch,
+validate it, and run the supported ideas locally without Codex. The page exposes the current JSON
+field names, allowed rule families, forbidden language categories, and a copyable minimal example.
+Pasted runs are temporary in this phase. EdgeLab does not save pasted batches or results, call AI,
+call external APIs, or promote any idea to paper or live use.
+
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,
 generating setup or sit-out candidates, and calculating one hypothetical short-hold result when

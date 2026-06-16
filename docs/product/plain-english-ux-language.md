@@ -151,6 +151,10 @@ Warnings should be short and direct:
 - "Accepted for local testing" should mean the idea passed safety and rule-family checks, not that
   the idea is good.
 - "Rejected before testing" should mean unsupported or unsafe for EdgeLab's current local rules.
+- "Paste Idea Batch" should mean the user supplies structured JSON created outside EdgeLab.
+- "Validate Batch" should mean safety and schema checks only.
+- "Run Local Test" should mean deterministic local research only, not execution.
+- "This run is temporary" should appear when pasted batches are not saved.
 - "Strategy Idea Scoreboard" should lead with what advanced, what did not, and what to test next.
 - "Later Check" should mean a conservative review across later local history, not proof.
 - "Expanded Free FirstRate Universe" should mean ignored local sample files discovered by the

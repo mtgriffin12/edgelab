@@ -181,6 +181,11 @@ plain-English scoreboard. Results are cached in process memory only. The service
 call external APIs, write saved research runs, tune thresholds after results, create symbol page
 sprawl, promote paper mode, or produce recommendations.
 
+Phase 7X-2M adds a paste runner for the same local idea-batch engine. The UI exposes the schema,
+copyable JSON, validation endpoint, and temporary local-run endpoint so users can operate structured
+batch tests without Codex. It does not save pasted batches, persist results, call AI, call external
+APIs, or introduce live/paper execution.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.
