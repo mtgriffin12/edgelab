@@ -40,6 +40,8 @@ Phase 7X-2J: AI-assisted strategy discovery sprint, fixed-library and local-only
 
 Phase 7X-2K: Expanded free FirstRate universe, strategy-first and research-only
 
+Phase 7X-2L: Structured AI idea batch testing, local deterministic checks only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

@@ -146,6 +146,11 @@ Warnings should be short and direct:
 - "Strategy Discovery Sprint" should mean a local fixed-library scan, not live AI reasoning.
 - "Future AI Idea Intake" should say AI may later propose a locked hypothesis, but Phase 7X-2J
   and Phase 7X-2K do not call AI.
+- "Idea Batch" should mean structured idea specs that EdgeLab can test locally, not AI finding a
+  strategy.
+- "Accepted for local testing" should mean the idea passed safety and rule-family checks, not that
+  the idea is good.
+- "Rejected before testing" should mean unsupported or unsafe for EdgeLab's current local rules.
 - "Strategy Idea Scoreboard" should lead with what advanced, what did not, and what to test next.
 - "Later Check" should mean a conservative review across later local history, not proof.
 - "Expanded Free FirstRate Universe" should mean ignored local sample files discovered by the

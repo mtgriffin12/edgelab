@@ -9,6 +9,7 @@ from edgelab.intraday.discovery_sprint_schema import (
     DiscoverySprintClassification,
     DiscoverySprintResult,
 )
+from edgelab.intraday.idea_batch_schema import IdeaBatchResult
 from edgelab.intraday.out_of_sample_gate_schema import OutOfSampleGateResult
 from edgelab.intraday.pattern_results_schema import MultiSessionReplaySummary
 from edgelab.intraday.prop_accounts import PropAccountSimulationResult
@@ -249,6 +250,51 @@ def comparative_study_to_markdown_card(result: ComparativeStudyResult) -> str:
             "",
             "## Evidence details",
             *_bullets(_comparative_evidence_lines(result)),
+        ]
+    )
+
+
+def idea_batch_to_markdown_card(result: IdeaBatchResult) -> str:
+    """Render a structured idea batch result as concise Markdown."""
+
+    return "\n".join(
+        [
+            f"# {result.batch_name}",
+            "",
+            "## Headline",
+            result.current_conclusion,
+            "",
+            "## Ideas Tested",
+            *_bullets(item.plain_english_name for item in result.accepted_ideas),
+            "",
+            "## Securities Tested",
+            ", ".join(result.securities_tested)
+            if result.securities_tested
+            else "No securities tested.",
+            "",
+            "## Best Idea If Any",
+            result.best_idea_if_any,
+            "",
+            "## Ideas Rejected",
+            *_bullets(_idea_batch_rejected_lines(result)),
+            "",
+            "## Ideas Needing More Examples",
+            *_bullets(result.ideas_needing_more_examples or ["None"]),
+            "",
+            "## Ideas With Mixed Results / No Clear Answer",
+            *_bullets(result.ideas_mixed_results or ["None"]),
+            "",
+            "## Next Action",
+            result.next_action,
+            "",
+            "## Real-Money Status",
+            f"- {result.real_money_status}",
+            "",
+            "## Evidence Details",
+            f"- Ideas submitted: {result.ideas_submitted}",
+            f"- Ideas tested: {result.ideas_tested}",
+            "- Local historical research only.",
+            "- No AI call was made.",
         ]
     )
 
@@ -623,6 +669,16 @@ def _discovery_strategy_names(
         if strategy.classification in classifications
     ]
     return ", ".join(names)
+
+
+def _idea_batch_rejected_lines(result: IdeaBatchResult) -> list[str]:
+    return [
+        (
+            f"{item.plain_english_name}: {item.classification_label}"
+            + (f" ({item.rejection_reason})" if item.rejection_reason else "")
+        )
+        for item in result.rejected_ideas
+    ]
 
 
 def _bullets(items: Iterable[str]) -> list[str]:

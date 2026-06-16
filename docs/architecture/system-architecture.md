@@ -172,6 +172,15 @@ QQQ. The future AI boundary is a schema for proposed locked hypotheses only. The
 call AI, call external APIs, write saved research runs, persist sprint results, create background
 jobs, promote paper mode, or produce recommendations.
 
+## Structured Intraday Idea Batch Testing
+
+Validates and tests locked idea batches against deterministic local intraday rule families. Phase
+7X-2L reads checked-in demo batches or ignored local batch files, rejects unsupported or unsafe
+ideas before testing, maps supported ideas to existing local discovery rules, and returns a
+plain-English scoreboard. Results are cached in process memory only. The service does not call AI,
+call external APIs, write saved research runs, tune thresholds after results, create symbol page
+sprawl, promote paper mode, or produce recommendations.
+
 ## Paper Trading Simulator
 
 Simulates trades and paper positions without real broker order execution.

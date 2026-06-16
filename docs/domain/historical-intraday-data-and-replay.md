@@ -329,3 +329,23 @@ AI idea intake remains only a structured future-safe format. EdgeLab currently t
 library of deterministic local ideas across the expanded free universe. It does not call AI, fetch
 live data, call vendors, save sprint outputs, create recommendations, promote paper mode, or approve
 real-money use.
+
+## Phase 7X-2L Structured AI Idea Batch Testing
+
+Phase 7X-2L adds local structured idea batches. A batch is a set of locked hypothesis specs that
+EdgeLab can validate before testing. The batch may be written by a person or proposed by an AI tool
+outside EdgeLab, but EdgeLab does not call AI, connect to a live model, or ask AI to judge results.
+
+Each idea must name a supported deterministic rule family, the securities to test, required local
+data, fixed parameters, useful-result criteria, failure criteria, expected failure modes, and safety
+notes. Unsupported rule families are rejected instead of approximated. Unsafe wording, action
+language, proof claims, readiness claims, and after-the-fact threshold changes are rejected before
+testing.
+
+Supported ideas run against the same ignored local FirstRate universe used by the discovery sprint.
+Results use plain labels: Worth testing on more history, Mixed results / no clear answer, Needs
+more examples, EdgeLab cannot test this idea with current local rules, Local data problem blocked
+the test, and Reject for now. Batch results are computed on demand with process-local caching and
+are not saved to the research-run DB in this phase. Current local data can show whether an idea
+deserves another research pass, but it cannot prove a trade, approve paper mode, or approve
+real-money use.

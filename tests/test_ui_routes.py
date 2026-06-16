@@ -289,6 +289,9 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
         "VXX_1min_firstratedata.csv",
         "Future AI idea intake",
         "does not call AI",
+        "Idea Batches",
+        "Structured idea specs that EdgeLab can test locally.",
+        "/ui/intraday-lab/research/idea-batches",
         "Evidence Details",
         "Real-money status: Not allowed",
     ]:
@@ -302,6 +305,57 @@ def test_intraday_research_list_returns_strategy_idea_table() -> None:
     assert "too noisy" not in response.text.lower()
     assert "ready for real money" not in response.text.lower()
     assert "validated edge" not in response.text.lower()
+
+
+def test_intraday_idea_batch_pages_return_concise_scoreboard() -> None:
+    list_response = client.get("/ui/intraday-lab/research/idea-batches")
+    detail_response = client.get("/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001")
+    symbol_sprawl_response = client.get(
+        "/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001/SPY"
+    )
+
+    assert list_response.status_code == 200
+    assert detail_response.status_code == 200
+    assert symbol_sprawl_response.status_code == 404
+    for phrase in [
+        "Idea Batches",
+        "Structured idea specs that EdgeLab can test locally.",
+        "Demo Structured Intraday Ideas",
+        "Accepted ideas",
+        "Rejected ideas",
+        "Real-money status: Not allowed",
+    ]:
+        assert phrase in list_response.text
+    for phrase in [
+        "Bottom line",
+        "Best idea if any",
+        "What EdgeLab tested",
+        "Scoreboard",
+        "Ideas rejected",
+        "Ideas needing more examples",
+        "Ideas with mixed results / no clear answer",
+        "Evidence Details",
+        "No AI call was made.",
+        "Real-money status:</strong> Not allowed",
+        "First Range Breakout Demo",
+        "Gap Fade Demo",
+        "SPY QQQ Difference Demo",
+        "Moon Phase Demo",
+        "unsafe_claim_001",
+    ]:
+        assert phrase in detail_response.text
+    primary_text = visible_text_before(detail_response.text, "Evidence Details")
+    for forbidden in [
+        "trade button",
+        "buy now",
+        "sell now",
+        "short now",
+        "ready for real money",
+        "validated edge",
+        "ai found a strategy",
+        "too noisy",
+    ]:
+        assert forbidden not in primary_text.lower()
 
 
 def test_failed_early_move_research_detail_summarizes_all_related_tests() -> None:
@@ -800,6 +854,8 @@ def test_ui_pages_do_not_contain_real_money_action_buttons() -> None:
         "/ui/risk-sentinel",
         "/ui/intraday-lab",
         "/ui/intraday-lab/research",
+        "/ui/intraday-lab/research/idea-batches",
+        "/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001",
         "/ui/intraday-lab/research/failed-early-move",
         "/ui/intraday-lab/trading",
         "/ui/intraday-lab/GEN_SYN",

@@ -1,0 +1,93 @@
+{
+  "batch_id": "ai_intraday_ideas_001",
+  "batch_name": "Demo Structured Intraday Ideas",
+  "created_for": "Phase 7X-2L local idea batch testing demo",
+  "research_only_status": "Research only",
+  "real_money_status": "Not allowed",
+  "ideas": [
+    {
+      "idea_id": "first_range_breakout_demo",
+      "plain_english_name": "First Range Breakout Demo",
+      "hypothesis": "A morning that leaves the first range can be checked with fixed local rules.",
+      "supported_rule_family": "first_range_breakout",
+      "instruments_to_test": ["AAPL", "AMZN", "DIA", "EEM", "META", "MSFT", "QQQ", "SPY", "TSLA", "VXX"],
+      "required_data": "Local one-minute first-hour bars.",
+      "exact_rule_definition": "Use the first 15 regular-session minutes, then check the next fixed local move.",
+      "fixed_parameters": {
+        "range_minutes": 15,
+        "hold_minutes": 5
+      },
+      "why_test_this": "It is simple and local bars can check it.",
+      "useful_result_definition": "Useful would mean the same fixed rule repeats across several local securities.",
+      "failed_or_unclear_result_definition": "Unclear means examples split between helpful and unhelpful outcomes.",
+      "expected_failure_modes": ["Needs more examples", "Mixed results / no clear answer"],
+      "safety_notes": "This is a locked local hypothesis only."
+    },
+    {
+      "idea_id": "gap_fade_demo",
+      "plain_english_name": "Gap Fade Demo",
+      "hypothesis": "A morning that opens away from a prior reference point can be checked for a move back toward it.",
+      "supported_rule_family": "gap_fade",
+      "instruments_to_test": ["AAPL", "AMZN", "DIA", "EEM", "META", "MSFT", "QQQ", "SPY", "TSLA", "VXX"],
+      "required_data": "Local one-minute first-hour bars and a prior reference level.",
+      "exact_rule_definition": "Use a fixed opening gap threshold before checking the next fixed local move.",
+      "fixed_parameters": {
+        "minimum_gap_percent": 0.25,
+        "hold_minutes": 5
+      },
+      "why_test_this": "The idea is simple enough to check without live data.",
+      "useful_result_definition": "Useful would mean enough local examples repeat across more than one security.",
+      "failed_or_unclear_result_definition": "Unclear means there are too few examples or the outcomes split.",
+      "expected_failure_modes": ["Needs more examples", "Mixed results / no clear answer"],
+      "safety_notes": "The batch can only ask EdgeLab to test fixed local rules."
+    },
+    {
+      "idea_id": "spy_qqq_difference_demo",
+      "plain_english_name": "SPY QQQ Difference Demo",
+      "hypothesis": "SPY and QQQ pointing different ways early can be checked as a local pair idea.",
+      "supported_rule_family": "symbol_divergence",
+      "instruments_to_test": ["SPY", "QQQ"],
+      "required_data": "Same-date local one-minute first-hour bars for SPY and QQQ.",
+      "exact_rule_definition": "Use a fixed early comparison window and check the next fixed local move.",
+      "fixed_parameters": {
+        "comparison_minutes": 20,
+        "hold_minutes": 5
+      },
+      "why_test_this": "It is a simple pair relationship that EdgeLab already has local files for.",
+      "useful_result_definition": "Useful would mean the pair behavior repeats clearly enough for deeper research.",
+      "failed_or_unclear_result_definition": "Unclear means the pair behavior splits or does not appear often.",
+      "expected_failure_modes": ["Reject for now", "Mixed results / no clear answer"],
+      "safety_notes": "The idea is research-only and must be tested locally."
+    },
+    {
+      "idea_id": "moon_phase_demo",
+      "plain_english_name": "Moon Phase Demo",
+      "hypothesis": "Calendar moon phases are outside the local first-hour rule set.",
+      "supported_rule_family": "reject_unsupported",
+      "instruments_to_test": ["SPY"],
+      "required_data": "External calendar context not included in EdgeLab local bars.",
+      "exact_rule_definition": "No deterministic local first-hour rule is available for this idea.",
+      "fixed_parameters": {},
+      "why_test_this": "This record checks that unsupported ideas are rejected safely.",
+      "useful_result_definition": "Useful would require a supported deterministic local rule first.",
+      "failed_or_unclear_result_definition": "Failure means EdgeLab cannot test it with current local rules.",
+      "expected_failure_modes": ["EdgeLab cannot test this idea with current local rules"],
+      "safety_notes": "EdgeLab must reject this idea until a deterministic local rule exists."
+    },
+    {
+      "idea_id": "unsafe_claim_001",
+      "plain_english_name": "Guaranteed Profit Pattern",
+      "hypothesis": "This idea claims it will work.",
+      "supported_rule_family": "gap_continuation",
+      "instruments_to_test": ["SPY"],
+      "required_data": "Local one-minute first-hour bars.",
+      "exact_rule_definition": "Tune after seeing results.",
+      "fixed_parameters": {},
+      "why_test_this": "This unsafe record should be rejected before testing.",
+      "useful_result_definition": "This record should not reach a useful result.",
+      "failed_or_unclear_result_definition": "This record should be blocked.",
+      "expected_failure_modes": ["Reject for now"],
+      "safety_notes": "This intentionally unsafe fixture verifies validation."
+    }
+  ]
+}

@@ -17,7 +17,7 @@ EdgeLab is a local-first trading research and validation app. It helps discover,
 
 ## Project Phase
 
-Current phase: **Phase 7X-2K Expanded Free FirstRate Universe**.
+Current phase: **Phase 7X-2L Structured AI Idea Batch Testing**.
 
 No live trading functionality exists.
 
@@ -55,6 +55,8 @@ Then visit:
 - `http://127.0.0.1:8000/ui/portfolios`
 - `http://127.0.0.1:8000/ui/intraday-lab`
 - `http://127.0.0.1:8000/ui/intraday-lab/research`
+- `http://127.0.0.1:8000/ui/intraday-lab/research/idea-batches`
+- `http://127.0.0.1:8000/ui/intraday-lab/research/idea-batches/ai_intraday_ideas_001`
 - `http://127.0.0.1:8000/ui/intraday-lab/research/failed-early-move`
 - `http://127.0.0.1:8000/ui/intraday-lab/research/gap-fade`
 - `http://127.0.0.1:8000/ui/intraday-lab/research/spy-qqq-divergence`
@@ -244,6 +246,13 @@ the expanded local universe, while SPY/QQQ Divergence stays scoped to SPY and QQ
 "AI-assisted" part is limited to a future-safe schema for locked hypotheses; Phase 7X-2K does not
 call AI, optimize prompts, save sprint outputs, fetch data, create recommendations, promote paper
 mode, or approve real-money use.
+
+The structured idea batch endpoints and `/ui/intraday-lab/research/idea-batches` pages let EdgeLab
+read locked idea specs and test only the ones that fit deterministic local rule families. AI may
+propose hypotheses outside the app, but EdgeLab does not call AI, connect to a live model, or let AI
+declare success. Unsupported ideas and unsafe wording are rejected before local testing. Batch
+results are computed in memory, not saved to the research-run DB, and remain research-only with
+real-money status Not allowed.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,

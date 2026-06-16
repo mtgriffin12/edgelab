@@ -59,6 +59,40 @@
   </section>
 
   <section class="section">
+    <h3>Idea Batches</h3>
+    <p>
+      Structured idea specs that EdgeLab can test locally.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Idea batch</th>
+          <th>Ideas submitted</th>
+          <th>Accepted for local testing</th>
+          <th>Rejected before testing</th>
+          <th>Next action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for batch in idea_batch_descriptions %}
+          <tr>
+            <td>
+              <a href="/ui/intraday-lab/research/idea-batches/{{ batch.batch_id }}">
+                {{ batch.batch_name }}
+              </a>
+            </td>
+            <td>{{ batch.ideas_submitted }}</td>
+            <td>{{ batch.accepted_ideas|length }}</td>
+            <td>{{ batch.rejected_ideas|length }}</td>
+            <td>{{ batch.next_action }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><a href="/ui/intraday-lab/research/idea-batches">Open idea batch list</a></p>
+  </section>
+
+  <section class="section">
     <h3>Evidence Details</h3>
     <details>
       <summary>Show sprint evidence</summary>

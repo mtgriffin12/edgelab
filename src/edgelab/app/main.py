@@ -28,6 +28,7 @@ from edgelab.intraday.cards import (
     comparative_study_to_markdown_card,
     discovery_sprint_to_markdown_card,
     historical_replay_to_markdown_card,
+    idea_batch_to_markdown_card,
     intraday_simulation_to_markdown_card,
     multi_session_replay_to_markdown_card,
     out_of_sample_gate_to_markdown_card,
@@ -55,6 +56,7 @@ from edgelab.intraday.historical_schema import (
     HistoricalIntradaySession,
     utc_now,
 )
+from edgelab.intraday.idea_batch_runner import IdeaBatchRunner
 from edgelab.intraday.out_of_sample_gate import OutOfSampleGateService
 from edgelab.intraday.pattern_results import MultiSessionPatternRunner
 from edgelab.intraday.pattern_results_schema import (
@@ -155,6 +157,7 @@ out_of_sample_gate_service = OutOfSampleGateService(
     setup_detector=intraday_setup_detector,
 )
 discovery_sprint_service = DiscoverySprintService(provider=firstrate_historical_provider)
+idea_batch_runner = IdeaBatchRunner(provider=firstrate_historical_provider)
 
 
 @dataclass(frozen=True)
@@ -199,7 +202,7 @@ def read_root() -> dict[str, str]:
 
     return {
         "app": "EdgeLab",
-        "phase": "Phase 7X-2J AI-assisted strategy discovery sprint",
+        "phase": "Phase 7X-2L structured AI idea batch testing",
         "status": "research-only",
     }
 
@@ -1079,6 +1082,77 @@ def read_intraday_ai_idea_spec_schema() -> dict[str, object]:
     }
 
 
+@app.get("/intraday/research/idea-batches")
+def read_intraday_idea_batches() -> dict[str, object]:
+    """Return local structured idea batches without calling AI."""
+
+    descriptions = idea_batch_runner.list_batches()
+    return {
+        "idea_batches": [description.model_dump(mode="json") for description in descriptions],
+        "accepted_ideas": [
+            idea for description in descriptions for idea in description.accepted_ideas
+        ],
+        "rejected_ideas": [
+            idea for description in descriptions for idea in description.rejected_ideas
+        ],
+        "securities_tested": sorted(
+            {symbol for description in descriptions for symbol in description.securities_tested}
+        ),
+        "best_idea_if_any": (
+            descriptions[0].best_idea_if_any if descriptions else "No local idea batches found."
+        ),
+        "current_conclusion": (
+            "Open a batch result to compute local deterministic tests."
+            if descriptions
+            else "No local idea batches found."
+        ),
+        "next_action": (
+            "Open an idea batch result."
+            if descriptions
+            else "Add a structured local idea batch before testing."
+        ),
+        "evidence_details": {
+            "source": "checked-in demo fixtures and ignored local idea batch files",
+            "does_not_call_ai": True,
+        },
+        "research_only_status": "Research only",
+        "real_money_status": "Not allowed",
+    }
+
+
+@app.get("/intraday/research/idea-batches/{batch_id}")
+def read_intraday_idea_batch(batch_id: str) -> dict[str, object]:
+    """Return validation-only details for one structured idea batch."""
+
+    try:
+        description = idea_batch_runner.describe_batch(batch_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Idea batch not found") from exc
+    return description.model_dump(mode="json")
+
+
+@app.get("/intraday/research/idea-batches/{batch_id}/results")
+def read_intraday_idea_batch_results(batch_id: str) -> dict[str, object]:
+    """Return local deterministic results for one structured idea batch."""
+
+    try:
+        result = idea_batch_runner.run_batch(batch_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Idea batch not found") from exc
+    return result.model_dump(mode="json")
+
+
+@app.get("/intraday/research/idea-batches/{batch_id}/card", response_class=Response)
+def read_intraday_idea_batch_card(batch_id: str) -> Response:
+    """Return one local idea batch result as Markdown."""
+
+    try:
+        result = idea_batch_runner.run_batch(batch_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Idea batch not found") from exc
+    return Response(content=idea_batch_to_markdown_card(result), media_type="text/plain")
+
+
 @app.get("/intraday/discovery-sprint")
 def read_intraday_discovery_sprint() -> dict[str, object]:
     """Return the local multi-instrument discovery sprint."""
@@ -1614,6 +1688,7 @@ def read_ui_intraday_research(request: Request) -> Response:
 
     saved_states = _failed_early_move_saved_states()
     discovery_result = discovery_sprint_service.run()
+    idea_batch_descriptions = idea_batch_runner.list_batches()
     research_rows = build_intraday_research_rows(
         saved_states=saved_states,
         discovery_result=discovery_result,
@@ -1621,7 +1696,38 @@ def read_ui_intraday_research(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="intraday_research.html",
-        context={"research_rows": research_rows, "discovery_result": discovery_result},
+        context={
+            "research_rows": research_rows,
+            "discovery_result": discovery_result,
+            "idea_batch_descriptions": idea_batch_descriptions,
+        },
+    )
+
+
+@app.get("/ui/intraday-lab/research/idea-batches", response_class=HTMLResponse)
+def read_ui_intraday_idea_batches(request: Request) -> Response:
+    """Render local structured idea batches."""
+
+    descriptions = idea_batch_runner.list_batches()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_idea_batches.html",
+        context={"idea_batch_descriptions": descriptions},
+    )
+
+
+@app.get("/ui/intraday-lab/research/idea-batches/{batch_id}", response_class=HTMLResponse)
+def read_ui_intraday_idea_batch_detail(request: Request, batch_id: str) -> Response:
+    """Render one local structured idea batch result."""
+
+    try:
+        result = idea_batch_runner.run_batch(batch_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Idea batch not found") from exc
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_idea_batch_detail.html",
+        context={"result": result},
     )
 
 

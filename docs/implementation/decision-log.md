@@ -156,3 +156,12 @@ while SPY/QQQ Divergence remains specific to SPY and QQQ. The research scoreboar
 strategy-first and reports data quality by symbol so local file problems are visible. This phase
 does not commit CSV data, call AI, call external APIs, write saved sprint results, create symbol
 page sprawl, promote paper mode, or approve real-money use.
+
+## DEC-037: Phase 7X-2L Structured AI Idea Batch Testing
+
+DEC-037 adds structured AI idea batch testing so EdgeLab can evaluate AI-proposed intraday
+hypotheses using deterministic local historical tests. EdgeLab may read locked idea specs, but it
+does not call AI, connect to a live model, or let AI judge whether an idea advanced. Unsupported
+rule families, unsafe wording, action language, proof or readiness claims, and threshold changes
+after results are rejected before testing. Supported ideas run locally against ignored FirstRate
+files, with results computed on demand and not saved in this phase.

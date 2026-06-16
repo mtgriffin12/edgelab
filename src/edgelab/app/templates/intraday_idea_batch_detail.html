@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ result.batch_name }}{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>{{ result.batch_name }}</h2>
+    <p class="muted">Local structured idea batch result.</p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ result.current_conclusion }}</p>
+    <p><strong>Best idea if any:</strong> {{ result.best_idea_if_any }}</p>
+    <p><strong>Next action:</strong> {{ result.next_action }}</p>
+    <p><strong>Real-money status:</strong> {{ result.real_money_status }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab tested</h3>
+    <p>
+      EdgeLab reviewed {{ result.ideas_submitted }} structured idea specs and tested
+      {{ result.ideas_tested }} using deterministic local rules.
+    </p>
+    <p>No AI call was made.</p>
+    <p>Securities tested: {{ result.securities_tested|join(", ") }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Scoreboard</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Idea</th>
+          <th>Rule family</th>
+          <th>Result</th>
+          <th>Securities tested</th>
+          <th>Next action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for idea in result.accepted_ideas %}
+          <tr>
+            <td>{{ idea.plain_english_name }}</td>
+            <td>{{ idea.supported_rule_family }}</td>
+            <td>{{ idea.classification_label }}</td>
+            <td>{{ idea.securities_tested|join(", ") }}</td>
+            <td>{{ idea.next_action }}</td>
+          </tr>
+        {% endfor %}
+        {% for idea in result.rejected_ideas %}
+          <tr>
+            <td>{{ idea.plain_english_name }}</td>
+            <td>{{ idea.supported_rule_family }}</td>
+            <td>{{ idea.classification_label }}</td>
+            <td>Not tested</td>
+            <td>{{ idea.next_action }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Result Groups</h3>
+    <p><strong>Ideas rejected:</strong> {{ result.ideas_rejected_for_now|join(", ") or "None" }}</p>
+    <p>
+      <strong>Ideas needing more examples:</strong>
+      {{ result.ideas_needing_more_examples|join(", ") or "None" }}
+    </p>
+    <p>
+      <strong>Ideas with mixed results / no clear answer:</strong>
+      {{ result.ideas_mixed_results|join(", ") or "None" }}
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show batch evidence</summary>
+      <p>Batch ID: {{ result.batch_id }}</p>
+      <p>Research-only status: {{ result.research_only_status }}</p>
+      <p>No AI call was made.</p>
+      <ul>
+        {% for idea in result.ranked_results %}
+          <li>
+            {{ idea.plain_english_name }}:
+            {{ idea.evidence_details.source_strategy_name }},
+            score {{ idea.evidence_score }}
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+  </section>
+{% endblock %}
