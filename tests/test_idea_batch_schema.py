@@ -41,10 +41,47 @@ def test_unsupported_rule_is_rejected_by_schema() -> None:
 
 
 @pytest.mark.parametrize(
+    "allowed_text",
+    [
+        "Check whether a short time after the open changes the local result.",
+        "Check whether a short-term failed move is different from a slow one.",
+        "Test mornings where price sells off early and then recovers.",
+        "A selloff after the first range can be checked with locked local rules.",
+        "The test watches whether price moves lower or moves higher after the setup.",
+        "A failed move may continue or reverse; this only checks local history.",
+        "Mixed results / no clear answer should keep the idea in research.",
+    ],
+)
+def test_research_language_with_short_or_selloff_words_is_allowed(
+    allowed_text: str,
+) -> None:
+    idea = AIProposedIntradayIdea(
+        **{
+            **_valid_idea(),
+            "hypothesis": allowed_text,
+        }
+    )
+
+    assert idea.hypothesis == allowed_text
+
+
+@pytest.mark.parametrize(
     "unsafe_text",
     [
+        "Buy now.",
+        "Sell now.",
+        "Short this.",
+        "Go long.",
+        "Go short.",
+        "Enter long.",
+        "Exit now.",
+        "Place an order.",
+        "Trade this.",
         "This says to buy the open.",
         "This is a trade recommendation.",
+        "This is guaranteed profit.",
+        "This is a proven profit.",
+        "This is a reliable profit.",
         "This claims profit.",
         "This claims proof.",
         "This is guaranteed.",
@@ -52,9 +89,14 @@ def test_unsupported_rule_is_rejected_by_schema() -> None:
         "This is a validated edge.",
         "This is for live trading.",
         "This has paper-mode readiness.",
+        "This is paper ready.",
+        "This is live ready.",
+        "This is ready for real money.",
         "This has real-money readiness.",
         "Tune after seeing results.",
         "This idea already works.",
+        "This works.",
+        "This cannot fail.",
     ],
 )
 def test_unsafe_idea_language_is_rejected(unsafe_text: str) -> None:

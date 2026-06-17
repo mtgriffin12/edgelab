@@ -484,11 +484,28 @@ def _validation_rejection_reason(
     messages = " ".join(str(error.get("msg", "")) for error in exc.errors()).lower()
     if classification == IdeaBatchResultLabel.UNSUPPORTED_RULE:
         return "Unsupported rule family: EdgeLab cannot test this idea with current local rules."
+    for category, label in {
+        "unsafe trading instruction": "Unsafe trading instruction found",
+        "unsafe recommendation wording": "Unsafe recommendation wording found",
+        "unsafe proof claim": "Unsafe proof claim found",
+        "unsafe profit claim": "Unsafe profit claim found",
+        "unsafe readiness claim": "Unsafe readiness claim found",
+        "unsafe threshold tuning after results": ("Unsafe threshold tuning after results found"),
+        "unsafe already-works claim": "Unsafe already-works claim found",
+        "unsafe live trading language": "Unsafe live trading language found",
+    }.items():
+        if category in messages:
+            return _unsafe_phrase_reason(messages, label)
     if "action instructions" in messages:
-        return "Unsafe language found: buy/sell/short instruction."
-    if "unsafe research language" in messages:
-        return "Unsafe language found: proof, readiness, or result claim."
+        return "Unsafe trading instruction found."
     return "EdgeLab rejected this idea because its wording was unsafe for research output."
+
+
+def _unsafe_phrase_reason(messages: str, label: str) -> str:
+    match = re.search(r"found: ([^.]+)", messages)
+    if match is None:
+        return f"{label}."
+    return f'{label}: "{match.group(1)}".'
 
 
 def _payload_to_batch(payload: object) -> IdeaBatch:

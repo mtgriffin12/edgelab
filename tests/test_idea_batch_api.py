@@ -148,6 +148,37 @@ def test_idea_batch_validate_api_accepts_valid_batch() -> None:
     assert data["real_money_status"] == "Not allowed"
 
 
+def test_idea_batch_validate_api_accepts_realistic_safe_research_language() -> None:
+    response = client.post(
+        "/intraday/research/idea-batches/validate",
+        json=_paste_batch(ideas=_realistic_safe_ai_ideas()),
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["can_run"] is True
+    assert data["ideas_submitted"] == 10
+    assert len(data["accepted_ideas"]) == 10
+    assert data["rejected_ideas"] == []
+    assert data["unsupported_ideas"] == []
+    assert data["safety_errors"] == []
+    assert {idea["plain_english_name"] for idea in data["accepted_ideas"]} == {
+        "Tech Leaders Confirm Breakout",
+        "TSLA Leads, QQQ Confirms",
+        "AAPL and MSFT Confirm QQQ Reclaim",
+        "VXX Opposes Equity Breakout",
+        "Narrow Open Expansion",
+        "Wide Open Reversal",
+        "Big Early Move Failure",
+        "Early Drop Reclaim",
+        "Early Spike Fade",
+        "Index ETF Leads Single Stocks",
+    }
+    assert data["does_not_call_ai"] is True
+    assert data["does_not_save_results"] is True
+    assert data["real_money_status"] == "Not allowed"
+
+
 def test_idea_batch_validate_api_rejects_invalid_json() -> None:
     response = client.post(
         "/intraday/research/idea-batches/validate",
@@ -205,9 +236,33 @@ def test_idea_batch_validate_api_splits_unsupported_and_unsafe_ideas() -> None:
         "missing_name_test",
         "unsafe_text_test",
     }
-    assert any("Unsafe language found" in error for error in data["safety_errors"])
+    assert any("Unsafe profit claim found" in error for error in data["safety_errors"])
     assert any(
         "Missing required field: plain_english_name." in error for error in data["safety_errors"]
+    )
+
+
+def test_idea_batch_validate_api_rejects_clear_trading_instruction() -> None:
+    payload = _paste_batch(
+        ideas=[
+            {
+                **_paste_idea(),
+                "idea_id": "unsafe_instruction_test",
+                "plain_english_name": "unsafe_instruction_test",
+                "hypothesis": "Buy now because this works.",
+            }
+        ]
+    )
+
+    response = client.post("/intraday/research/idea-batches/validate", json=payload)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["accepted_ideas"] == []
+    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"unsafe_instruction_test"}
+    assert any(
+        error.startswith('Unsafe trading instruction found: "buy now"')
+        for error in data["safety_errors"]
     )
 
 
@@ -273,3 +328,139 @@ def _paste_idea(idea_id: str = "gap_fade_local_check") -> dict[str, object]:
         "expected_failure_modes": ["too few examples", "mixed results / no clear answer"],
         "safety_notes": "Research only. Local history check only.",
     }
+
+
+def _realistic_safe_ai_ideas() -> list[dict[str, object]]:
+    base: dict[str, object] = {
+        "required_data": "Local 1-minute bars and the first-hour price range.",
+        "fixed_parameters": {"range_minutes": 15, "test_horizon_minutes": 10},
+        "useful_result_definition": (
+            "Useful would mean enough completed examples moved in the tested direction "
+            "more often than they moved against it."
+        ),
+        "failed_or_unclear_result_definition": (
+            "Unclear would mean too few examples or mixed results / no clear answer."
+        ),
+        "expected_failure_modes": [
+            "needs more examples",
+            "mixed results / no clear answer",
+            "local data problem",
+        ],
+        "safety_notes": "Research only. Local history check only. No recommendation.",
+    }
+    ideas = [
+        (
+            "tech_leaders_confirm_breakout",
+            "Tech Leaders Confirm Breakout",
+            "Test whether a short-term early range move may continue when large tech names agree.",
+            "first_range_breakout",
+            ["AAPL", "MSFT", "META", "AMZN", "QQQ"],
+            (
+                "Find mornings where the first range breaks higher and several tech names "
+                "move higher too."
+            ),
+            "This checks whether grouped movement matters more than one symbol alone.",
+        ),
+        (
+            "tsla_leads_qqq_confirms",
+            "TSLA Leads, QQQ Confirms",
+            "Test whether TSLA moving first and QQQ following is different from isolated movement.",
+            "trend_continuation",
+            ["TSLA", "QQQ"],
+            "Find mornings where TSLA moves higher early and QQQ confirms the same direction.",
+            "This checks whether one high-attention name lines up with the broader basket.",
+        ),
+        (
+            "aapl_msft_confirm_qqq_reclaim",
+            "AAPL and MSFT Confirm QQQ Reclaim",
+            "Test whether QQQ recovery is clearer when AAPL and MSFT recover too.",
+            "reclaim",
+            ["AAPL", "MSFT", "QQQ"],
+            "Find mornings where QQQ returns inside the early range after weakness.",
+            "This checks whether a recovery has broader support from large components.",
+        ),
+        (
+            "vxx_opposes_equity_breakout",
+            "VXX Opposes Equity Breakout",
+            "Test whether VXX moving lower matters when equity symbols move higher.",
+            "first_range_breakout",
+            ["VXX", "SPY", "QQQ"],
+            "Find mornings where SPY or QQQ move higher while VXX moves lower.",
+            "This checks whether a risk-off reference disagrees with an equity move.",
+        ),
+        (
+            "narrow_open_expansion",
+            "Narrow Open Expansion",
+            "Test whether a quiet first range later expands enough to matter.",
+            "first_range_breakout",
+            ["AAPL", "AMZN", "META", "MSFT", "QQQ", "SPY"],
+            "Find mornings with a narrow first range and a later move outside that range.",
+            "This checks whether quiet opens create enough examples for local testing.",
+        ),
+        (
+            "wide_open_reversal",
+            "Wide Open Reversal",
+            "Test whether a wide first range is followed by a failed move.",
+            "first_range_failure",
+            ["AAPL", "AMZN", "META", "MSFT", "QQQ", "SPY"],
+            "Find mornings with a wide first range and a later failed early move.",
+            "This checks whether large early movement becomes less useful afterward.",
+        ),
+        (
+            "big_early_move_failure",
+            "Big Early Move Failure",
+            "Test whether a strong early move fails after moving too far too fast.",
+            "first_range_failure",
+            ["AAPL", "AMZN", "META", "MSFT", "QQQ", "SPY", "TSLA"],
+            "Find mornings where price makes a strong early move and then gives it back.",
+            "This checks failed early move behavior across the local universe.",
+        ),
+        (
+            "early_drop_reclaim",
+            "Early Drop Reclaim",
+            "Test whether price sells off early and then recovers into the first range.",
+            "reclaim",
+            ["AAPL", "AMZN", "META", "MSFT", "QQQ", "SPY", "TSLA"],
+            "Find mornings where price moves lower early and later returns inside the first range.",
+            "This checks whether early weakness sometimes reverses in local history.",
+        ),
+        (
+            "early_spike_fade",
+            "Early Spike Fade",
+            "Test whether an early spike fades after the first range is formed.",
+            "gap_fade",
+            ["AAPL", "AMZN", "META", "MSFT", "QQQ", "SPY", "TSLA"],
+            "Find mornings where the opening move fades after the early range.",
+            "This checks whether early excitement often cools off in the local sample.",
+        ),
+        (
+            "index_etf_leads_single_stocks",
+            "Index ETF Leads Single Stocks",
+            "Test whether SPY or QQQ moving first lines up with single-stock follow-through.",
+            "symbol_divergence",
+            ["SPY", "QQQ", "AAPL", "MSFT", "META", "AMZN"],
+            "Find mornings where index ETFs and single stocks disagree early.",
+            "This checks whether disagreement is useful enough to keep studying.",
+        ),
+    ]
+    return [
+        {
+            **base,
+            "idea_id": idea_id,
+            "plain_english_name": name,
+            "hypothesis": hypothesis,
+            "supported_rule_family": rule_family,
+            "instruments_to_test": instruments,
+            "exact_rule_definition": exact_rule_definition,
+            "why_test_this": why_test_this,
+        }
+        for (
+            idea_id,
+            name,
+            hypothesis,
+            rule_family,
+            instruments,
+            exact_rule_definition,
+            why_test_this,
+        ) in ideas
+    ]

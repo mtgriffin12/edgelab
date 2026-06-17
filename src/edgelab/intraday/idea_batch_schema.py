@@ -8,42 +8,91 @@ from typing import Any, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from edgelab.intraday.pattern_results_schema import OVERCONFIDENT_RESEARCH_PHRASES
 from edgelab.intraday.schema import normalize_symbol, reject_action_instructions
 
 IDEA_BATCH_SCHEMA_VERSION = "phase_7x_2l_v1"
 IDEA_BATCH_CODE_VERSION = "phase_7x_2l"
 
-IDEA_BATCH_FORBIDDEN_PHRASES = [
-    *OVERCONFIDENT_RESEARCH_PHRASES,
-    "validated edge",
-    "signal readiness",
-    "paper-mode readiness",
-    "paper mode readiness",
-    "real-money readiness",
-    "live signal",
-    "live trading",
-    "paper mode",
-    "ready to trade",
-    "guaranteed",
-    "reliable",
-    "proven",
-    "proof",
-    "prove",
-    "proves",
-    "profit",
-    "profitable",
-    "recommend",
-    "recommendation",
-    "buy",
-    "sell",
-    "short",
-    "tune after seeing results",
-    "change thresholds after seeing results",
-    "adjust after seeing results",
-    "already works",
-    "will work",
-    "should work",
+IDEA_BATCH_UNSAFE_PATTERNS: list[tuple[str, tuple[str, ...]]] = [
+    (
+        "trading instruction",
+        (
+            r"\bbuy\s+(?:now|this|here|the\s+\w+)\b",
+            r"\bsell\s+(?:now|this|here|the\s+\w+)\b",
+            r"\bshort\s+(?:now|this|here|the\s+\w+)\b",
+            r"\bgo\s+(?:long|short)\b",
+            r"\benter\s+(?:long|short|now|here|this)\b",
+            r"\bexit\s+(?:now|here|this)\b",
+            r"\bplace\s+(?:an?\s+)?order\b",
+            r"\btake\s+this\s+trade\b",
+        ),
+    ),
+    (
+        "recommendation wording",
+        (
+            r"\btrade\s+this\b",
+            r"\bthis\s+is\s+(?:a\s+)?trade\s+recommendation\b",
+            r"\brecommend(?:ed|s|ing)?\s+(?:buying|selling|shorting|this|the)\b",
+        ),
+    ),
+    (
+        "proof claim",
+        (
+            r"\bguaranteed(?:\s+profit)?\b",
+            r"\bproven(?:\s+profit)?\b",
+            r"\breliable(?:\s+profit)?\b",
+            r"\bvalidated\s+edge\b",
+            r"\bclaims?\s+(?:a\s+)?proof\b",
+            r"\bproof\s+that\b",
+            r"\bthis\s+is\s+proof\b",
+        ),
+    ),
+    (
+        "profit claim",
+        (
+            r"\bprofitable\b",
+            r"\bguaranteed\s+profit\b",
+            r"\bproven\s+profit\b",
+            r"\breliable\s+profit\b",
+            r"\bclaims?\s+(?:a\s+)?profit\b",
+        ),
+    ),
+    (
+        "readiness claim",
+        (
+            r"\bready\s+for\s+real\s+money\b",
+            r"\breal-?money\s+ready\b",
+            r"\bpaper\s+ready\b",
+            r"\blive\s+ready\b",
+            r"\bready\s+to\s+trade\b",
+            r"\b(?:signal|paper-?mode|real-?money)\s+readiness\b",
+        ),
+    ),
+    (
+        "threshold tuning after results",
+        (
+            r"\btune\s+after\s+seeing\s+results\b",
+            r"\bchange\s+thresholds\s+after\s+seeing\s+results\b",
+            r"\badjust\s+after\s+seeing\s+results\b",
+        ),
+    ),
+    (
+        "already-works claim",
+        (
+            r"\bthis\s+works\b",
+            r"\balways\s+works\b",
+            r"\bwill\s+work\b",
+            r"\balready\s+works\b",
+            r"\bcannot\s+fail\b",
+        ),
+    ),
+    (
+        "live trading language",
+        (
+            r"\blive\s+trading\b",
+            r"\blive\s+signal\b",
+        ),
+    ),
 ]
 
 IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS = [
@@ -359,9 +408,21 @@ def _validate_safe_text(
         raise ValueError(f"{context} must remain research-only")
     if real_money_status != "Not allowed":
         raise ValueError(f"{context} real-money status must be Not allowed")
-    reject_action_instructions(text, context)
     lowered = text.lower()
-    if any(
-        re.search(rf"\b{re.escape(phrase)}\b", lowered) for phrase in IDEA_BATCH_FORBIDDEN_PHRASES
-    ):
-        raise ValueError(f"{context} must not contain unsafe research language")
+    found = _find_unsafe_idea_batch_phrase(lowered)
+    if found is not None:
+        category, phrase = found
+        raise ValueError(f"{context} unsafe {category} found: {phrase}")
+    try:
+        reject_action_instructions(text, context)
+    except ValueError as exc:
+        raise ValueError(f"{context} unsafe trading instruction found") from exc
+
+
+def _find_unsafe_idea_batch_phrase(text: str) -> tuple[str, str] | None:
+    for category, patterns in IDEA_BATCH_UNSAFE_PATTERNS:
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match is not None:
+                return category, match.group(0)
+    return None
