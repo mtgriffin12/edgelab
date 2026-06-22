@@ -16,6 +16,8 @@ def test_idea_batch_accepts_raw_ideas_for_individual_validation() -> None:
         batch_name="Demo Batch",
         created_for="Local research test",
         ideas=[_valid_idea()],
+        research_only_status="Research only",
+        real_money_status="Not allowed",
     )
 
     assert batch.research_only_status == "Research only"
@@ -40,8 +42,18 @@ def test_unsupported_rule_is_rejected_by_schema() -> None:
         )
 
 
+def test_batch_requires_research_status_fields() -> None:
+    with pytest.raises(ValidationError):
+        IdeaBatch(
+            batch_id="demo_batch",
+            batch_name="Demo Batch",
+            created_for="Local research test",
+            ideas=[_valid_idea()],
+        )
+
+
 @pytest.mark.parametrize(
-    "allowed_text",
+    "idea_text",
     [
         "Check whether a short time after the open changes the local result.",
         "Check whether a short-term failed move is different from a slow one.",
@@ -50,63 +62,31 @@ def test_unsupported_rule_is_rejected_by_schema() -> None:
         "The test watches whether price moves lower or moves higher after the setup.",
         "A failed move may continue or reverse; this only checks local history.",
         "Mixed results / no clear answer should keep the idea in research.",
-    ],
-)
-def test_research_language_with_short_or_selloff_words_is_allowed(
-    allowed_text: str,
-) -> None:
-    idea = AIProposedIntradayIdea(
-        **{
-            **_valid_idea(),
-            "hypothesis": allowed_text,
-        }
-    )
-
-    assert idea.hypothesis == allowed_text
-
-
-@pytest.mark.parametrize(
-    "unsafe_text",
-    [
         "Buy now.",
         "Sell now.",
         "Short this.",
         "Go long.",
         "Go short.",
-        "Enter long.",
-        "Exit now.",
         "Place an order.",
         "Trade this.",
-        "This says to buy the open.",
-        "This is a trade recommendation.",
         "This is guaranteed profit.",
-        "This is a proven profit.",
-        "This is a reliable profit.",
-        "This claims profit.",
-        "This claims proof.",
-        "This is guaranteed.",
-        "This is reliable.",
         "This is a validated edge.",
-        "This is for live trading.",
-        "This has paper-mode readiness.",
         "This is paper ready.",
         "This is live ready.",
         "This is ready for real money.",
-        "This has real-money readiness.",
-        "Tune after seeing results.",
-        "This idea already works.",
         "This works.",
         "This cannot fail.",
     ],
 )
-def test_unsafe_idea_language_is_rejected(unsafe_text: str) -> None:
-    with pytest.raises((ValidationError, ValueError)):
-        AIProposedIntradayIdea(
-            **{
-                **_valid_idea(),
-                "hypothesis": unsafe_text,
-            }
-        )
+def test_idea_text_is_not_rejected_for_wording(idea_text: str) -> None:
+    idea = AIProposedIntradayIdea(
+        **{
+            **_valid_idea(),
+            "hypothesis": idea_text,
+        }
+    )
+
+    assert idea.hypothesis == idea_text
 
 
 def _valid_idea() -> dict[str, object]:

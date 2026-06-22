@@ -175,11 +175,12 @@ jobs, promote paper mode, or produce recommendations.
 ## Structured Intraday Idea Batch Testing
 
 Validates and tests locked idea batches against deterministic local intraday rule families. Phase
-7X-2L reads checked-in demo batches or ignored local batch files, rejects unsupported or unsafe
-ideas before testing, maps supported ideas to existing local discovery rules, and returns a
-plain-English scoreboard. Results are cached in process memory only. The service does not call AI,
-call external APIs, write saved research runs, tune thresholds after results, create symbol page
-sprawl, promote paper mode, or produce recommendations.
+7X-2L reads checked-in demo batches or ignored local batch files, separates unsupported rule
+families before testing, maps supported ideas to existing local discovery rules, and returns a
+plain-English scoreboard. It does not reject user-authored idea text based on wording. Results are
+cached in process memory only. The service does not call AI, call external APIs, write saved
+research runs, tune thresholds after results, create symbol page sprawl, promote paper mode, or
+produce recommendations.
 
 Phase 7X-2M adds a paste runner for the same local idea-batch engine. The UI exposes the schema,
 copyable JSON, validation endpoint, and temporary local-run endpoint so users can operate structured

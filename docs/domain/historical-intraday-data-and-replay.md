@@ -338,9 +338,8 @@ outside EdgeLab, but EdgeLab does not call AI, connect to a live model, or ask A
 
 Each idea must name a supported deterministic rule family, the securities to test, required local
 data, fixed parameters, useful-result criteria, failure criteria, expected failure modes, and safety
-notes. Unsupported rule families are rejected instead of approximated. Unsafe wording, action
-language, proof claims, readiness claims, and after-the-fact threshold changes are rejected before
-testing.
+notes. Unsupported rule families are separated instead of approximated. User-authored idea text is
+not rejected based on wording.
 
 Supported ideas run against the same ignored local FirstRate universe used by the discovery sprint.
 Results use plain labels: Worth testing on more history, Mixed results / no clear answer, Needs

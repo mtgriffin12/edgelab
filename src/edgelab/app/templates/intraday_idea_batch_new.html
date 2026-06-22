@@ -4,8 +4,8 @@
   <section class="page-header">
     <h2>Paste Idea Batch</h2>
     <p class="muted">
-      Paste a structured JSON idea batch. EdgeLab will validate the ideas, reject unsafe or
-      unsupported ones, and run supported ideas against local historical data.
+      Paste a structured JSON idea batch. EdgeLab will check the JSON shape, separate unsupported
+      rule families, and run supported ideas against local historical data.
     </p>
   </section>
 
@@ -38,8 +38,8 @@
     <ul id="rejected-ideas"></ul>
     <h4>Unsupported ideas</h4>
     <ul id="unsupported-ideas"></ul>
-    <h4>Safety errors</h4>
-    <ul id="safety-errors"></ul>
+    <h4>Validation errors</h4>
+    <ul id="validation-errors"></ul>
   </section>
 
   <section class="section" id="idea-batch-results" hidden>
@@ -79,13 +79,6 @@
       <ul>
         {% for rule in schema.allowed_rule_families %}
           <li><code>{{ rule }}</code></li>
-        {% endfor %}
-      </ul>
-
-      <h3>Forbidden language categories</h3>
-      <ul>
-        {% for category in schema.forbidden_language_categories %}
-          <li>{{ category }}</li>
         {% endfor %}
       </ul>
 
@@ -129,7 +122,7 @@
       listItems("unsupported-ideas", data.unsupported_ideas, (idea) =>
         `${idea.plain_english_name}: ${idea.rejection_reason || idea.classification_label}`
       );
-      listItems("safety-errors", data.safety_errors);
+      listItems("validation-errors", data.validation_errors);
     }
 
     function showResults(data) {

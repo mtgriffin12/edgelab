@@ -148,11 +148,13 @@ Warnings should be short and direct:
   and Phase 7X-2K do not call AI.
 - "Idea Batch" should mean structured idea specs that EdgeLab can test locally, not AI finding a
   strategy.
-- "Accepted for local testing" should mean the idea passed safety and rule-family checks, not that
-  the idea is good.
-- "Rejected before testing" should mean unsupported or unsafe for EdgeLab's current local rules.
+- "Accepted for local testing" should mean the idea passed structural and rule-family checks, not
+  that the idea is good.
+- "Rejected before testing" should mean malformed or structurally incomplete for EdgeLab's current
+  local rules.
+- "Unsupported" should mean EdgeLab does not have a deterministic local rule for that family yet.
 - "Paste Idea Batch" should mean the user supplies structured JSON created outside EdgeLab.
-- "Validate Batch" should mean safety and schema checks only.
+- "Validate Batch" should mean JSON shape, required-field, and rule-family checks only.
 - "Run Local Test" should mean deterministic local research only, not execution.
 - "This run is temporary" should appear when pasted batches are not saved.
 - "Strategy Idea Scoreboard" should lead with what advanced, what did not, and what to test next.

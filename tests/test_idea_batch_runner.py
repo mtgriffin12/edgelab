@@ -4,7 +4,7 @@ from edgelab.intraday.idea_batch_runner import IdeaBatchRunner
 from edgelab.intraday.idea_batch_schema import IdeaBatchResultLabel
 
 
-def test_idea_batch_runner_loads_fixture_and_rejects_bad_ideas() -> None:
+def test_idea_batch_runner_loads_fixture_and_separates_unsupported_ideas() -> None:
     runner = IdeaBatchRunner()
 
     result = runner.run_batch("ai_intraday_ideas_001")
@@ -12,15 +12,12 @@ def test_idea_batch_runner_loads_fixture_and_rejects_bad_ideas() -> None:
 
     assert result.batch_id == "ai_intraday_ideas_001"
     assert result.ideas_submitted == 5
-    assert result.ideas_tested == 3
-    assert len(result.accepted_ideas) == 3
-    assert {idea.idea_id for idea in result.rejected_ideas} == {
-        "moon_phase_demo",
-        "unsafe_claim_001",
-    }
+    assert result.ideas_tested == 4
+    assert len(result.accepted_ideas) == 4
+    assert {idea.idea_id for idea in result.accepted_ideas} >= {"user_wording_claim_001"}
+    assert {idea.idea_id for idea in result.rejected_ideas} == {"moon_phase_demo"}
     assert {idea.classification for idea in result.rejected_ideas} == {
-        IdeaBatchResultLabel.UNSUPPORTED_RULE,
-        IdeaBatchResultLabel.REJECT_FOR_NOW,
+        IdeaBatchResultLabel.UNSUPPORTED_RULE
     }
     assert result.ranked_results
     assert result.real_money_status == "Not allowed"

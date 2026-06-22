@@ -1077,9 +1077,9 @@ def read_intraday_ai_idea_spec_schema() -> dict[str, object]:
     schema = idea_batch_schema_help()
     return {
         "description": (
-            "Paste a structured JSON idea batch. EdgeLab validates the ideas, rejects unsafe "
-            "or unsupported ones, and runs supported ideas against local historical data. "
-            "This endpoint does not call AI."
+            "Paste a structured JSON idea batch. EdgeLab checks the JSON shape, separates "
+            "unsupported rule families, and runs supported ideas against local historical "
+            "data. This endpoint does not call AI."
         ),
         **schema,
         "example": discovery_sprint_service.ai_idea_schema_example(),
@@ -1240,7 +1240,7 @@ def _idea_batch_error_response(errors: list[str]) -> JSONResponse:
             "accepted_ideas": [],
             "rejected_ideas": [],
             "unsupported_ideas": [],
-            "safety_errors": errors,
+            "validation_errors": errors,
             "can_run": False,
             "research_only_status": "Research only",
             "real_money_status": "Not allowed",
@@ -1258,10 +1258,6 @@ def _friendly_validation_errors(exc: ValidationError) -> list[str]:
         message = str(error.get("msg", ""))
         if error_type == "missing":
             messages.append(f"Missing required field: {loc}.")
-        elif "must not contain action instructions" in message:
-            messages.append("Unsafe language found: buy/sell/short instruction.")
-        elif "unsafe research language" in message:
-            messages.append("Unsafe language found: proof, readiness, or result claim.")
         else:
             messages.append(f"{loc}: {message}.")
     return messages or ["EdgeLab could not validate this idea batch."]

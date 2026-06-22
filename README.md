@@ -250,15 +250,16 @@ mode, or approve real-money use.
 The structured idea batch endpoints and `/ui/intraday-lab/research/idea-batches` pages let EdgeLab
 read locked idea specs and test only the ones that fit deterministic local rule families. AI may
 propose hypotheses outside the app, but EdgeLab does not call AI, connect to a live model, or let AI
-declare success. Unsupported ideas and unsafe wording are rejected before local testing. Batch
-results are computed in memory, not saved to the research-run DB, and remain research-only with
-real-money status Not allowed.
+declare success. EdgeLab checks the JSON shape, separates unsupported rule families, and tests
+supported ideas locally; it does not reject user-authored idea text based on wording. Batch results
+are computed in memory, not saved to the research-run DB, and remain research-only with real-money
+status Not allowed.
 
 `/ui/intraday-lab/research/idea-batches/new` lets a user paste a structured JSON idea batch,
 validate it, and run the supported ideas locally without Codex. The page exposes the current JSON
-field names, allowed rule families, forbidden language categories, and a copyable minimal example.
-Pasted runs are temporary in this phase. EdgeLab does not save pasted batches or results, call AI,
-call external APIs, or promote any idea to paper or live use.
+field names, allowed rule families, and a copyable minimal example. Pasted runs are temporary in
+this phase. EdgeLab does not save pasted batches or results, call AI, call external APIs, or promote
+any idea to paper or live use.
 
 The intraday endpoints and `/ui/intraday-lab` page are read-only and local. They study synthetic
 first-hour fixture sessions by calculating opening benchmarks, detecting measurable events,

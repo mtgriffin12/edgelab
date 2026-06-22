@@ -162,14 +162,22 @@ page sprawl, promote paper mode, or approve real-money use.
 DEC-037 adds structured AI idea batch testing so EdgeLab can evaluate AI-proposed intraday
 hypotheses using deterministic local historical tests. EdgeLab may read locked idea specs, but it
 does not call AI, connect to a live model, or let AI judge whether an idea advanced. Unsupported
-rule families, unsafe wording, action language, proof or readiness claims, and threshold changes
-after results are rejected before testing. Supported ideas run locally against ignored FirstRate
-files, with results computed on demand and not saved in this phase.
+rule families are separated before testing instead of being approximated. User-authored idea text
+is not rejected based on wording; supported ideas run locally against ignored FirstRate files, with
+results computed on demand and not saved in this phase.
 
 ## DEC-038: Phase 7X-2M Idea Batch Paste Runner
 
 DEC-038 adds a paste runner so users can validate and run structured idea batch JSON from the
 EdgeLab UI without Codex. The page exposes the required schema, allowed local rule families,
-forbidden language categories, and a copyable example. Pasted batches run temporarily against local
-historical data only. This phase does not save pasted batches or results, call AI, call external
-APIs, fetch live data, promote paper mode, or approve real-money use.
+and a copyable example. Pasted batches run temporarily against local historical data only. This
+phase does not save pasted batches or results, call AI, call external APIs, fetch live data, promote
+paper mode, or approve real-money use.
+
+## DEC-039: Phase 7X-2O Remove Idea-Text Safety Blocks
+
+DEC-039 removes content-based idea-text rejection from the idea batch paste, validate, and run
+workflow. The validator still checks JSON shape, required fields, research-only status, real-money
+status, data types, supported rule-family classification, and local testability. It no longer scans
+user-authored idea text for trading, proof, profit, readiness, or other wording. Unsupported ideas
+remain classified as `unsupported_rule`; supported ideas remain temporary local research only.

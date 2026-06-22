@@ -110,7 +110,7 @@ def test_ai_idea_schema_endpoint_does_not_call_ai_or_advance_ideas() -> None:
     text = response.text.lower()
     assert "does not call ai" in text
     assert "ready for real money" not in text
-    assert "validated edge" in data["forbidden_language_categories"]
+    assert "forbidden_language_categories" not in data
 
 
 def test_discovery_sprint_markdown_card_stays_research_only() -> None:

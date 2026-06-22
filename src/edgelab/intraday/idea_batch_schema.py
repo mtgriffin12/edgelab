@@ -2,98 +2,15 @@
 
 from __future__ import annotations
 
-import re
 from enum import StrEnum
 from typing import Any, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from edgelab.intraday.schema import normalize_symbol, reject_action_instructions
+from edgelab.intraday.schema import normalize_symbol
 
 IDEA_BATCH_SCHEMA_VERSION = "phase_7x_2l_v1"
 IDEA_BATCH_CODE_VERSION = "phase_7x_2l"
-
-IDEA_BATCH_UNSAFE_PATTERNS: list[tuple[str, tuple[str, ...]]] = [
-    (
-        "trading instruction",
-        (
-            r"\bbuy\s+(?:now|this|here|the\s+\w+)\b",
-            r"\bsell\s+(?:now|this|here|the\s+\w+)\b",
-            r"\bshort\s+(?:now|this|here|the\s+\w+)\b",
-            r"\bgo\s+(?:long|short)\b",
-            r"\benter\s+(?:long|short|now|here|this)\b",
-            r"\bexit\s+(?:now|here|this)\b",
-            r"\bplace\s+(?:an?\s+)?order\b",
-            r"\btake\s+this\s+trade\b",
-        ),
-    ),
-    (
-        "recommendation wording",
-        (
-            r"\btrade\s+this\b",
-            r"\bthis\s+is\s+(?:a\s+)?trade\s+recommendation\b",
-            r"\brecommend(?:ed|s|ing)?\s+(?:buying|selling|shorting|this|the)\b",
-        ),
-    ),
-    (
-        "proof claim",
-        (
-            r"\bguaranteed(?:\s+profit)?\b",
-            r"\bproven(?:\s+profit)?\b",
-            r"\breliable(?:\s+profit)?\b",
-            r"\bvalidated\s+edge\b",
-            r"\bclaims?\s+(?:a\s+)?proof\b",
-            r"\bproof\s+that\b",
-            r"\bthis\s+is\s+proof\b",
-        ),
-    ),
-    (
-        "profit claim",
-        (
-            r"\bprofitable\b",
-            r"\bguaranteed\s+profit\b",
-            r"\bproven\s+profit\b",
-            r"\breliable\s+profit\b",
-            r"\bclaims?\s+(?:a\s+)?profit\b",
-        ),
-    ),
-    (
-        "readiness claim",
-        (
-            r"\bready\s+for\s+real\s+money\b",
-            r"\breal-?money\s+ready\b",
-            r"\bpaper\s+ready\b",
-            r"\blive\s+ready\b",
-            r"\bready\s+to\s+trade\b",
-            r"\b(?:signal|paper-?mode|real-?money)\s+readiness\b",
-        ),
-    ),
-    (
-        "threshold tuning after results",
-        (
-            r"\btune\s+after\s+seeing\s+results\b",
-            r"\bchange\s+thresholds\s+after\s+seeing\s+results\b",
-            r"\badjust\s+after\s+seeing\s+results\b",
-        ),
-    ),
-    (
-        "already-works claim",
-        (
-            r"\bthis\s+works\b",
-            r"\balways\s+works\b",
-            r"\bwill\s+work\b",
-            r"\balready\s+works\b",
-            r"\bcannot\s+fail\b",
-        ),
-    ),
-    (
-        "live trading language",
-        (
-            r"\blive\s+trading\b",
-            r"\blive\s+signal\b",
-        ),
-    ),
-]
 
 IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS = [
     "batch_id",
@@ -118,21 +35,6 @@ IDEA_BATCH_REQUIRED_IDEA_FIELDS = [
     "failed_or_unclear_result_definition",
     "expected_failure_modes",
     "safety_notes",
-]
-
-IDEA_BATCH_FORBIDDEN_LANGUAGE_CATEGORIES = [
-    "buy/sell/short instructions",
-    "trade recommendations",
-    "profit claims",
-    "proof claims",
-    "guaranteed",
-    "reliable",
-    "validated edge",
-    "live trading language",
-    "paper-mode readiness",
-    "real-money readiness",
-    "threshold tuning after seeing results",
-    "language implying the idea already works",
 ]
 
 
@@ -204,14 +106,13 @@ def idea_batch_schema_help() -> dict[str, Any]:
 
     return {
         "description": (
-            "Paste a structured JSON idea batch. EdgeLab validates the ideas, rejects unsafe "
-            "or unsupported ones, and runs supported ideas against local historical data. "
-            "This endpoint does not call AI."
+            "Paste a structured JSON idea batch. EdgeLab checks the JSON shape, separates "
+            "unsupported rule families, and runs supported ideas against local historical "
+            "data. This endpoint does not call AI."
         ),
         "required_top_level_fields": IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS,
         "required_idea_fields": IDEA_BATCH_REQUIRED_IDEA_FIELDS,
         "allowed_rule_families": [item.value for item in IdeaBatchRuleFamily],
-        "forbidden_language_categories": IDEA_BATCH_FORBIDDEN_LANGUAGE_CATEGORIES,
         "minimal_valid_example": idea_batch_minimal_example(),
         "research_only_status": "Research only",
         "real_money_status": "Not allowed",
@@ -261,25 +162,10 @@ class AIProposedIntradayIdea(BaseModel):
         return normalized
 
     @model_validator(mode="after")
-    def validate_safe_idea(self) -> Self:
-        """Reject unsafe or non-deterministic proposed ideas."""
+    def validate_status_fields(self) -> Self:
+        """Keep individual idea records inside the research-only boundary."""
 
-        _validate_safe_text(
-            " ".join(
-                [
-                    self.idea_id,
-                    self.plain_english_name,
-                    self.hypothesis,
-                    self.required_data,
-                    self.exact_rule_definition,
-                    " ".join(f"{key} {value}" for key, value in self.fixed_parameters.items()),
-                    self.why_test_this,
-                    self.useful_result_definition,
-                    self.failed_or_unclear_result_definition,
-                    *self.expected_failure_modes,
-                    self.safety_notes,
-                ]
-            ),
+        _validate_research_status(
             context="AI-proposed intraday idea",
             research_only_status=self.research_only_status,
             real_money_status=self.real_money_status,
@@ -290,7 +176,7 @@ class AIProposedIntradayIdea(BaseModel):
 class IdeaBatch(BaseModel):
     """A raw idea batch envelope.
 
-    Ideas intentionally remain raw records here so the runner can reject one unsafe idea
+    Ideas intentionally remain raw records here so the runner can reject one malformed idea
     without failing the whole batch.
     """
 
@@ -298,8 +184,8 @@ class IdeaBatch(BaseModel):
     batch_name: str = Field(min_length=1)
     created_for: str = Field(min_length=1)
     ideas: list[dict[str, Any]] = Field(min_length=1)
-    research_only_status: str = "Research only"
-    real_money_status: str = "Not allowed"
+    research_only_status: str = Field(min_length=1)
+    real_money_status: str = Field(min_length=1)
     schema_version: str = IDEA_BATCH_SCHEMA_VERSION
 
     @model_validator(mode="after")
@@ -310,8 +196,7 @@ class IdeaBatch(BaseModel):
             raise ValueError("idea batch must remain research-only")
         if self.real_money_status != "Not allowed":
             raise ValueError("idea batch real-money status must be Not allowed")
-        _validate_safe_text(
-            " ".join([self.batch_id, self.batch_name, self.created_for]),
+        _validate_research_status(
             context="idea batch envelope",
             research_only_status=self.research_only_status,
             real_money_status=self.real_money_status,
@@ -397,9 +282,7 @@ def idea_batch_label(classification: IdeaBatchResultLabel) -> str:
     }[classification]
 
 
-def _validate_safe_text(
-    text: str,
-    *,
+def _validate_research_status(
     context: str,
     research_only_status: str,
     real_money_status: str,
@@ -408,21 +291,3 @@ def _validate_safe_text(
         raise ValueError(f"{context} must remain research-only")
     if real_money_status != "Not allowed":
         raise ValueError(f"{context} real-money status must be Not allowed")
-    lowered = text.lower()
-    found = _find_unsafe_idea_batch_phrase(lowered)
-    if found is not None:
-        category, phrase = found
-        raise ValueError(f"{context} unsafe {category} found: {phrase}")
-    try:
-        reject_action_instructions(text, context)
-    except ValueError as exc:
-        raise ValueError(f"{context} unsafe trading instruction found") from exc
-
-
-def _find_unsafe_idea_batch_phrase(text: str) -> tuple[str, str] | None:
-    for category, patterns in IDEA_BATCH_UNSAFE_PATTERNS:
-        for pattern in patterns:
-            match = re.search(pattern, text)
-            if match is not None:
-                return category, match.group(0)
-    return None

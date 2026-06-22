@@ -31,8 +31,9 @@ def test_idea_batch_detail_api_is_validation_only() -> None:
         "First Range Breakout Demo",
         "Gap Fade Demo",
         "SPY QQQ Difference Demo",
+        "User Wording Claim Demo",
     ]
-    assert data["rejected_ideas"] == ["unsafe_claim_001", "Moon Phase Demo"]
+    assert data["rejected_ideas"] == ["Moon Phase Demo"]
     assert data["current_conclusion"] == "Not computed on the list page."
     assert data["real_money_status"] == "Not allowed"
 
@@ -43,7 +44,7 @@ def test_idea_batch_results_api_returns_scoreboard() -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["ideas_submitted"] == 5
-    assert data["ideas_tested"] == 3
+    assert data["ideas_tested"] == 4
     assert data["best_idea_if_any"]
     assert data["current_conclusion"]
     assert data["next_action"]
@@ -59,10 +60,7 @@ def test_idea_batch_results_api_returns_scoreboard() -> None:
         "TSLA",
         "VXX",
     ]
-    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {
-        "moon_phase_demo",
-        "unsafe_claim_001",
-    }
+    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"moon_phase_demo"}
     vxx = {
         item["symbol"]: item for item in data["evidence_details"]["provider_data_quality_by_symbol"]
     }["VXX"]
@@ -129,7 +127,7 @@ def test_idea_batch_schema_endpoint_exposes_copyable_contract() -> None:
     assert "safety_notes" in data["required_idea_fields"]
     assert "gap_fade" in data["allowed_rule_families"]
     assert "reject_unsupported" in data["allowed_rule_families"]
-    assert "buy/sell/short instructions" in data["forbidden_language_categories"]
+    assert "forbidden_language_categories" not in data
     assert data["minimal_valid_example"]["real_money_status"] == "Not allowed"
 
 
@@ -161,7 +159,7 @@ def test_idea_batch_validate_api_accepts_realistic_safe_research_language() -> N
     assert len(data["accepted_ideas"]) == 10
     assert data["rejected_ideas"] == []
     assert data["unsupported_ideas"] == []
-    assert data["safety_errors"] == []
+    assert data["validation_errors"] == []
     assert {idea["plain_english_name"] for idea in data["accepted_ideas"]} == {
         "Tech Leaders Confirm Breakout",
         "TSLA Leads, QQQ Confirms",
@@ -200,7 +198,7 @@ def test_idea_batch_validate_api_rejects_missing_top_level_field() -> None:
     assert "Missing required field: batch_name." in response.json()["errors"]
 
 
-def test_idea_batch_validate_api_splits_unsupported_and_unsafe_ideas() -> None:
+def test_idea_batch_validate_api_splits_unsupported_and_structural_errors() -> None:
     payload = _paste_batch(
         ideas=[
             _paste_idea(),
@@ -212,8 +210,8 @@ def test_idea_batch_validate_api_splits_unsupported_and_unsafe_ideas() -> None:
             },
             {
                 **_paste_idea(),
-                "idea_id": "unsafe_text_test",
-                "plain_english_name": "unsafe_text_test",
+                "idea_id": "wording_text_test",
+                "plain_english_name": "wording_text_test",
                 "hypothesis": "This claims profit.",
             },
             {
@@ -229,20 +227,18 @@ def test_idea_batch_validate_api_splits_unsupported_and_unsafe_ideas() -> None:
     assert response.status_code == 200
     data = response.json()
     assert [idea["plain_english_name"] for idea in data["accepted_ideas"]] == [
-        "Gap Fade Local Check"
+        "Gap Fade Local Check",
+        "wording_text_test",
     ]
     assert {idea["idea_id"] for idea in data["unsupported_ideas"]} == {"moon_phase_test"}
-    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {
-        "missing_name_test",
-        "unsafe_text_test",
-    }
-    assert any("Unsafe profit claim found" in error for error in data["safety_errors"])
+    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"missing_name_test"}
     assert any(
-        "Missing required field: plain_english_name." in error for error in data["safety_errors"]
+        "Missing required field: plain_english_name." in error
+        for error in data["validation_errors"]
     )
 
 
-def test_idea_batch_validate_api_rejects_clear_trading_instruction() -> None:
+def test_idea_batch_validate_api_accepts_trading_instruction_wording() -> None:
     payload = _paste_batch(
         ideas=[
             {
@@ -258,12 +254,9 @@ def test_idea_batch_validate_api_rejects_clear_trading_instruction() -> None:
 
     assert response.status_code == 200
     data = response.json()
-    assert data["accepted_ideas"] == []
-    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"unsafe_instruction_test"}
-    assert any(
-        error.startswith('Unsafe trading instruction found: "buy now"')
-        for error in data["safety_errors"]
-    )
+    assert [idea["idea_id"] for idea in data["accepted_ideas"]] == ["unsafe_instruction_test"]
+    assert data["rejected_ideas"] == []
+    assert data["validation_errors"] == []
 
 
 def test_idea_batch_run_api_runs_supported_safe_ideas_only() -> None:
@@ -278,8 +271,8 @@ def test_idea_batch_run_api_runs_supported_safe_ideas_only() -> None:
             },
             {
                 **_paste_idea(),
-                "idea_id": "unsafe_demo",
-                "plain_english_name": "unsafe_demo",
+                "idea_id": "wording_demo",
+                "plain_english_name": "wording_demo",
                 "hypothesis": "This says to buy the open.",
             },
         ]
@@ -291,10 +284,13 @@ def test_idea_batch_run_api_runs_supported_safe_ideas_only() -> None:
     data = response.json()
     assert data["batch_name"] == "Paste Batch Test"
     assert data["ideas_submitted"] == 3
-    assert data["ideas_tested"] == 1
-    assert data["accepted_ideas"][0]["plain_english_name"] == "Gap Fade Local Check"
+    assert data["ideas_tested"] == 2
+    assert [idea["plain_english_name"] for idea in data["accepted_ideas"]] == [
+        "Gap Fade Local Check",
+        "wording_demo",
+    ]
     assert {idea["idea_id"] for idea in data["unsupported_ideas"]} == {"unsupported_demo"}
-    assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"unsafe_demo"}
+    assert data["rejected_ideas"] == []
     assert data["scoreboard"]
     assert data["does_not_call_ai"] is True
     assert data["does_not_save_results"] is True

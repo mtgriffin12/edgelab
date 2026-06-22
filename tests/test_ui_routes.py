@@ -344,7 +344,7 @@ def test_intraday_idea_batch_pages_return_concise_scoreboard() -> None:
         "Gap Fade Demo",
         "SPY QQQ Difference Demo",
         "Moon Phase Demo",
-        "unsafe_claim_001",
+        "User Wording Claim Demo",
     ]:
         assert phrase in detail_response.text
     primary_text = visible_text_before(detail_response.text, "Evidence Details")
@@ -385,6 +385,11 @@ def test_intraday_idea_batch_pages_return_concise_scoreboard() -> None:
         "No AI call is made.",
     ]:
         assert phrase in new_response.text
+    for phrase in [
+        "Forbidden language categories",
+        "Safety errors",
+    ]:
+        assert phrase not in new_response.text
     paste_primary_text = visible_text_before(new_response.text, "Idea batch JSON format")
     for forbidden in [
         "Execute",

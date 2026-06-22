@@ -75,19 +75,19 @@
       "safety_notes": "EdgeLab must reject this idea until a deterministic local rule exists."
     },
     {
-      "idea_id": "unsafe_claim_001",
-      "plain_english_name": "Guaranteed Profit Pattern",
-      "hypothesis": "This idea claims it will work.",
+      "idea_id": "user_wording_claim_001",
+      "plain_english_name": "User Wording Claim Demo",
+      "hypothesis": "Buy now because this works.",
       "supported_rule_family": "gap_continuation",
       "instruments_to_test": ["SPY"],
       "required_data": "Local one-minute first-hour bars.",
-      "exact_rule_definition": "Tune after seeing results.",
+      "exact_rule_definition": "Use the locked local gap continuation rule without changing settings.",
       "fixed_parameters": {},
-      "why_test_this": "This unsafe record should be rejected before testing.",
-      "useful_result_definition": "This record should not reach a useful result.",
-      "failed_or_unclear_result_definition": "This record should be blocked.",
-      "expected_failure_modes": ["Reject for now"],
-      "safety_notes": "This intentionally unsafe fixture verifies validation."
+      "why_test_this": "This record verifies user-authored wording does not block structural validation.",
+      "useful_result_definition": "Useful would mean enough examples repeat locally.",
+      "failed_or_unclear_result_definition": "Unclear means examples split or are thin.",
+      "expected_failure_modes": ["Needs more examples", "Mixed results / no clear answer"],
+      "safety_notes": "Research only. Local history check only."
     }
   ]
 }
