@@ -45,6 +45,7 @@
   <section class="section" id="idea-batch-results" hidden>
     <h3>Results</h3>
     <div id="result-summary"></div>
+    <div id="batch-evidence-summary"></div>
     <table>
       <thead>
         <tr>
@@ -134,8 +135,27 @@
 
     function showResults(data) {
       resultsSection.hidden = false;
+      const summary = data.batch_summary || {};
       document.getElementById("result-summary").textContent =
-        `${data.current_conclusion} Next: ${data.next_action}`;
+        `${summary.plain_english_summary || data.current_conclusion} Next: ${data.next_action}`;
+      const batchEvidence = document.getElementById("batch-evidence-summary");
+      batchEvidence.innerHTML = "";
+      const batchList = document.createElement("ul");
+      [
+        ["Ideas submitted", summary.ideas_submitted || data.ideas_submitted],
+        ["Ideas tested", summary.ideas_tested || data.ideas_tested],
+        ["Ideas advanced", summary.ideas_advanced || 0],
+        ["Ideas rejected", summary.ideas_rejected || 0],
+        ["Ideas mixed / no clear answer", summary.ideas_mixed_or_unclear || 0],
+        ["Closest to interesting idea", summary.closest_to_interesting_idea || "No clear candidate yet."],
+        ["Why it was closest", summary.closest_to_interesting_reason || "No tested idea was close enough to narrow yet."],
+        ["Recommended next research focus", summary.recommended_next_research_focus || "Keep researching simple local ideas."]
+      ].forEach(([label, value]) => {
+        const item = document.createElement("li");
+        item.textContent = `${label}: ${value}`;
+        batchList.appendChild(item);
+      });
+      batchEvidence.appendChild(batchList);
       const body = document.getElementById("scoreboard-body");
       body.innerHTML = "";
       data.scoreboard.forEach((row) => {
@@ -147,7 +167,54 @@
           tr.appendChild(td);
         });
         body.appendChild(tr);
+        const evidenceRow = document.createElement("tr");
+        const evidenceCell = document.createElement("td");
+        evidenceCell.colSpan = 4;
+        const details = document.createElement("details");
+        const summaryLine = document.createElement("summary");
+        summaryLine.textContent = "Evidence details";
+        details.appendChild(summaryLine);
+        details.appendChild(evidenceList(row));
+        evidenceCell.appendChild(details);
+        evidenceRow.appendChild(evidenceCell);
+        body.appendChild(evidenceRow);
       });
+    }
+
+    function evidenceList(row) {
+      const list = document.createElement("ul");
+      const examplesBySymbol = row.example_count_by_symbol || {};
+      const symbolSummary = row.symbol_result_summary || [];
+      const examplesText = Object.keys(examplesBySymbol).length
+        ? Object.entries(examplesBySymbol).map(([symbol, count]) => `${symbol}: ${count}`).join(", ")
+        : "Detailed per-symbol movement is not available yet.";
+      [
+        ["Total examples found", row.example_count_total ?? 0],
+        ["Examples by symbol", examplesText],
+        ["Which symbol looked best", row.best_symbol || "None yet"],
+        ["Which symbol looked worst", row.worst_symbol || "None yet"],
+        ["Why EdgeLab gave this label", row.why_label_was_assigned || "EdgeLab could not explain this label yet."],
+        ["What to try next", row.what_to_try_next || row.next_action],
+        ["How much to trust this result", row.result_confidence_explanation || "Low confidence because this is only a first local read."]
+      ].forEach(([label, value]) => {
+        const item = document.createElement("li");
+        item.textContent = `${label}: ${value}`;
+        list.appendChild(item);
+      });
+      if (symbolSummary.length) {
+        const symbolItem = document.createElement("li");
+        symbolItem.textContent = "Symbol result summary";
+        const nested = document.createElement("ul");
+        symbolSummary.forEach((symbolResult) => {
+          const item = document.createElement("li");
+          item.textContent =
+            `${symbolResult.symbol}: ${symbolResult.simple_result_label}. ${symbolResult.plain_english_reason}`;
+          nested.appendChild(item);
+        });
+        symbolItem.appendChild(nested);
+        list.appendChild(symbolItem);
+      }
+      return list;
     }
 
     async function postBatch(path) {
@@ -165,8 +232,8 @@
         return null;
       }
       statusLine.textContent = data.can_run === false
-        ? "No supported local ideas are ready to run."
-        : "Supported local ideas are ready.";
+        ? "No supported local ideas can run yet."
+        : "Supported local ideas can run.";
       return data;
     }
 

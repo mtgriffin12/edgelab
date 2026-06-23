@@ -293,6 +293,26 @@ def idea_batch_to_markdown_card(result: IdeaBatchResult) -> str:
             "## Evidence Details",
             f"- Ideas submitted: {result.ideas_submitted}",
             f"- Ideas tested: {result.ideas_tested}",
+            f"- Ideas advanced: {result.evidence_details.get('ideas_advanced_count', 0)}",
+            f"- Ideas rejected: {result.evidence_details.get('ideas_rejected_count', 0)}",
+            (
+                "- Closest to interesting idea: "
+                + str(
+                    result.evidence_details.get(
+                        "closest_to_interesting_idea",
+                        "No clear candidate yet.",
+                    )
+                )
+            ),
+            (
+                "- Why it was closest: "
+                + str(
+                    result.evidence_details.get(
+                        "closest_to_interesting_reason",
+                        "No tested idea was close enough to narrow yet.",
+                    )
+                )
+            ),
             "- Local historical research only.",
             "- No AI call was made.",
         ]

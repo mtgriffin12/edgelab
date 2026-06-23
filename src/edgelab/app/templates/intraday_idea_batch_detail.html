@@ -10,6 +10,10 @@
     <h3>Bottom line</h3>
     <p>{{ result.current_conclusion }}</p>
     <p><strong>Best idea if any:</strong> {{ result.best_idea_if_any }}</p>
+    <p>
+      <strong>Closest to interesting idea:</strong>
+      {{ result.evidence_details.closest_to_interesting_idea }}
+    </p>
     <p><strong>Next action:</strong> {{ result.next_action }}</p>
     <p><strong>Real-money status:</strong> {{ result.real_money_status }}</p>
   </section>
@@ -80,11 +84,82 @@
       <p>Research-only status: {{ result.research_only_status }}</p>
       <p>No AI call was made.</p>
       <ul>
+        <li>Ideas submitted: {{ result.ideas_submitted }}</li>
+        <li>Ideas tested: {{ result.ideas_tested }}</li>
+        <li>Ideas advanced: {{ result.evidence_details.ideas_advanced_count }}</li>
+        <li>Ideas rejected: {{ result.evidence_details.ideas_rejected_count }}</li>
+        <li>
+          Ideas mixed / no clear answer:
+          {{ result.evidence_details.ideas_mixed_or_unclear_count }}
+        </li>
+        <li>
+          Closest to interesting idea:
+          {{ result.evidence_details.closest_to_interesting_idea }}
+        </li>
+        <li>
+          Why it was closest:
+          {{ result.evidence_details.closest_to_interesting_reason }}
+        </li>
+        <li>
+          Recommended next research focus:
+          {{ result.evidence_details.recommended_next_research_focus }}
+        </li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="section">
+    <h3>Idea Evidence Details</h3>
+    {% for idea in result.ranked_results + result.rejected_ideas %}
+      <details>
+        <summary>{{ idea.plain_english_name }} — {{ idea.classification_label }}</summary>
+        <ul>
+          <li>Total examples found: {{ idea.example_count_total }}</li>
+          <li>
+            Examples by symbol:
+            {% if idea.example_count_by_symbol %}
+              {% for symbol, count in idea.example_count_by_symbol.items() %}
+                {{ symbol }}: {{ count }}{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              Detailed per-symbol movement is not available yet.
+            {% endif %}
+          </li>
+          <li>Which symbol looked best: {{ idea.best_symbol or "None yet" }}</li>
+          <li>Which symbol looked worst: {{ idea.worst_symbol or "None yet" }}</li>
+          <li>Why EdgeLab gave this label: {{ idea.why_label_was_assigned }}</li>
+          <li>What to try next: {{ idea.what_to_try_next }}</li>
+          <li>How much to trust this result: {{ idea.result_confidence_explanation }}</li>
+        </ul>
+        {% if idea.symbol_result_summary %}
+          <h4>Symbol result summary</h4>
+          <ul>
+            {% for symbol_result in idea.symbol_result_summary %}
+              <li>
+                {{ symbol_result.symbol }}:
+                {{ symbol_result.simple_result_label }}.
+                {{ symbol_result.plain_english_reason }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </details>
+    {% endfor %}
+  </section>
+
+  <section class="section">
+    <h3>Raw Evidence Details</h3>
+    <details>
+      <summary>Show technical evidence</summary>
+      <p>Batch ID: {{ result.batch_id }}</p>
+      <p>Research-only status: {{ result.research_only_status }}</p>
+      <p>No AI call was made.</p>
+      <ul>
         {% for idea in result.ranked_results %}
           <li>
             {{ idea.plain_english_name }}:
             {{ idea.evidence_details.source_strategy_name }},
-            score {{ idea.evidence_score }}
+            evidence score {{ idea.evidence_score }}
           </li>
         {% endfor %}
       </ul>

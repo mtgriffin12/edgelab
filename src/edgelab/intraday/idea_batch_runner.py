@@ -29,6 +29,7 @@ from edgelab.intraday.idea_batch_schema import (
     IdeaBatchResult,
     IdeaBatchResultLabel,
     IdeaBatchRuleFamily,
+    IdeaBatchSymbolResultSummary,
     idea_batch_label,
 )
 
@@ -173,9 +174,9 @@ class IdeaBatchRunner:
             ],
             "can_run": bool(testable_ideas),
             "validation_status": (
-                "Ready to run supported local ideas."
+                "Supported local ideas can run."
                 if testable_ideas
-                else "No supported local ideas are ready to run."
+                else "No supported local ideas can run yet."
             ),
             "this_run_is_temporary": True,
             "research_only_status": "Research only",
@@ -223,6 +224,7 @@ class IdeaBatchRunner:
             for result in ranked
             if result.classification == IdeaBatchResultLabel.WORTH_TESTING_ON_MORE_HISTORY
         ]
+        batch_evidence = _batch_evidence_details(ranked, all_rejected)
         batch_result = IdeaBatchResult(
             batch_id=batch.batch_id,
             batch_name=batch.batch_name,
@@ -273,6 +275,7 @@ class IdeaBatchRunner:
                 "code_version": IDEA_BATCH_CODE_VERSION,
             },
             evidence_details={
+                **batch_evidence,
                 "file_signature": [list(item) for item in cache_key.file_signature],
                 "provider_data_quality_by_symbol": _provider_data_quality_by_symbol(self.provider),
                 "data_quality_by_symbol": _data_quality_by_symbol_from_ranked(ranked),
@@ -322,6 +325,11 @@ class IdeaBatchRunner:
                 reason="EdgeLab could not run this local deterministic rule.",
             )
         classification = _classification_from_discovery(strategy_result.classification)
+        evidence = _idea_evidence_details(
+            idea=idea,
+            classification=classification,
+            instrument_results=strategy_result.instrument_results,
+        )
         return IdeaBatchIdeaResult(
             idea_id=idea.idea_id,
             plain_english_name=idea.plain_english_name,
@@ -329,11 +337,22 @@ class IdeaBatchRunner:
             accepted_for_testing=True,
             classification=classification,
             classification_label=idea_batch_label(classification),
+            outcome_label=idea_batch_label(classification),
             securities_tested=[
                 instrument.symbol for instrument in strategy_result.instrument_results
             ],
+            symbols_tested=[instrument.symbol for instrument in strategy_result.instrument_results],
             current_conclusion=idea_batch_label(classification),
             next_action=_next_action_for_classification(classification),
+            example_count_total=evidence["example_count_total"],
+            example_count_by_symbol=evidence["example_count_by_symbol"],
+            symbol_result_summary=evidence["symbol_result_summary"],
+            best_symbol=evidence["best_symbol"],
+            worst_symbol=evidence["worst_symbol"],
+            closest_to_interesting_reason=evidence["closest_to_interesting_reason"],
+            why_label_was_assigned=evidence["why_label_was_assigned"],
+            what_to_try_next=evidence["what_to_try_next"],
+            result_confidence_explanation=evidence["result_confidence_explanation"],
             evidence_score=strategy_result.evidence_score,
             evidence_details={
                 "source_strategy_id": strategy_result.strategy_id.value,
@@ -341,6 +360,17 @@ class IdeaBatchRunner:
                 "source_conclusion": strategy_result.current_conclusion,
                 "source_status": strategy_result.status,
                 "source_next_action": strategy_result.next_research_action,
+                "example_count_total": evidence["example_count_total"],
+                "example_count_by_symbol": evidence["example_count_by_symbol"],
+                "symbol_result_summary": [
+                    item.model_dump(mode="json") for item in evidence["symbol_result_summary"]
+                ],
+                "best_symbol": evidence["best_symbol"],
+                "worst_symbol": evidence["worst_symbol"],
+                "closest_to_interesting_reason": evidence["closest_to_interesting_reason"],
+                "why_label_was_assigned": evidence["why_label_was_assigned"],
+                "what_to_try_next": evidence["what_to_try_next"],
+                "result_confidence_explanation": evidence["result_confidence_explanation"],
                 "instrument_results": [
                     instrument.model_dump(mode="json")
                     for instrument in strategy_result.instrument_results
@@ -523,6 +553,10 @@ def _rejected_result(
     classification: IdeaBatchResultLabel,
     reason: str,
 ) -> IdeaBatchIdeaResult:
+    evidence = _not_tested_evidence(
+        classification=classification,
+        reason=reason,
+    )
     return IdeaBatchIdeaResult(
         idea_id=idea_id,
         plain_english_name=plain_english_name,
@@ -530,12 +564,412 @@ def _rejected_result(
         accepted_for_testing=False,
         classification=classification,
         classification_label=idea_batch_label(classification),
+        outcome_label=idea_batch_label(classification),
         securities_tested=[],
+        symbols_tested=[],
         current_conclusion=idea_batch_label(classification),
         next_action=_next_action_for_classification(classification),
         rejection_reason=reason,
-        evidence_details={"rejection_reason": reason},
+        example_count_total=0,
+        example_count_by_symbol={},
+        symbol_result_summary=[],
+        best_symbol=None,
+        worst_symbol=None,
+        closest_to_interesting_reason=evidence["closest_to_interesting_reason"],
+        why_label_was_assigned=evidence["why_label_was_assigned"],
+        what_to_try_next=evidence["what_to_try_next"],
+        result_confidence_explanation=evidence["result_confidence_explanation"],
+        evidence_details={
+            "not_tested": True,
+            "rejection_reason": reason,
+            **evidence,
+        },
     )
+
+
+def _idea_evidence_details(
+    *,
+    idea: AIProposedIntradayIdea,
+    classification: IdeaBatchResultLabel,
+    instrument_results: list[Any],
+) -> dict[str, Any]:
+    summaries = [_symbol_result_summary(result) for result in instrument_results]
+    example_count_by_symbol = {
+        str(result.symbol): int(result.examples_found) for result in instrument_results
+    }
+    best_symbol = _best_symbol(instrument_results)
+    worst_symbol = _worst_symbol(instrument_results)
+    return {
+        "example_count_total": sum(example_count_by_symbol.values()),
+        "example_count_by_symbol": example_count_by_symbol,
+        "symbol_result_summary": summaries,
+        "best_symbol": best_symbol,
+        "worst_symbol": worst_symbol,
+        "closest_to_interesting_reason": _closest_to_interesting_reason(
+            idea=idea,
+            classification=classification,
+            instrument_results=instrument_results,
+            best_symbol=best_symbol,
+            worst_symbol=worst_symbol,
+        ),
+        "why_label_was_assigned": _why_label_was_assigned(
+            classification,
+            instrument_results,
+        ),
+        "what_to_try_next": _what_to_try_next(
+            classification=classification,
+            idea=idea,
+            instrument_results=instrument_results,
+            best_symbol=best_symbol,
+        ),
+        "result_confidence_explanation": _result_confidence_explanation(
+            classification,
+            instrument_results,
+        ),
+    }
+
+
+def _symbol_result_summary(result: Any) -> IdeaBatchSymbolResultSummary:
+    label = _simple_symbol_result_label(result)
+    return IdeaBatchSymbolResultSummary(
+        symbol=str(result.symbol),
+        matched_examples=int(result.examples_found),
+        simple_result_label=label,
+        plain_english_reason=_symbol_plain_reason(result, label),
+    )
+
+
+def _simple_symbol_result_label(result: Any) -> str:
+    classification = result.classification
+    completed = int(result.completed_examples)
+    if classification == DiscoverySprintClassification.DATA_PROBLEM:
+        return "Data problem"
+    if completed == 0 and result.data_warnings:
+        return "Data problem"
+    if classification == DiscoverySprintClassification.NOT_ENOUGH_EXAMPLES or completed < 10:
+        return "Too few examples"
+    if classification in {
+        DiscoverySprintClassification.WORTH_MORE_TESTING,
+        DiscoverySprintClassification.HELD_UP_ON_LATER_CHECK,
+        DiscoverySprintClassification.LOOKED_BETTER_AT_FIRST,
+    }:
+        return "Helpful"
+    if classification == DiscoverySprintClassification.REJECT_FOR_NOW:
+        return "Unhelpful"
+    share = _instrument_helpful_share(result)
+    if share is not None and share >= 0.58:
+        return "Helpful"
+    if share is not None and share <= 0.40:
+        return "Unhelpful"
+    return "Mixed results / no clear answer"
+
+
+def _symbol_plain_reason(result: Any, label: str) -> str:
+    symbol = str(result.symbol)
+    completed = int(result.completed_examples)
+    if label == "Data problem":
+        return f"{symbol} had a local data problem, so EdgeLab could not read this symbol fairly."
+    if label == "Too few examples":
+        return f"{symbol} had {completed} completed examples, which is too few for a fair read."
+    expected = int(result.moved_as_expected_count)
+    against = int(result.moved_against_test_count)
+    flat = int(result.did_not_move_enough_count)
+    if label == "Helpful":
+        return (
+            f"This symbol helped: {expected} of {completed} completed examples moved as "
+            f"the idea expected."
+        )
+    if label == "Unhelpful":
+        return (
+            f"This symbol hurt: {against} of {completed} completed examples moved against "
+            f"the idea, and {flat} did not move enough to matter."
+        )
+    return (
+        f"{symbol} was split: {expected} moved as expected, {against} moved against "
+        f"the idea, and {flat} did not move enough to matter."
+    )
+
+
+def _best_symbol(instrument_results: list[Any]) -> str | None:
+    candidates = [
+        result
+        for result in instrument_results
+        if int(result.completed_examples) > 0
+        and _simple_symbol_result_label(result) not in {"Data problem", "Too few examples"}
+    ]
+    if not candidates:
+        return None
+    return str(
+        max(
+            candidates,
+            key=lambda result: (
+                _instrument_helpful_share(result) or 0.0,
+                int(result.completed_examples),
+            ),
+        ).symbol
+    )
+
+
+def _worst_symbol(instrument_results: list[Any]) -> str | None:
+    candidates = [
+        result
+        for result in instrument_results
+        if int(result.completed_examples) > 0
+        and _simple_symbol_result_label(result) not in {"Data problem", "Too few examples"}
+    ]
+    if not candidates:
+        return None
+    return str(
+        min(
+            candidates,
+            key=lambda result: (
+                _instrument_helpful_share(result)
+                if _instrument_helpful_share(result) is not None
+                else 1.0,
+                -int(result.completed_examples),
+            ),
+        ).symbol
+    )
+
+
+def _closest_to_interesting_reason(
+    *,
+    idea: AIProposedIntradayIdea,
+    classification: IdeaBatchResultLabel,
+    instrument_results: list[Any],
+    best_symbol: str | None,
+    worst_symbol: str | None,
+) -> str:
+    if not instrument_results:
+        return "EdgeLab could not test this idea with the local data available."
+    counts = _symbol_label_counts(instrument_results)
+    if classification == IdeaBatchResultLabel.NEEDS_MORE_EXAMPLES:
+        return "This needs more history because the local sample did not find enough examples."
+    if classification == IdeaBatchResultLabel.REJECT_FOR_NOW:
+        if counts["Unhelpful"] > 1:
+            return "This was rejected because several tested symbols hurt the idea."
+        return (
+            "This was rejected because the tested symbols did not separate better mornings "
+            "from worse mornings."
+        )
+    if classification == IdeaBatchResultLabel.WORTH_TESTING_ON_MORE_HISTORY:
+        if best_symbol is not None:
+            return (
+                f"{best_symbol} looked closest to helpful, but EdgeLab still needs a tighter "
+                "follow-up before trusting the idea."
+            )
+        return "One pocket looked closest to helpful, but EdgeLab still needs a tighter follow-up."
+    if best_symbol and worst_symbol and best_symbol != worst_symbol:
+        return f"{best_symbol} looked closest to helpful, but {worst_symbol} did not confirm it."
+    if counts["Helpful"] > 0 and counts["Unhelpful"] > 0:
+        return "Some symbols helped and others hurt, so the idea did not give one clear answer."
+    if idea.supported_rule_family == IdeaBatchRuleFamily.SYMBOL_DIVERGENCE:
+        return "The pair check did not show a clean enough difference between the symbols."
+    return "The idea found examples, but the results were split across symbols."
+
+
+def _why_label_was_assigned(
+    classification: IdeaBatchResultLabel,
+    instrument_results: list[Any],
+) -> str:
+    counts = _symbol_label_counts(instrument_results)
+    total_examples = sum(int(result.examples_found) for result in instrument_results)
+    if classification == IdeaBatchResultLabel.NEEDS_MORE_EXAMPLES:
+        return (
+            f"This was marked Too few examples because EdgeLab found {total_examples} "
+            "matching mornings across the tested symbols."
+        )
+    if classification == IdeaBatchResultLabel.REJECT_FOR_NOW:
+        return (
+            "This was marked Reject for now because the tested symbols mostly moved against "
+            "the idea or did not separate better mornings from worse mornings."
+        )
+    if classification == IdeaBatchResultLabel.DATA_PROBLEM:
+        return "This was marked Local data problem because local data blocked a fair read."
+    if classification == IdeaBatchResultLabel.WORTH_TESTING_ON_MORE_HISTORY:
+        return (
+            "This was marked Worth testing on more history because at least one tested symbol "
+            "looked helpful in the local sample."
+        )
+    if counts["Helpful"] > 0 and counts["Unhelpful"] > 0:
+        return (
+            "This was marked Mixed results / no clear answer because some symbols looked "
+            "helpful and others did not."
+        )
+    return (
+        "This was marked Mixed results / no clear answer because EdgeLab found examples, "
+        "but the result was not consistent enough across symbols."
+    )
+
+
+def _what_to_try_next(
+    *,
+    classification: IdeaBatchResultLabel,
+    idea: AIProposedIntradayIdea,
+    instrument_results: list[Any],
+    best_symbol: str | None,
+) -> str:
+    if classification == IdeaBatchResultLabel.NEEDS_MORE_EXAMPLES:
+        return "Do not judge this idea until more local history is available."
+    if classification == IdeaBatchResultLabel.REJECT_FOR_NOW:
+        return "Reject for now and avoid retesting the same broad idea unchanged."
+    if classification == IdeaBatchResultLabel.DATA_PROBLEM:
+        return "Review local data quality before testing this idea again."
+    if best_symbol is not None:
+        return f"Retest this narrower idea around {best_symbol} and require clearer confirmation."
+    if idea.supported_rule_family == IdeaBatchRuleFamily.RECLAIM:
+        return "Try a stricter reclaim version that requires more confirming symbols."
+    if idea.supported_rule_family == IdeaBatchRuleFamily.FIRST_RANGE_FAILURE:
+        return "Try this only after unusually wide early ranges."
+    return "Try a narrower version with fewer symbols and clearer confirmation rules."
+
+
+def _result_confidence_explanation(
+    classification: IdeaBatchResultLabel,
+    instrument_results: list[Any],
+) -> str:
+    counts = _symbol_label_counts(instrument_results)
+    if classification == IdeaBatchResultLabel.NEEDS_MORE_EXAMPLES:
+        return "Low confidence because there were too few examples."
+    if classification == IdeaBatchResultLabel.REJECT_FOR_NOW and counts["Unhelpful"] > 1:
+        return (
+            "Moderate confidence for rejecting this locally because several symbols failed "
+            "in the same way."
+        )
+    if counts["Helpful"] > 0 and counts["Unhelpful"] > 0:
+        return "Low confidence because results differed across symbols."
+    return "Low confidence because the local sample is limited and this is only a first read."
+
+
+def _not_tested_evidence(
+    *,
+    classification: IdeaBatchResultLabel,
+    reason: str,
+) -> dict[str, str]:
+    if classification == IdeaBatchResultLabel.UNSUPPORTED_RULE:
+        return {
+            "closest_to_interesting_reason": (
+                "Not tested. EdgeLab does not currently have local rule logic for this idea shape."
+            ),
+            "why_label_was_assigned": f"Not tested because {reason}",
+            "what_to_try_next": (
+                "Rewrite this idea using one of the supported rule families, or add a new "
+                "local rule in a future phase."
+            ),
+            "result_confidence_explanation": (
+                "No result confidence because this idea was not tested."
+            ),
+        }
+    return {
+        "closest_to_interesting_reason": "Not tested because the idea batch entry needs changes.",
+        "why_label_was_assigned": f"Not tested because {reason}",
+        "what_to_try_next": "Fix the JSON structure, then validate the batch again.",
+        "result_confidence_explanation": "No result confidence because this idea was not tested.",
+    }
+
+
+def _batch_evidence_details(
+    ranked: list[IdeaBatchIdeaResult],
+    rejected: list[IdeaBatchIdeaResult],
+) -> dict[str, Any]:
+    advanced = [
+        result
+        for result in ranked
+        if result.classification == IdeaBatchResultLabel.WORTH_TESTING_ON_MORE_HISTORY
+    ]
+    mixed = [
+        result
+        for result in ranked
+        if result.classification == IdeaBatchResultLabel.MIXED_RESULTS_NO_CLEAR_ANSWER
+    ]
+    rejected_or_blocked = [
+        result
+        for result in [*ranked, *rejected]
+        if result.classification
+        in {
+            IdeaBatchResultLabel.REJECT_FOR_NOW,
+            IdeaBatchResultLabel.UNSUPPORTED_RULE,
+            IdeaBatchResultLabel.DATA_PROBLEM,
+        }
+    ]
+    closest = advanced[0] if advanced else _closest_ranked_result(ranked)
+    closest_name = closest.plain_english_name if closest is not None else "No clear candidate yet."
+    closest_reason = (
+        closest.closest_to_interesting_reason
+        if closest is not None
+        else "No tested idea was close enough to narrow yet."
+    )
+    return {
+        "ideas_advanced_count": len(advanced),
+        "ideas_rejected_count": len(rejected_or_blocked),
+        "ideas_mixed_or_unclear_count": len(mixed),
+        "closest_to_interesting_idea": closest_name,
+        "closest_to_interesting_reason": closest_reason,
+        "recommended_next_research_focus": _recommended_next_research_focus(closest),
+        "batch_plain_english_summary": _batch_plain_summary(
+            advanced_count=len(advanced),
+            closest_name=closest_name,
+            closest_reason=closest_reason,
+        ),
+    }
+
+
+def _closest_ranked_result(ranked: list[IdeaBatchIdeaResult]) -> IdeaBatchIdeaResult | None:
+    for result in ranked:
+        if result.classification not in {
+            IdeaBatchResultLabel.REJECT_FOR_NOW,
+            IdeaBatchResultLabel.DATA_PROBLEM,
+        }:
+            return result
+    return ranked[0] if ranked else None
+
+
+def _recommended_next_research_focus(result: IdeaBatchIdeaResult | None) -> str:
+    if result is None:
+        return "Try a simpler idea family or add more local history before narrowing."
+    if result.classification == IdeaBatchResultLabel.NEEDS_MORE_EXAMPLES:
+        return "More local history before judging this idea family."
+    if result.supported_rule_family == IdeaBatchRuleFamily.RECLAIM.value:
+        return "Reclaim ideas with fewer symbols and clearer confirmation."
+    if result.supported_rule_family == IdeaBatchRuleFamily.FIRST_RANGE_FAILURE.value:
+        return "Failed early move ideas with stricter early-range conditions."
+    if result.supported_rule_family == IdeaBatchRuleFamily.SYMBOL_DIVERGENCE.value:
+        return "Symbol disagreement checks only if the pair evidence improves."
+    return "A narrower version of the closest mixed idea."
+
+
+def _batch_plain_summary(
+    *,
+    advanced_count: int,
+    closest_name: str,
+    closest_reason: str,
+) -> str:
+    if advanced_count == 0:
+        return f"Nothing advanced. Closest to interesting: {closest_name}. {closest_reason}"
+    return (
+        f"{advanced_count} idea moved to deeper local research. Closest to interesting: "
+        f"{closest_name}. {closest_reason}"
+    )
+
+
+def _symbol_label_counts(instrument_results: list[Any]) -> dict[str, int]:
+    counts = {
+        "Helpful": 0,
+        "Unhelpful": 0,
+        "Mixed results / no clear answer": 0,
+        "Too few examples": 0,
+        "Data problem": 0,
+    }
+    for result in instrument_results:
+        counts[_simple_symbol_result_label(result)] += 1
+    return counts
+
+
+def _instrument_helpful_share(result: Any) -> float | None:
+    completed = int(result.completed_examples)
+    if completed <= 0:
+        return None
+    return int(result.moved_as_expected_count) / completed
 
 
 def _safe_raw_value(value: object, fallback: str) -> str:

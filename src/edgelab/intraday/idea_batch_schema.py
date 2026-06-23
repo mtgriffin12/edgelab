@@ -258,6 +258,15 @@ class IdeaBatchDescription(BaseModel):
     real_money_status: str = "Not allowed"
 
 
+class IdeaBatchSymbolResultSummary(BaseModel):
+    """Plain-English summary for one symbol inside one idea-batch result."""
+
+    symbol: str
+    matched_examples: int = Field(ge=0)
+    simple_result_label: str
+    plain_english_reason: str
+
+
 class IdeaBatchIdeaResult(BaseModel):
     """One idea's validation or local test result."""
 
@@ -267,10 +276,21 @@ class IdeaBatchIdeaResult(BaseModel):
     accepted_for_testing: bool
     classification: IdeaBatchResultLabel
     classification_label: str
+    outcome_label: str
     securities_tested: list[str]
+    symbols_tested: list[str] = Field(default_factory=list)
     current_conclusion: str
     next_action: str
     rejection_reason: str | None = None
+    example_count_total: int = Field(default=0, ge=0)
+    example_count_by_symbol: dict[str, int] = Field(default_factory=dict)
+    symbol_result_summary: list[IdeaBatchSymbolResultSummary] = Field(default_factory=list)
+    best_symbol: str | None = None
+    worst_symbol: str | None = None
+    closest_to_interesting_reason: str = ""
+    why_label_was_assigned: str = ""
+    what_to_try_next: str = ""
+    result_confidence_explanation: str = ""
     evidence_score: int = Field(default=0, ge=0, le=100)
     evidence_details: dict[str, Any] = Field(default_factory=dict)
     research_only_status: str = "Research only"

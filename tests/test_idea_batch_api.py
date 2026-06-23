@@ -68,6 +68,27 @@ def test_idea_batch_results_api_returns_scoreboard() -> None:
     assert vxx["quality_issues"] == 859
     assert data["research_only_status"] == "Research only"
     assert data["real_money_status"] == "Not allowed"
+    assert data["evidence_details"]["ideas_advanced_count"] == 0
+    assert data["evidence_details"]["closest_to_interesting_idea"]
+    assert data["evidence_details"]["recommended_next_research_focus"]
+    first_result = data["ranked_results"][0]
+    assert first_result["outcome_label"]
+    assert first_result["symbols_tested"] == first_result["securities_tested"]
+    assert first_result["example_count_total"] >= 0
+    assert first_result["example_count_by_symbol"]
+    assert first_result["symbol_result_summary"]
+    assert first_result["symbol_result_summary"][0]["matched_examples"] >= 0
+    assert first_result["symbol_result_summary"][0]["simple_result_label"] in {
+        "Helpful",
+        "Unhelpful",
+        "Mixed results / no clear answer",
+        "Too few examples",
+        "Data problem",
+    }
+    assert first_result["closest_to_interesting_reason"]
+    assert first_result["why_label_was_assigned"]
+    assert first_result["what_to_try_next"]
+    assert first_result["result_confidence_explanation"]
 
 
 def test_idea_batch_card_api_is_concise_and_safe() -> None:
@@ -85,6 +106,8 @@ def test_idea_batch_card_api_is_concise_and_safe() -> None:
         "ideas with mixed results / no clear answer",
         "next action",
         "real-money status",
+        "closest to interesting idea",
+        "why it was closest",
         "no ai call was made",
     ]:
         assert phrase in text
@@ -256,6 +279,14 @@ def test_idea_batch_validate_api_splits_unsupported_and_structural_errors() -> N
     ]
     assert {idea["idea_id"] for idea in data["unsupported_ideas"]} == {"moon_phase_test"}
     assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"missing_name_test"}
+    unsupported = data["unsupported_ideas"][0]
+    assert unsupported["accepted_for_testing"] is False
+    assert unsupported["example_count_total"] == 0
+    assert unsupported["closest_to_interesting_reason"].startswith("Not tested")
+    assert "local rule logic" in unsupported["closest_to_interesting_reason"]
+    assert "supported rule families" in unsupported["what_to_try_next"]
+    rejected = data["rejected_ideas"][0]
+    assert rejected["why_label_was_assigned"].startswith("Not tested")
     assert any(
         "missing_name_test: missing required field: plain_english_name." in error
         for error in data["validation_errors"]
@@ -358,6 +389,18 @@ def test_idea_batch_run_api_runs_supported_safe_ideas_only() -> None:
     assert {idea["idea_id"] for idea in data["unsupported_ideas"]} == {"unsupported_demo"}
     assert data["rejected_ideas"] == []
     assert data["scoreboard"]
+    unsupported = data["unsupported_ideas"][0]
+    assert unsupported["closest_to_interesting_reason"].startswith("Not tested")
+    assert "supported rule families" in unsupported["what_to_try_next"]
+    scoreboard_row = data["scoreboard"][0]
+    assert scoreboard_row["outcome_label"]
+    assert scoreboard_row["symbols_tested"] == scoreboard_row["securities_tested"]
+    assert scoreboard_row["example_count_total"] >= 0
+    assert scoreboard_row["example_count_by_symbol"]
+    assert scoreboard_row["symbol_result_summary"]
+    assert scoreboard_row["why_label_was_assigned"]
+    assert scoreboard_row["what_to_try_next"]
+    assert scoreboard_row["result_confidence_explanation"]
     assert data["does_not_call_ai"] is True
     assert data["does_not_save_results"] is True
     assert data["real_money_status"] == "Not allowed"
@@ -376,6 +419,20 @@ def test_idea_batch_run_api_runs_user_style_supported_ideas() -> None:
     assert len(data["accepted_ideas"]) == 10
     assert data["rejected_ideas"] == []
     assert data["unsupported_ideas"] == []
+    assert data["batch_summary"]["ideas_submitted"] == 10
+    assert data["batch_summary"]["ideas_tested"] == 10
+    assert data["batch_summary"]["ideas_advanced"] == 0
+    assert data["batch_summary"]["closest_to_interesting_idea"]
+    assert data["batch_summary"]["recommended_next_research_focus"]
+    assert data["evidence_details"]["batch_plain_english_summary"].startswith("Nothing advanced.")
+    assert len(data["scoreboard"]) == 10
+    assert all(row["example_count_total"] >= 0 for row in data["scoreboard"])
+    assert all(row["example_count_by_symbol"] for row in data["scoreboard"])
+    assert all(row["symbol_result_summary"] for row in data["scoreboard"])
+    assert all(row["why_label_was_assigned"] for row in data["scoreboard"])
+    assert all(row["what_to_try_next"] for row in data["scoreboard"])
+    assert all(row["result_confidence_explanation"] for row in data["scoreboard"])
+    assert "safety_errors" not in data
     assert data["does_not_save_results"] is True
     assert data["real_money_status"] == "Not allowed"
 

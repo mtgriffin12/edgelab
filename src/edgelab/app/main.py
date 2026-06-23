@@ -1168,12 +1168,54 @@ async def run_intraday_idea_batch(request: Request) -> JSONResponse:
             "ideas_mixed_results": result.ideas_mixed_results,
             "ideas_rejected_for_now": result.ideas_rejected_for_now,
             "ranked_results": [item.model_dump(mode="json") for item in result.ranked_results],
+            "evidence_details": result.evidence_details,
+            "batch_summary": {
+                "ideas_submitted": result.ideas_submitted,
+                "ideas_tested": result.ideas_tested,
+                "ideas_advanced": result.evidence_details.get("ideas_advanced_count", 0),
+                "ideas_rejected": result.evidence_details.get("ideas_rejected_count", 0),
+                "ideas_mixed_or_unclear": result.evidence_details.get(
+                    "ideas_mixed_or_unclear_count",
+                    0,
+                ),
+                "closest_to_interesting_idea": result.evidence_details.get(
+                    "closest_to_interesting_idea",
+                    "No clear candidate yet.",
+                ),
+                "closest_to_interesting_reason": result.evidence_details.get(
+                    "closest_to_interesting_reason",
+                    "No tested idea was close enough to narrow yet.",
+                ),
+                "recommended_next_research_focus": result.evidence_details.get(
+                    "recommended_next_research_focus",
+                    "Try a simpler idea family or add more local history before narrowing.",
+                ),
+                "plain_english_summary": result.evidence_details.get(
+                    "batch_plain_english_summary",
+                    result.current_conclusion,
+                ),
+            },
             "scoreboard": [
                 {
                     "idea": item.plain_english_name,
                     "result": item.classification_label,
+                    "outcome_label": item.outcome_label,
                     "securities_tested": item.securities_tested,
+                    "symbols_tested": item.symbols_tested,
                     "next_action": item.next_action,
+                    "evidence_details": item.evidence_details,
+                    "example_count_total": item.example_count_total,
+                    "example_count_by_symbol": item.example_count_by_symbol,
+                    "symbol_result_summary": [
+                        symbol_result.model_dump(mode="json")
+                        for symbol_result in item.symbol_result_summary
+                    ],
+                    "best_symbol": item.best_symbol,
+                    "worst_symbol": item.worst_symbol,
+                    "closest_to_interesting_reason": item.closest_to_interesting_reason,
+                    "why_label_was_assigned": item.why_label_was_assigned,
+                    "what_to_try_next": item.what_to_try_next,
+                    "result_confidence_explanation": item.result_confidence_explanation,
                 }
                 for item in [*result.ranked_results, *result.rejected_ideas]
             ],
