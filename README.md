@@ -301,6 +301,28 @@ replay engine. It reports first-hour completeness so missing or duplicate first-
 visible before any replay is trusted. These results are not live signals, not recommendations, and
 real-money status remains Not allowed.
 
+The MarketData.app SPY/CSGP data helper is a local command-line tool only. It can plan or run an
+explicit download of recent 1-minute SPY and CSGP candles, then write normalized CSV files to the
+ignored `data/raw/historical_intraday/firstratedata/` folder. Normal app pages do not call
+MarketData.app, and tests do not make network calls. The token is read only from
+`MARKETDATA_APP_TOKEN` at download time and must never be committed.
+
+Dry-run first:
+
+```bash
+PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12 --dry-run
+```
+
+Actual local download, only after reviewing the dry-run and setting a token:
+
+```bash
+export MARKETDATA_APP_TOKEN="[paste your MarketData.app token]"
+PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12
+```
+
+The target files are `SPY_recent_1min.csv` and `CSGP_recent_1min.csv`. Do not commit downloaded CSV
+files, saved databases, or API tokens.
+
 To run a local fixture-backed backtest:
 
 ```bash

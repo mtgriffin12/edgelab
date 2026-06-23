@@ -12,11 +12,35 @@
     <h3>Bottom line</h3>
     <p>{{ audit.current_spy_data_plain_english }}</p>
     <p>{{ audit.csgp_data_plain_english }}</p>
+    <p>{{ audit.recent_pair_plain_english }}</p>
     <p><strong>Real-money status:</strong> {{ audit.real_money_status }}</p>
   </section>
 
   <section class="section">
     <h3>What EdgeLab has locally</h3>
+    {% if audit.legacy_spy_summary %}
+      <p>
+        Legacy SPY FirstRate file range:
+        {{ audit.legacy_spy_summary.start_date }} to {{ audit.legacy_spy_summary.end_date }}.
+      </p>
+    {% endif %}
+    {% if audit.recent_spy_summary %}
+      <p>
+        Recent SPY file range:
+        {{ audit.recent_spy_summary.start_date }} to {{ audit.recent_spy_summary.end_date }}.
+      </p>
+    {% else %}
+      <p>Recent SPY file: not found yet.</p>
+    {% endif %}
+    {% if audit.recent_csgp_summary %}
+      <p>
+        Recent CSGP file range:
+        {{ audit.recent_csgp_summary.start_date }} to {{ audit.recent_csgp_summary.end_date }}.
+      </p>
+    {% else %}
+      <p>Recent CSGP file: not found yet.</p>
+    {% endif %}
+    <p>Recent files overlap enough for the future study: {{ yes_no(audit.recent_pair_has_enough_overlap) }}</p>
     <table>
       <thead>
         <tr>
@@ -120,6 +144,30 @@
         <li>{{ step }}</li>
       {% endfor %}
     </ul>
+  </section>
+
+  <section class="section">
+    <h3>Local MarketData.app download helper</h3>
+    <ol>
+      <li>Create a MarketData.app account.</li>
+      <li>Get an API token.</li>
+      <li>In Terminal, set <code>export MARKETDATA_APP_TOKEN="[paste your MarketData.app token]"</code>.</li>
+      <li>
+        Run dry-run first:
+        <code>PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12 --dry-run</code>
+      </li>
+      <li>
+        Run the actual local download only when ready:
+        <code>PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12</code>
+      </li>
+      <li>Confirm the CSV files are under <code>data/raw/historical_intraday/firstratedata</code>.</li>
+      <li>Refresh this audit page.</li>
+    </ol>
+    <p>
+      Do not commit downloaded CSV files or API tokens. Use matching SPY and CSGP date
+      ranges. If free daily credits are not enough, run smaller windows or upgrade only if
+      you choose to.
+    </p>
   </section>
 
   <section class="section">

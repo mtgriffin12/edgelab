@@ -44,6 +44,8 @@ Phase 7X-2L: Structured AI idea batch testing, local deterministic checks only
 
 Phase 7X-2M: Idea batch paste runner, temporary local validation and test workflow
 
+Phase 7X-2T: MarketData.app SPY/CSGP data helper, local explicit download and normalization only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

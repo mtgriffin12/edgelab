@@ -226,6 +226,47 @@ Future paid data providers may be investigated later, but the current historical
 not add provider SDKs, credentials, or external calls. The current paid-provider placeholder exists
 only to show where a future adapter could fit.
 
+## Phase 7X-2T MarketData.app SPY/CSGP Local Data Helper
+
+Phase 7X-2T adds a local command-line helper for the SPY/CSGP morning divergence research question.
+It plans or runs an explicit MarketData.app historical candle download for recent 1-minute SPY and
+CSGP data, normalizes both files to:
+
+`timestamp,open,high,low,close,volume`
+
+The target files are:
+
+`data/raw/historical_intraday/firstratedata/SPY_recent_1min.csv`
+
+`data/raw/historical_intraday/firstratedata/CSGP_recent_1min.csv`
+
+Those files must stay ignored and untracked. The normal app pages do not fetch provider data, tests
+do not call the network, and EdgeLab does not store API tokens. The CLI reads the token only from
+`MARKETDATA_APP_TOKEN` when a real download is requested.
+
+Dry-run first:
+
+```bash
+PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12 --dry-run
+```
+
+Actual local download, only after reviewing the dry-run and setting a token:
+
+```bash
+export MARKETDATA_APP_TOKEN="[paste your MarketData.app token]"
+PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SPY CSGP --months 12
+```
+
+Use matching SPY and CSGP date ranges. The first target window is trailing 12 months, with optional
+18-month and 24-month windows if more local history is needed. If free daily credits are not enough,
+run smaller windows or upgrade only if the user chooses.
+
+The SPY/CSGP audit now recognizes the recent filenames above. It still shows the legacy SPY
+FirstRate file range separately so old SPY-only data is not mixed with current CSGP data.
+
+This helper does not add live data to the app, real-time quotes, provider SDKs, charting, broker
+integration, paper-mode promotion, or recommendations. Real-money status remains Not allowed.
+
 ## Phase 7X-2F Saved Research Runs
 
 Phase 7X-2F adds saved local research runs for expensive FirstRate many-morning analysis. EdgeLab

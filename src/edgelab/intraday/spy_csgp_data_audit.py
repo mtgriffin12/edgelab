@@ -47,10 +47,16 @@ class SpyCsgpDataAuditService:
         dry_run = self.provider.dry_run()
         capabilities = self.provider.provider_capabilities()
         file_audits = [_file_audit(file_summary) for file_summary in dry_run.files]
-        by_symbol = {item.symbol: item for item in file_audits}
-        spy_summary = by_symbol.get("SPY")
-        csgp_summary = by_symbol.get("CSGP")
+        legacy_spy_summary = _legacy_summary(file_audits, "SPY")
+        recent_spy_summary = _recent_summary(file_audits, "SPY")
+        recent_csgp_summary = _recent_summary(file_audits, "CSGP")
+        spy_summary = recent_spy_summary or legacy_spy_summary or _first_summary(file_audits, "SPY")
+        csgp_summary = recent_csgp_summary or _first_summary(file_audits, "CSGP")
         recent_enough = _is_recent_enough(spy_summary, self.as_of)
+        recent_pair_has_enough_overlap = _recent_pair_has_enough_overlap(
+            recent_spy_summary,
+            recent_csgp_summary,
+        )
 
         return SpyCsgpDataAudit(
             audit_id="phase-7x-2s-spy-csgp-morning-divergence-data-audit",
@@ -63,6 +69,15 @@ class SpyCsgpDataAuditService:
             csgp_data_found=csgp_summary is not None,
             spy_summary=spy_summary,
             csgp_summary=csgp_summary,
+            legacy_spy_summary=legacy_spy_summary,
+            recent_spy_summary=recent_spy_summary,
+            recent_csgp_summary=recent_csgp_summary,
+            recent_pair_has_enough_overlap=recent_pair_has_enough_overlap,
+            recent_pair_plain_english=_recent_pair_summary(
+                recent_spy_summary,
+                recent_csgp_summary,
+                recent_pair_has_enough_overlap,
+            ),
             current_spy_data_plain_english=_spy_data_summary(spy_summary, recent_enough),
             csgp_data_plain_english=_csgp_data_summary(csgp_summary),
             spy_data_recent_enough_for_last_year_observation=recent_enough,
@@ -219,6 +234,65 @@ def _file_audit(file_summary: FirstRateFileDryRunSummary) -> SpyCsgpFileAudit:
         quality_issue_count=quality_issue_count,
         data_quality_warning=_quality_warning(quality_issue_count, session_count),
     )
+
+
+def _first_summary(file_audits: list[SpyCsgpFileAudit], symbol: str) -> SpyCsgpFileAudit | None:
+    for file_audit in file_audits:
+        if file_audit.symbol == symbol:
+            return file_audit
+    return None
+
+
+def _recent_summary(file_audits: list[SpyCsgpFileAudit], symbol: str) -> SpyCsgpFileAudit | None:
+    recent_filename = f"{symbol}_recent_1min.csv"
+    for file_audit in file_audits:
+        if file_audit.symbol == symbol and file_audit.filename == recent_filename:
+            return file_audit
+    return None
+
+
+def _legacy_summary(file_audits: list[SpyCsgpFileAudit], symbol: str) -> SpyCsgpFileAudit | None:
+    for file_audit in file_audits:
+        if file_audit.symbol == symbol and file_audit.filename != f"{symbol}_recent_1min.csv":
+            return file_audit
+    return None
+
+
+def _recent_pair_has_enough_overlap(
+    recent_spy_summary: SpyCsgpFileAudit | None,
+    recent_csgp_summary: SpyCsgpFileAudit | None,
+) -> bool:
+    if recent_spy_summary is None or recent_csgp_summary is None:
+        return False
+    if (
+        recent_spy_summary.start_date is None
+        or recent_spy_summary.end_date is None
+        or recent_csgp_summary.start_date is None
+        or recent_csgp_summary.end_date is None
+    ):
+        return False
+    overlap_start = max(recent_spy_summary.start_date, recent_csgp_summary.start_date)
+    overlap_end = min(recent_spy_summary.end_date, recent_csgp_summary.end_date)
+    return overlap_start <= overlap_end
+
+
+def _recent_pair_summary(
+    recent_spy_summary: SpyCsgpFileAudit | None,
+    recent_csgp_summary: SpyCsgpFileAudit | None,
+    has_enough_overlap: bool,
+) -> str:
+    if recent_spy_summary is None and recent_csgp_summary is None:
+        return "EdgeLab does not yet see recent SPY or CSGP files for this study."
+    if recent_spy_summary is None:
+        return "EdgeLab sees recent CSGP data, but recent SPY data is still missing."
+    if recent_csgp_summary is None:
+        return "EdgeLab sees recent SPY data, but recent CSGP data is still missing."
+    if has_enough_overlap:
+        return (
+            "EdgeLab sees recent SPY and CSGP files with overlapping dates, so the future "
+            "morning divergence study has the local files it needs."
+        )
+    return "EdgeLab sees recent SPY and CSGP files, but their dates do not overlap enough yet."
 
 
 def _quality_warning(quality_issue_count: int, session_count: int) -> str:

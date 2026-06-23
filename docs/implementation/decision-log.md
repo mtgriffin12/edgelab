@@ -181,3 +181,13 @@ workflow. The validator still checks JSON shape, required fields, research-only 
 status, data types, supported rule-family classification, and local testability. It no longer scans
 user-authored idea text for trading, proof, profit, readiness, or other wording. Unsupported ideas
 remain classified as `unsupported_rule`; supported ideas remain temporary local research only.
+
+## DEC-040: Phase 7X-2T MarketData.app SPY/CSGP Local Data Helper
+
+DEC-040 adds an explicit local command-line helper for downloading recent SPY and CSGP 1-minute
+candles from MarketData.app and normalizing them into ignored CSV files for the future morning
+divergence study. The helper supports dry-run planning without credentials, reads the API token
+only from `MARKETDATA_APP_TOKEN` for real downloads, and writes only to local ignored raw-data
+paths. Normal app page loads do not call MarketData.app, tests do not use the network, and the
+feature does not add live data, provider SDKs, trading, broker integration, paper-mode promotion,
+or real-money readiness.

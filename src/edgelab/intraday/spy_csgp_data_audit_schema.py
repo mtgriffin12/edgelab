@@ -89,6 +89,11 @@ class SpyCsgpDataAudit(BaseModel):
     csgp_data_found: bool
     spy_summary: SpyCsgpFileAudit | None = None
     csgp_summary: SpyCsgpFileAudit | None = None
+    legacy_spy_summary: SpyCsgpFileAudit | None = None
+    recent_spy_summary: SpyCsgpFileAudit | None = None
+    recent_csgp_summary: SpyCsgpFileAudit | None = None
+    recent_pair_has_enough_overlap: bool = False
+    recent_pair_plain_english: str = Field(min_length=1)
     current_spy_data_plain_english: str = Field(min_length=1)
     csgp_data_plain_english: str = Field(min_length=1)
     spy_data_recent_enough_for_last_year_observation: bool

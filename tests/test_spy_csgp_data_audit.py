@@ -37,6 +37,48 @@ def test_spy_csgp_audit_detects_local_files_and_missing_csgp(tmp_path: Path) -> 
     assert audit.csgp_data_plain_english == (
         "EdgeLab does not currently see a local CSGP FirstRate CSV file."
     )
+    assert audit.legacy_spy_summary is not None
+    assert audit.legacy_spy_summary.filename == "SPY_1min_firstratedata.csv"
+    assert audit.recent_spy_summary is None
+    assert audit.recent_csgp_summary is None
+    assert audit.recent_pair_has_enough_overlap is False
+    assert "does not yet see recent SPY or CSGP" in audit.recent_pair_plain_english
+
+
+def test_spy_csgp_audit_detects_recent_pair_and_prefers_it(tmp_path: Path) -> None:
+    _write_firstrate_file(
+        tmp_path / "SPY_1min_firstratedata.csv",
+        _rows_for_date("2023-09-29", 430.0),
+    )
+    _write_firstrate_file(
+        tmp_path / "SPY_recent_1min.csv",
+        _rows_for_date("2026-06-22", 500.0),
+    )
+    _write_firstrate_file(
+        tmp_path / "CSGP_recent_1min.csv",
+        _rows_for_date("2026-06-22", 80.0),
+    )
+    provider = FirstRateLocalCSVHistoricalProvider(
+        data_dir=tmp_path,
+        normalizer=FirstRateHistoricalCSVNormalizer(
+            adjustment_mode=HistoricalIntradayAdjustmentMode.UNADJUSTED
+        ),
+    )
+
+    audit = SpyCsgpDataAuditService(provider=provider, as_of=date(2026, 6, 23)).run()
+
+    assert audit.spy_data_found is True
+    assert audit.csgp_data_found is True
+    assert audit.legacy_spy_summary is not None
+    assert audit.legacy_spy_summary.start_date == date(2023, 9, 29)
+    assert audit.recent_spy_summary is not None
+    assert audit.recent_spy_summary.start_date == date(2026, 6, 22)
+    assert audit.recent_csgp_summary is not None
+    assert audit.recent_csgp_summary.start_date == date(2026, 6, 22)
+    assert audit.spy_summary == audit.recent_spy_summary
+    assert audit.csgp_summary == audit.recent_csgp_summary
+    assert audit.recent_pair_has_enough_overlap is True
+    assert "overlapping dates" in audit.recent_pair_plain_english
 
 
 def test_spy_csgp_audit_defines_required_data_and_study_plan(tmp_path: Path) -> None:
@@ -113,6 +155,11 @@ def test_spy_csgp_data_audit_api_and_ui_routes(monkeypatch, tmp_path: Path) -> N
         "Exact data needed next",
         "SPY_recent_1min.csv",
         "CSGP_recent_1min.csv",
+        "Recent SPY file",
+        "Recent CSGP file",
+        "Local MarketData.app download helper",
+        "MARKETDATA_APP_TOKEN",
+        "python -m edgelab.intraday.marketdata_app_downloader",
         "Open to 15 minutes",
         "SPY down at least 1.00%",
         "CSGP positive while SPY is negative",
