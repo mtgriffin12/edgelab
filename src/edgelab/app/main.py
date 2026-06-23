@@ -76,6 +76,7 @@ from edgelab.intraday.research_view_model import (
 from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
+from edgelab.intraday.spy_csgp_data_audit import SpyCsgpDataAuditService
 from edgelab.intraday.variant_study import ControlledVariantStudyService
 from edgelab.intraday.variant_study_schema import VariantStudyRequest
 from edgelab.portfolios.cards import model_portfolio_to_markdown_card
@@ -161,6 +162,7 @@ out_of_sample_gate_service = OutOfSampleGateService(
 )
 discovery_sprint_service = DiscoverySprintService(provider=firstrate_historical_provider)
 idea_batch_runner = IdeaBatchRunner(provider=firstrate_historical_provider)
+spy_csgp_data_audit_service = SpyCsgpDataAuditService(provider=firstrate_historical_provider)
 
 
 @dataclass(frozen=True)
@@ -1263,6 +1265,13 @@ def read_intraday_idea_batch_card(batch_id: str) -> Response:
     return Response(content=idea_batch_to_markdown_card(result), media_type="text/plain")
 
 
+@app.get("/intraday/research/spy-csgp/data-audit")
+def read_spy_csgp_data_audit() -> dict[str, object]:
+    """Return a local data-readiness audit for the SPY/CSGP morning question."""
+
+    return spy_csgp_data_audit_service.run().model_dump(mode="json")
+
+
 async def _read_pasted_json(request: Request) -> tuple[object | None, list[str] | None]:
     body = await request.body()
     if not body.strip():
@@ -1895,6 +1904,18 @@ def read_ui_intraday_idea_batch_detail(request: Request, batch_id: str) -> Respo
         request=request,
         name="intraday_idea_batch_detail.html",
         context={"result": result},
+    )
+
+
+@app.get("/ui/intraday-lab/research/spy-csgp", response_class=HTMLResponse)
+def read_ui_spy_csgp_data_audit(request: Request) -> Response:
+    """Render the SPY/CSGP morning divergence data audit."""
+
+    audit = spy_csgp_data_audit_service.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_spy_csgp_data_audit.html",
+        context={"audit": audit},
     )
 
 

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}SPY / CSGP Data Audit{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY / CSGP Morning Data Audit</h2>
+    <p class="muted">
+      A local data readiness check for a possible morning relationship. This is not a strategy.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ audit.current_spy_data_plain_english }}</p>
+    <p>{{ audit.csgp_data_plain_english }}</p>
+    <p><strong>Real-money status:</strong> {{ audit.real_money_status }}</p>
+  </section>
+
+  <section class="section">
+    <h3>What EdgeLab has locally</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Security</th>
+          <th>Rows</th>
+          <th>First timestamp</th>
+          <th>Last timestamp</th>
+          <th>Sessions</th>
+          <th>Usable first-hour sessions</th>
+          <th>Data note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in audit.files %}
+          <tr>
+            <td>{{ file.symbol }}</td>
+            <td>{{ file.row_count }}</td>
+            <td>{{ file.first_timestamp_utc }}</td>
+            <td>{{ file.last_timestamp_utc }}</td>
+            <td>{{ file.apparent_trading_sessions }}</td>
+            <td>{{ file.usable_first_hour_sessions }}</td>
+            <td>{{ file.data_quality_warning }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>Available symbols: {{ audit.available_symbols|join(", ") }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Exact data needed next</h3>
+    <p>{{ audit.recommended_data_window }}</p>
+    <p>{{ audit.why_old_and_current_data_should_not_be_mixed }}</p>
+    <ul>
+      {% for item in audit.exact_data_needed %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Security</th>
+          <th>Recommended filename</th>
+          <th>Required columns</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file_spec in audit.required_files %}
+          <tr>
+            <td>{{ file_spec.symbol }}</td>
+            <td><code>{{ file_spec.recommended_path }}</code></td>
+            <td>{{ file_spec.required_columns|join(", ") }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>
+      Acceptable provider column names can include:
+      {{ audit.required_files[0].acceptable_alternative_columns|join(", ") }}.
+      EdgeLab's target format remains:
+      {{ audit.target_normalized_columns|join(", ") }}.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>First study EdgeLab should run</h3>
+    <p>{{ audit.first_study_question }}</p>
+    <h4>Morning windows</h4>
+    <ul>
+      {% for window in audit.morning_windows %}
+        <li><strong>{{ window.label }}:</strong> {{ window.local_time_window }}. {{ window.why_it_matters }}</li>
+      {% endfor %}
+    </ul>
+    <h4>SPY weakness checks</h4>
+    <ul>
+      {% for threshold in audit.spy_weakness_thresholds %}
+        <li>{{ threshold }}</li>
+      {% endfor %}
+    </ul>
+    <h4>CSGP strength checks</h4>
+    <ul>
+      {% for threshold in audit.csgp_strength_thresholds %}
+        <li>{{ threshold }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3>What the future study should measure</h3>
+    <ul>
+      {% for metric in audit.future_metrics %}
+        <li>{{ metric }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3>What to do after getting the data</h3>
+    <ul>
+      {% for step in audit.next_steps %}
+        <li>{{ step }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show local provider and file details</summary>
+      <p>{{ audit.provider_plain_english_summary }}</p>
+      <p>External calls: {{ yes_no(audit.provider_supports_external_calls) }}</p>
+      <p>Credentials required: {{ yes_no(audit.provider_requires_credentials) }}</p>
+      <p>No live data requested: {{ yes_no(audit.no_live_data_requested) }}</p>
+      <p>No AI/model calls: {{ yes_no(audit.no_ai_or_model_calls) }}</p>
+      <p>Local save deferred: {{ yes_no(audit.local_save_deferred) }}</p>
+      <p>Data directory: <code>{{ audit.data_dir }}</code></p>
+      <p>As of: {{ audit.as_of }}</p>
+      <p>Research-only status: {{ audit.research_only_status }}</p>
+      <p>Real-money status: {{ audit.real_money_status }}</p>
+    </details>
+  </section>
+{% endblock %}
