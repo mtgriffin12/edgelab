@@ -128,7 +128,14 @@ def test_idea_batch_schema_endpoint_exposes_copyable_contract() -> None:
     assert "gap_fade" in data["allowed_rule_families"]
     assert "reject_unsupported" in data["allowed_rule_families"]
     assert "forbidden_language_categories" not in data
+    assert "safety_errors" not in data
+    assert data["field_types"]["instruments_to_test"] == "non-empty array of strings"
+    assert data["field_types"]["required_data"] == "array of strings"
+    assert data["field_types"]["expected_failure_modes"] == "non-empty array of strings"
+    assert data["field_types"]["fixed_parameters"] == "object with JSON-compatible values"
     assert data["minimal_valid_example"]["real_money_status"] == "Not allowed"
+    assert isinstance(data["minimal_valid_example"]["ideas"][0]["required_data"], list)
+    assert isinstance(data["minimal_valid_example"]["ideas"][0]["fixed_parameters"], dict)
 
 
 def test_idea_batch_validate_api_accepts_valid_batch() -> None:
@@ -175,6 +182,23 @@ def test_idea_batch_validate_api_accepts_realistic_safe_research_language() -> N
     assert data["does_not_call_ai"] is True
     assert data["does_not_save_results"] is True
     assert data["real_money_status"] == "Not allowed"
+
+
+def test_idea_batch_validate_api_accepts_user_style_10_idea_json_shape() -> None:
+    response = client.post(
+        "/intraday/research/idea-batches/validate",
+        json=_paste_batch(ideas=_user_style_10_idea_batch()),
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["can_run"] is True
+    assert data["ideas_submitted"] == 10
+    assert len(data["accepted_ideas"]) == 10
+    assert data["rejected_ideas"] == []
+    assert data["unsupported_ideas"] == []
+    assert data["validation_errors"] == []
+    assert "safety_errors" not in data
 
 
 def test_idea_batch_validate_api_rejects_invalid_json() -> None:
@@ -233,8 +257,50 @@ def test_idea_batch_validate_api_splits_unsupported_and_structural_errors() -> N
     assert {idea["idea_id"] for idea in data["unsupported_ideas"]} == {"moon_phase_test"}
     assert {idea["idea_id"] for idea in data["rejected_ideas"]} == {"missing_name_test"}
     assert any(
-        "Missing required field: plain_english_name." in error
+        "missing_name_test: missing required field: plain_english_name." in error
         for error in data["validation_errors"]
+    )
+
+
+def test_idea_batch_validate_api_returns_field_level_structural_errors() -> None:
+    payload = _paste_batch(
+        ideas=[
+            {
+                **_paste_idea("bad_required_data"),
+                "required_data": "Local bars should be an array.",
+            },
+            {
+                **_paste_idea("bad_fixed_parameters"),
+                "fixed_parameters": "range_minutes=15",
+            },
+            {
+                **_paste_idea("bad_expected_failure_modes"),
+                "expected_failure_modes": "needs more examples",
+            },
+            {
+                **_paste_idea("bad_instruments"),
+                "instruments_to_test": "SPY",
+            },
+        ]
+    )
+
+    response = client.post("/intraday/research/idea-batches/validate", json=payload)
+
+    assert response.status_code == 200
+    errors = response.json()["validation_errors"]
+    assert any(
+        "bad_required_data: required_data must be a list of strings." in error for error in errors
+    )
+    assert any(
+        "bad_fixed_parameters: fixed_parameters must be an object." in error for error in errors
+    )
+    assert any(
+        "bad_expected_failure_modes: expected_failure_modes must be a list of strings." in error
+        for error in errors
+    )
+    assert any(
+        "bad_instruments: instruments_to_test must be a list of strings." in error
+        for error in errors
     )
 
 
@@ -297,6 +363,23 @@ def test_idea_batch_run_api_runs_supported_safe_ideas_only() -> None:
     assert data["real_money_status"] == "Not allowed"
 
 
+def test_idea_batch_run_api_runs_user_style_supported_ideas() -> None:
+    response = client.post(
+        "/intraday/research/idea-batches/run",
+        json=_paste_batch(ideas=_user_style_10_idea_batch()),
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["ideas_submitted"] == 10
+    assert data["ideas_tested"] == 10
+    assert len(data["accepted_ideas"]) == 10
+    assert data["rejected_ideas"] == []
+    assert data["unsupported_ideas"] == []
+    assert data["does_not_save_results"] is True
+    assert data["real_money_status"] == "Not allowed"
+
+
 def _paste_batch(ideas: list[dict[str, object]] | None = None) -> dict[str, object]:
     return {
         "batch_id": "paste_batch_test",
@@ -315,7 +398,7 @@ def _paste_idea(idea_id: str = "gap_fade_local_check") -> dict[str, object]:
         "hypothesis": "A local opening gap can be checked with a fixed local rule.",
         "supported_rule_family": "gap_fade",
         "instruments_to_test": ["SPY", "QQQ"],
-        "required_data": "1-minute bars and first-hour range.",
+        "required_data": ["1-minute bars", "first-hour range"],
         "exact_rule_definition": "Use the locked local gap fade rule without changing settings.",
         "fixed_parameters": {"minimum_gap_percent": 0.25},
         "why_test_this": "It is simple and local bars can check it.",
@@ -328,7 +411,7 @@ def _paste_idea(idea_id: str = "gap_fade_local_check") -> dict[str, object]:
 
 def _realistic_safe_ai_ideas() -> list[dict[str, object]]:
     base: dict[str, object] = {
-        "required_data": "Local 1-minute bars and the first-hour price range.",
+        "required_data": ["Local 1-minute bars", "first-hour price range"],
         "fixed_parameters": {"range_minutes": 15, "test_horizon_minutes": 10},
         "useful_result_definition": (
             "Useful would mean enough completed examples moved in the tested direction "
@@ -459,4 +542,55 @@ def _realistic_safe_ai_ideas() -> list[dict[str, object]]:
             exact_rule_definition,
             why_test_this,
         ) in ideas
+    ]
+
+
+def _user_style_10_idea_batch() -> list[dict[str, object]]:
+    phrases = [
+        "Buy now because this works.",
+        "sell now",
+        "short this",
+        "guaranteed profit",
+        "validated edge",
+        "paper ready",
+        "live ready",
+        "ready for real money",
+        "go long",
+        "place order",
+    ]
+    rule_families = [
+        "first_range_breakout",
+        "first_range_failure",
+        "gap_fade",
+        "gap_continuation",
+        "reclaim",
+        "trend_continuation",
+        "symbol_divergence",
+        "first_range_breakout",
+        "gap_fade",
+        "gap_continuation",
+    ]
+    return [
+        {
+            **_paste_idea(f"user_style_idea_{index:02d}"),
+            "plain_english_name": f"User Style Idea {index:02d}",
+            "hypothesis": f"Local research idea with user wording: {phrase}",
+            "supported_rule_family": rule_family,
+            "instruments_to_test": (
+                ["SPY", "QQQ"] if rule_family == "symbol_divergence" else ["SPY"]
+            ),
+            "required_data": ["Local one-minute bars", "First-hour range"],
+            "fixed_parameters": {
+                "range_minutes": 15,
+                "minimum_confirming_symbols": 3,
+                "test_horizon_minutes": 10,
+                "range_width_bucket": "narrow",
+                "allow_retest": True,
+                "optional_note": None,
+            },
+        }
+        for index, (phrase, rule_family) in enumerate(
+            zip(phrases, rule_families, strict=True),
+            start=1,
+        )
     ]

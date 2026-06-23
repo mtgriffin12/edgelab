@@ -1082,7 +1082,7 @@ def read_intraday_ai_idea_spec_schema() -> dict[str, object]:
             "data. This endpoint does not call AI."
         ),
         **schema,
-        "example": discovery_sprint_service.ai_idea_schema_example(),
+        "example": schema["minimal_valid_example"],
     }
 
 

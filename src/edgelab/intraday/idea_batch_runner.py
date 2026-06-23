@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -361,7 +362,7 @@ class IdeaBatchRunner:
         requested = tuple(symbol for symbol in idea.instruments_to_test if symbol in available)
         if idea.supported_rule_family == IdeaBatchRuleFamily.SYMBOL_DIVERGENCE:
             requested = tuple(symbol for symbol in ("QQQ", "SPY") if symbol in requested)
-        return requested or idea.instruments_to_test
+        return requested or tuple(idea.instruments_to_test)
 
     def _is_testable_rule(self, rule: IdeaBatchRuleFamily) -> bool:
         return rule in _TESTABLE_RULES
@@ -449,6 +450,7 @@ def _next_action_for_classification(classification: IdeaBatchResultLabel) -> str
 
 
 def _validation_rejection(raw_idea: dict[str, Any], exc: ValidationError) -> IdeaBatchIdeaResult:
+    idea_id = _safe_raw_value(raw_idea.get("idea_id"), "rejected_idea")
     missing_fields = [
         str(error.get("loc", ("field",))[-1])
         for error in exc.errors()
@@ -461,12 +463,13 @@ def _validation_rejection(raw_idea: dict[str, Any], exc: ValidationError) -> Ide
     )
     reason = _validation_rejection_reason(
         exc,
+        idea_id=idea_id,
         classification=classification,
         missing_fields=missing_fields,
     )
     return _rejected_result(
-        idea_id=_safe_raw_value(raw_idea.get("idea_id"), "rejected_idea"),
-        plain_english_name=_safe_raw_value(raw_idea.get("idea_id"), "Rejected idea"),
+        idea_id=idea_id,
+        plain_english_name=_safe_raw_value(raw_idea.get("plain_english_name"), idea_id),
         supported_rule_family=str(raw_idea.get("supported_rule_family", "unknown")),
         classification=classification,
         reason=reason,
@@ -476,15 +479,32 @@ def _validation_rejection(raw_idea: dict[str, Any], exc: ValidationError) -> Ide
 def _validation_rejection_reason(
     exc: ValidationError,
     *,
+    idea_id: str,
     classification: IdeaBatchResultLabel,
     missing_fields: list[str],
 ) -> str:
     if missing_fields:
-        return f"Missing required field: {', '.join(missing_fields)}."
-    messages = " ".join(str(error.get("msg", "")) for error in exc.errors()).lower()
+        return f"{idea_id}: missing required field: {', '.join(missing_fields)}."
     if classification == IdeaBatchResultLabel.UNSUPPORTED_RULE:
         return "Unsupported rule family: EdgeLab cannot test this idea with current local rules."
-    return f"Structural validation failed: {messages}."
+    return " ".join(_validation_error_message(idea_id, error) for error in exc.errors())
+
+
+def _validation_error_message(idea_id: str, error: Mapping[str, Any]) -> str:
+    loc = ".".join(str(part) for part in error.get("loc", ())) or "idea"
+    error_type = str(error.get("type", ""))
+    if error_type == "list_type":
+        return f"{idea_id}: {loc} must be a list of strings."
+    if error_type == "dict_type":
+        return f"{idea_id}: {loc} must be an object."
+    if error_type == "string_type":
+        return f"{idea_id}: {loc} must be a string."
+    if error_type in {"int_type", "float_type", "bool_type"}:
+        return f"{idea_id}: {loc} has the wrong JSON value type."
+    if error_type == "too_short":
+        return f"{idea_id}: {loc} must not be empty."
+    message = str(error.get("msg", "Invalid value"))
+    return f"{idea_id}: {loc}: {message}."
 
 
 def _payload_to_batch(payload: object) -> IdeaBatch:

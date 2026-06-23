@@ -106,7 +106,9 @@ def test_ai_idea_schema_endpoint_does_not_call_ai_or_advance_ideas() -> None:
     data = response.json()
     assert data["research_only_status"] == "Research only"
     assert data["real_money_status"] == "Not allowed"
-    assert data["example"]["supported_rule_family"] == "gap_fade"
+    assert data["example"]["ideas"][0]["supported_rule_family"] == "reclaim"
+    assert isinstance(data["example"]["ideas"][0]["required_data"], list)
+    assert isinstance(data["example"]["ideas"][0]["fixed_parameters"], dict)
     text = response.text.lower()
     assert "does not call ai" in text
     assert "ready for real money" not in text

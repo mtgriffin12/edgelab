@@ -37,6 +37,28 @@ IDEA_BATCH_REQUIRED_IDEA_FIELDS = [
     "safety_notes",
 ]
 
+IDEA_BATCH_FIELD_TYPES = {
+    "batch_id": "string",
+    "batch_name": "string",
+    "created_for": "string",
+    "research_only_status": "string, must equal Research only",
+    "real_money_status": "string, must equal Not allowed",
+    "ideas": "non-empty array of idea objects",
+    "idea_id": "string",
+    "plain_english_name": "string",
+    "hypothesis": "string",
+    "supported_rule_family": "string from allowed_rule_families",
+    "instruments_to_test": "non-empty array of strings",
+    "required_data": "array of strings",
+    "exact_rule_definition": "string",
+    "fixed_parameters": "object with JSON-compatible values",
+    "why_test_this": "string",
+    "useful_result_definition": "string",
+    "failed_or_unclear_result_definition": "string",
+    "expected_failure_modes": "non-empty array of strings",
+    "safety_notes": "string",
+}
+
 
 class IdeaBatchRuleFamily(StrEnum):
     """Rule families EdgeLab can accept or reject deterministically."""
@@ -71,7 +93,10 @@ def idea_batch_minimal_example() -> dict[str, Any]:
                 ),
                 "supported_rule_family": "reclaim",
                 "instruments_to_test": ["AAPL", "AMZN", "MSFT", "META", "TSLA", "SPY", "QQQ"],
-                "required_data": "1-minute bars and the first-hour price range",
+                "required_data": [
+                    "1-minute bars",
+                    "first-hour price range",
+                ],
                 "exact_rule_definition": (
                     "Find mornings where price opens weak, moves below the early range, "
                     "then returns back inside the early range."
@@ -112,6 +137,7 @@ def idea_batch_schema_help() -> dict[str, Any]:
         ),
         "required_top_level_fields": IDEA_BATCH_REQUIRED_TOP_LEVEL_FIELDS,
         "required_idea_fields": IDEA_BATCH_REQUIRED_IDEA_FIELDS,
+        "field_types": IDEA_BATCH_FIELD_TYPES,
         "allowed_rule_families": [item.value for item in IdeaBatchRuleFamily],
         "minimal_valid_example": idea_batch_minimal_example(),
         "research_only_status": "Research only",
@@ -139,27 +165,37 @@ class AIProposedIntradayIdea(BaseModel):
     plain_english_name: str = Field(min_length=1)
     hypothesis: str = Field(min_length=1)
     supported_rule_family: IdeaBatchRuleFamily
-    instruments_to_test: tuple[str, ...] = Field(min_length=1)
-    required_data: str = Field(min_length=1)
+    instruments_to_test: list[str] = Field(min_length=1)
+    required_data: list[str] = Field(min_length=1)
     exact_rule_definition: str = Field(min_length=1)
     fixed_parameters: dict[str, Any] = Field(default_factory=dict)
     why_test_this: str = Field(min_length=1)
     useful_result_definition: str = Field(min_length=1)
     failed_or_unclear_result_definition: str = Field(min_length=1)
-    expected_failure_modes: tuple[str, ...] = Field(min_length=1)
+    expected_failure_modes: list[str] = Field(min_length=1)
     safety_notes: str = Field(min_length=1)
     research_only_status: str = "Research only"
     real_money_status: str = "Not allowed"
 
     @field_validator("instruments_to_test")
     @classmethod
-    def normalize_symbols(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+    def normalize_symbols(cls, value: list[str]) -> list[str]:
         """Normalize and de-duplicate proposed symbols."""
 
-        normalized = tuple(dict.fromkeys(normalize_symbol(symbol) for symbol in value))
+        normalized = list(dict.fromkeys(normalize_symbol(symbol) for symbol in value))
         if not normalized:
             raise ValueError("instruments_to_test cannot be empty")
         return normalized
+
+    @field_validator("fixed_parameters")
+    @classmethod
+    def validate_fixed_parameters(cls, value: dict[str, Any]) -> dict[str, Any]:
+        """Accept normal JSON objects and reject non-JSON Python values."""
+
+        for key, item in value.items():
+            if not _is_json_compatible(item):
+                raise ValueError(f"fixed_parameters.{key} must be a JSON-compatible value")
+        return value
 
     @model_validator(mode="after")
     def validate_status_fields(self) -> Self:
@@ -291,3 +327,15 @@ def _validate_research_status(
         raise ValueError(f"{context} must remain research-only")
     if real_money_status != "Not allowed":
         raise ValueError(f"{context} real-money status must be Not allowed")
+
+
+def _is_json_compatible(value: object) -> bool:
+    if value is None or isinstance(value, str | int | float | bool):
+        return True
+    if isinstance(value, list):
+        return all(_is_json_compatible(item) for item in value)
+    if isinstance(value, dict):
+        return all(
+            isinstance(key, str) and _is_json_compatible(item) for key, item in value.items()
+        )
+    return False

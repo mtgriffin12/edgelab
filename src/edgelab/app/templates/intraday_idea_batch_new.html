@@ -75,6 +75,13 @@
         {% endfor %}
       </ul>
 
+      <h3>Field types</h3>
+      <ul>
+        {% for field, field_type in schema.field_types.items() %}
+          <li><code>{{ field }}</code>: {{ field_type }}</li>
+        {% endfor %}
+      </ul>
+
       <h3>Allowed rule families</h3>
       <ul>
         {% for rule in schema.allowed_rule_families %}
