@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}SPY / CSGP Trigger Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY / CSGP Morning Divergence Trigger and Exit Study</h2>
+    <p class="muted">
+      A local read-only check of narrower morning trigger conditions and measured exit thresholds.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ study.plain_english_bottom_line }}</p>
+    <p><strong>Study name:</strong> {{ study.study_name }}</p>
+    <p><strong>Primary symbol:</strong> {{ study.primary_symbol }}</p>
+    <p><strong>Comparison symbol:</strong> {{ study.comparison_symbol }}</p>
+    <p><strong>Relationship tested:</strong> {{ study.relationship_tested }}</p>
+    <p><strong>Primary file used:</strong> <code>{{ study.primary_file_used }}</code></p>
+    <p><strong>Comparison file used:</strong> <code>{{ study.comparison_file_used }}</code></p>
+    <p>
+      <strong>Data window:</strong>
+      {{ study.overlap_range_analyzed.first_date }} to {{ study.overlap_range_analyzed.last_date }},
+      {{ study.trading_days_analyzed }} trading days analyzed.
+    </p>
+    <p><strong>Trigger time:</strong> {{ study.trigger_time_label }}</p>
+    <p><strong>Best current research clue:</strong> {{ study.best_current_research_clue }}</p>
+    <p><strong>Examples are too few:</strong> {{ yes_no(study.examples_are_too_few) }}</p>
+    <p><strong>What to study next:</strong> {{ study.what_to_study_next[0] }}</p>
+    <p><strong>Real-money status:</strong> {{ study.real_money_status }}</p>
+  </section>
+
+  <section class="section">
+    <h3>SPY down / CSGP stronger setups</h3>
+    {% for family in study.setup_families %}
+      {% if family.family_id == "primary_down_comparison_stronger" %}
+        <p>{{ family.plain_english_summary }}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Trigger condition</th>
+              <th>Examples</th>
+              <th>Best outcome window</th>
+              <th>Current rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in family.trigger_conditions %}
+              <tr>
+                <td>{{ row.trigger_label }}</td>
+                <td>{{ row.examples_found }}</td>
+                <td>{{ row.best_outcome_window }}</td>
+                <td>{{ row.best_rating }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="section">
+    <h3>SPY up / CSGP weaker setups</h3>
+    {% for family in study.setup_families %}
+      {% if family.family_id == "primary_up_comparison_weaker" %}
+        <p>{{ family.plain_english_summary }}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Trigger condition</th>
+              <th>Examples</th>
+              <th>Best outcome window</th>
+              <th>Current rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in family.trigger_conditions %}
+              <tr>
+                <td>{{ row.trigger_label }}</td>
+                <td>{{ row.examples_found }}</td>
+                <td>{{ row.best_outcome_window }}</td>
+                <td>{{ row.best_rating }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="section">
+    <h3>Ranked trigger + exit combinations</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Trigger condition</th>
+          <th>Exit threshold window</th>
+          <th>Examples</th>
+          <th>Favorable percent</th>
+          <th>Median post-trigger move</th>
+          <th>Current rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in study.ranked_trigger_exit_combinations %}
+          <tr>
+            <td>{{ row.rank }}</td>
+            <td>{{ row.trigger_label }}</td>
+            <td>{{ row.outcome_window_label }}</td>
+            <td>{{ row.examples_found }}</td>
+            <td>{{ row.favorable_percent }}</td>
+            <td>{{ row.median_post_trigger_move }}</td>
+            <td>{{ row.rating }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Strongest examples</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Trigger condition</th>
+          <th>Outcome window</th>
+          <th>Primary move by trigger</th>
+          <th>Comparison move by trigger</th>
+          <th>Post-trigger comparison move</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for example in study.strongest_examples %}
+          <tr>
+            <td>{{ example.date }}</td>
+            <td>{{ example.trigger_label }}</td>
+            <td>{{ example.outcome_window }}</td>
+            <td>{{ example.primary_morning_move }}</td>
+            <td>{{ example.comparison_morning_move }}</td>
+            <td>{{ example.comparison_post_trigger_move }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Weakest examples</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Trigger condition</th>
+          <th>Outcome window</th>
+          <th>Primary move by trigger</th>
+          <th>Comparison move by trigger</th>
+          <th>Post-trigger comparison move</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for example in study.weakest_examples %}
+          <tr>
+            <td>{{ example.date }}</td>
+            <td>{{ example.trigger_label }}</td>
+            <td>{{ example.outcome_window }}</td>
+            <td>{{ example.primary_morning_move }}</td>
+            <td>{{ example.comparison_morning_move }}</td>
+            <td>{{ example.comparison_post_trigger_move }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Giveback / hold behavior</h3>
+    <p>{{ study.giveback_hold_summary }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Trigger condition</th>
+          <th>Outcome window</th>
+          <th>Kept at least half</th>
+          <th>Gave back at least half</th>
+          <th>Exit thresholds reached</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in study.outcome_window_summaries[:12] %}
+          <tr>
+            <td>{{ row.trigger_label }}</td>
+            <td>{{ row.outcome_window_label }}</td>
+            <td>{{ row.kept_half_count }}</td>
+            <td>{{ row.gave_back_half_count }}</td>
+            <td>
+              {% for label, count in row.threshold_reached_counts.items() %}
+                {{ label }}: {{ count }}{% if not loop.last %}; {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>What to test next</h3>
+    <ul>
+      {% for item in study.what_to_study_next %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show files, windows, and safety status</summary>
+      <p>Morning windows tested: {{ study.morning_windows_tested|join(", ") }}</p>
+      <p>Outcome windows tested: {{ study.outcome_windows_tested|join(", ") }}</p>
+      <p>No external calls: {{ yes_no(study.no_external_calls) }}</p>
+      <p>No live data: {{ yes_no(study.no_live_data) }}</p>
+      <p>No saved outputs: {{ yes_no(study.no_saved_outputs) }}</p>
+      <p>Research-only status: {{ study.research_only_status }}</p>
+      <p>Real-money status: {{ study.real_money_status }}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Rows</th>
+            <th>First date</th>
+            <th>Last date</th>
+            <th>File</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in study.files_used %}
+            <tr>
+              <td>{{ file.symbol }}</td>
+              <td>{{ file.row_count }}</td>
+              <td>{{ file.first_date }}</td>
+              <td>{{ file.last_date }}</td>
+              <td><code>{{ file.path }}</code></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </section>
+{% endblock %}

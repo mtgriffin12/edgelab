@@ -245,6 +245,8 @@ class _LocalBar(BaseModel):
     local_date: date
     local_time: time
     open: float
+    high: float
+    low: float
     close: float
 
     @field_validator("timestamp")
@@ -468,6 +470,8 @@ def _parse_bar(symbol: str, row: dict[str, str], row_number: int) -> _LocalBar:
     local_timestamp = timestamp.astimezone(NEW_YORK)
     try:
         open_price = float(row["open"])
+        high_price = float(row["high"])
+        low_price = float(row["low"])
         close_price = float(row["close"])
     except (KeyError, ValueError) as error:
         raise ValueError(f"{symbol} row {row_number} has invalid price values.") from error
@@ -477,6 +481,8 @@ def _parse_bar(symbol: str, row: dict[str, str], row_number: int) -> _LocalBar:
         local_date=local_timestamp.date(),
         local_time=local_timestamp.time(),
         open=open_price,
+        high=high_price,
+        low=low_price,
         close=close_price,
     )
 

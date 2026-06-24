@@ -61,6 +61,10 @@ from edgelab.intraday.historical_schema import (
 from edgelab.intraday.idea_batch_runner import IdeaBatchRunner
 from edgelab.intraday.idea_batch_schema import idea_batch_schema_help
 from edgelab.intraday.out_of_sample_gate import OutOfSampleGateService
+from edgelab.intraday.pair_morning_trigger_exit import (
+    PairMorningTriggerExitStudyService,
+    spy_csgp_trigger_exit_config,
+)
 from edgelab.intraday.pattern_results import MultiSessionPatternRunner
 from edgelab.intraday.pattern_results_schema import (
     MultiSessionReplayRequest,
@@ -170,6 +174,9 @@ discovery_sprint_service = DiscoverySprintService(provider=firstrate_discovery_p
 idea_batch_runner = IdeaBatchRunner(provider=firstrate_historical_provider)
 spy_csgp_data_audit_service = SpyCsgpDataAuditService(provider=firstrate_historical_provider)
 spy_csgp_morning_divergence_service = SpyCsgpMorningDivergenceStudyService()
+spy_csgp_trigger_exit_service = PairMorningTriggerExitStudyService(
+    config=spy_csgp_trigger_exit_config()
+)
 
 
 @dataclass(frozen=True)
@@ -1286,6 +1293,13 @@ def read_spy_csgp_morning_divergence() -> dict[str, object]:
     return spy_csgp_morning_divergence_service.run().model_dump(mode="json")
 
 
+@app.get("/intraday/research/spy-csgp/trigger-exit-study")
+def read_spy_csgp_trigger_exit_study() -> dict[str, object]:
+    """Return the local SPY/CSGP pair trigger/exit study."""
+
+    return spy_csgp_trigger_exit_service.run().model_dump(mode="json")
+
+
 async def _read_pasted_json(request: Request) -> tuple[object | None, list[str] | None]:
     body = await request.body()
     if not body.strip():
@@ -1941,6 +1955,18 @@ def read_ui_spy_csgp_morning_divergence(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="intraday_spy_csgp_morning_divergence.html",
+        context={"study": study},
+    )
+
+
+@app.get("/ui/intraday-lab/research/spy-csgp/trigger-exit-study", response_class=HTMLResponse)
+def read_ui_spy_csgp_trigger_exit_study(request: Request) -> Response:
+    """Render the local SPY/CSGP trigger/exit threshold study."""
+
+    study = spy_csgp_trigger_exit_service.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_spy_csgp_trigger_exit_study.html",
         context={"study": study},
     )
 
