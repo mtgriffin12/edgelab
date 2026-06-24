@@ -46,6 +46,8 @@ Phase 7X-2M: Idea batch paste runner, temporary local validation and test workfl
 
 Phase 7X-2T: MarketData.app SPY/CSGP data helper, local explicit download and normalization only
 
+Phase 7X-2U: SPY/CSGP morning divergence study, local read-only evidence only
+
 Phase 8: Reporting and trade journal
 
 Phase 9: Broker adapter research

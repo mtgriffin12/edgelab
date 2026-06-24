@@ -267,6 +267,27 @@ FirstRate file range separately so old SPY-only data is not mixed with current C
 This helper does not add live data to the app, real-time quotes, provider SDKs, charting, broker
 integration, paper-mode promotion, or recommendations. Real-money status remains Not allowed.
 
+## Phase 7X-2U SPY/CSGP Morning Divergence Study
+
+Phase 7X-2U adds the first local SPY/CSGP morning divergence study. It only reads ignored recent
+CSV files already present under `data/raw/historical_intraday/firstratedata/`:
+
+- `SPY_recent_1min.csv`
+- `CSGP_recent_1min.csv`
+
+The study compares matching trading dates and the morning windows 9:30-9:45, 9:30-10:00,
+9:30-10:30, 10:00-11:00, and full session as a secondary comparison. It checks both SPY weakness
+levels and SPY strength levels. The plain-English question is whether CSGP moved up or held stronger
+when SPY was weak, and whether CSGP moved down or lagged SPY when SPY was strong.
+
+The analysis is data-window flexible. It reads the current local files, determines each file's date
+range, analyzes only the overlapping date range, and labels the sample as short, recent, larger
+recent, or broader historical based on the number of matching local trading days.
+
+This phase is an evidence page and API only. It does not fetch MarketData.app data, call external
+APIs, write processed files, save study outputs, add charts, connect to brokers, create trade
+actions, promote paper mode, or approve real-money use. Real-money status remains Not allowed.
+
 ## Phase 7X-2F Saved Research Runs
 
 Phase 7X-2F adds saved local research runs for expensive FirstRate many-morning analysis. EdgeLab

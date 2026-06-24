@@ -191,3 +191,12 @@ only from `MARKETDATA_APP_TOKEN` for real downloads, and writes only to local ig
 paths. Normal app page loads do not call MarketData.app, tests do not use the network, and the
 feature does not add live data, provider SDKs, trading, broker integration, paper-mode promotion,
 or real-money readiness.
+
+## DEC-041: Phase 7X-2U SPY/CSGP Morning Divergence Study
+
+DEC-041 adds a read-only local SPY/CSGP morning divergence study over ignored recent 1-minute CSV
+files. The study compares overlapping morning windows, SPY weakness levels, SPY strength levels,
+combined opposite-direction behavior, strongest and weakest inverse mornings, and after-10:00
+follow-through. It is data-window flexible: it uses the actual overlapping file range rather than a
+fixed calendar window. It does not fetch data, call MarketData.app, save outputs, add charts, connect
+to brokers, create trade actions, promote paper mode, or approve real-money use.

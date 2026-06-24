@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}SPY / CSGP Morning Study{% endblock %}
+{% block content %}
+  <section class="page-header">
+    <h2>SPY / CSGP Morning Divergence Study</h2>
+    <p class="muted">
+      A local read-only check of whether CSGP moved opposite SPY during meaningful morning moves.
+    </p>
+  </section>
+
+  <section class="section">
+    <h3>Bottom line</h3>
+    <p>{{ study.plain_english_bottom_line }}</p>
+    <p><strong>Real-money status:</strong> {{ study.real_money_status }}</p>
+  </section>
+
+  <section class="section">
+    <h3>Data window</h3>
+    <table>
+      <tbody>
+        <tr>
+          <th>SPY file date range</th>
+          <td>{{ study.spy_file_range.first_date }} to {{ study.spy_file_range.last_date }}</td>
+        </tr>
+        <tr>
+          <th>CSGP file date range</th>
+          <td>{{ study.csgp_file_range.first_date }} to {{ study.csgp_file_range.last_date }}</td>
+        </tr>
+        <tr>
+          <th>Overlapping date range analyzed</th>
+          <td>{{ study.overlap_range_analyzed.first_date }} to {{ study.overlap_range_analyzed.last_date }}</td>
+        </tr>
+        <tr>
+          <th>Trading days analyzed</th>
+          <td>{{ study.trading_days_analyzed }}</td>
+        </tr>
+        <tr>
+          <th>Sample description</th>
+          <td>{{ study.analyzed_sample_description }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>SPY down / CSGP stronger</h3>
+    <p>{{ study.spy_down_csgp_stronger_summary }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Window</th>
+          <th>SPY weak morning</th>
+          <th>Matching mornings</th>
+          <th>Average SPY move</th>
+          <th>Average CSGP move</th>
+          <th>CSGP moved up</th>
+          <th>CSGP beat SPY by 1 point</th>
+          <th>CSGP beat SPY by 2 points</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in study.threshold_summaries %}
+          {% if not row.secondary_only %}
+            <tr>
+              <td>{{ row.window_label }}</td>
+              <td>{{ row.threshold_label }}</td>
+              <td>{{ row.matching_mornings }}</td>
+              <td>{{ row.average_spy_move }}</td>
+              <td>{{ row.average_csgp_move }}</td>
+              <td>{{ row.csgp_positive_while_spy_negative_count }}</td>
+              <td>{{ row.csgp_beat_spy_by_1pt_count }}</td>
+              <td>{{ row.csgp_beat_spy_by_2pt_count }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>SPY up / CSGP weaker</h3>
+    <p>{{ study.spy_up_csgp_weaker_summary }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Window</th>
+          <th>SPY strong morning</th>
+          <th>Matching mornings</th>
+          <th>Average SPY move</th>
+          <th>Average CSGP move</th>
+          <th>CSGP moved down</th>
+          <th>CSGP lagged by 1 point</th>
+          <th>CSGP lagged by 2 points</th>
+          <th>CSGP also rose</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in study.strength_threshold_summaries %}
+          {% if not row.secondary_only %}
+            <tr>
+              <td>{{ row.window_label }}</td>
+              <td>{{ row.threshold_label }}</td>
+              <td>{{ row.matching_mornings }}</td>
+              <td>{{ row.average_spy_move }}</td>
+              <td>{{ row.average_csgp_move }}</td>
+              <td>{{ row.csgp_negative_while_spy_positive_count }}</td>
+              <td>{{ row.csgp_lagged_spy_by_1pt_count }}</td>
+              <td>{{ row.csgp_lagged_spy_by_2pt_count }}</td>
+              <td>{{ row.csgp_also_rose_count }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Combined inverse relationship</h3>
+    <p>{{ study.combined_inverse_summary }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Window</th>
+          <th>Meaningful SPY move</th>
+          <th>Total mornings</th>
+          <th>Opposite-direction mornings</th>
+          <th>Opposite-direction percent</th>
+          <th>Same-direction mornings</th>
+          <th>Same-direction percent</th>
+          <th>Clearer side</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in study.combined_inverse_summaries %}
+          {% if not row.secondary_only %}
+            <tr>
+              <td>{{ row.window_label }}</td>
+              <td>{{ row.threshold_label }}</td>
+              <td>{{ row.total_meaningful_spy_move_mornings }}</td>
+              <td>{{ row.inverse_mornings_count }}</td>
+              <td>{{ row.inverse_mornings_percent }}</td>
+              <td>{{ row.same_direction_mornings_count }}</td>
+              <td>{{ row.same_direction_mornings_percent }}</td>
+              <td>{{ row.clearer_side }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Strongest inverse mornings</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Window</th>
+          <th>SPY move</th>
+          <th>CSGP move</th>
+          <th>CSGP minus SPY</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day in study.strongest_inverse_mornings %}
+          <tr>
+            <td>{{ day.date }}</td>
+            <td>{{ day.window_label }}</td>
+            <td>{{ day.spy_move }}</td>
+            <td>{{ day.csgp_move }}</td>
+            <td>{{ day.csgp_minus_spy }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Weakest inverse mornings</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Window</th>
+          <th>SPY move</th>
+          <th>CSGP move</th>
+          <th>CSGP minus SPY</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day in study.weakest_inverse_mornings %}
+          <tr>
+            <td>{{ day.date }}</td>
+            <td>{{ day.window_label }}</td>
+            <td>{{ day.spy_move }}</td>
+            <td>{{ day.csgp_move }}</td>
+            <td>{{ day.csgp_minus_spy }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>Follow-through after 10:00</h3>
+    <p>{{ study.follow_through_summary.plain_english_summary }}</p>
+    <table>
+      <tbody>
+        <tr>
+          <th>Starting condition</th>
+          <td>{{ study.follow_through_summary.threshold_label }}</td>
+        </tr>
+        <tr>
+          <th>Matching mornings</th>
+          <td>{{ study.follow_through_summary.matching_mornings }}</td>
+        </tr>
+        <tr>
+          <th>Continued after 10:00</th>
+          <td>{{ study.follow_through_summary.csgp_continued_higher_count }}</td>
+        </tr>
+        <tr>
+          <th>Gave back after 10:00</th>
+          <td>{{ study.follow_through_summary.csgp_gave_back_count }}</td>
+        </tr>
+        <tr>
+          <th>Mixed results / no clear answer</th>
+          <td>{{ study.follow_through_summary.csgp_mixed_count }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <h3>What to study next</h3>
+    <ul>
+      {% for item in study.what_to_study_next %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="section">
+    <h3>Evidence Details</h3>
+    <details>
+      <summary>Show files and study settings</summary>
+      <p>{{ study.data_readiness_summary }}</p>
+      <p>Morning windows: {{ study.morning_windows_tested|join(", ") }}</p>
+      <p>SPY weakness checks: {{ study.spy_weakness_thresholds_tested|join(", ") }}</p>
+      <p>SPY strength checks: {{ study.spy_strength_thresholds_tested|join(", ") }}</p>
+      <p>No external calls: {{ yes_no(study.no_external_calls) }}</p>
+      <p>No live data: {{ yes_no(study.no_live_data) }}</p>
+      <p>No saved outputs: {{ yes_no(study.no_saved_outputs) }}</p>
+      <p>Research-only status: {{ study.research_only_status }}</p>
+      <p>Real-money status: {{ study.real_money_status }}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Security</th>
+            <th>Rows</th>
+            <th>First date</th>
+            <th>Last date</th>
+            <th>File</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in study.files_used %}
+            <tr>
+              <td>{{ file.symbol }}</td>
+              <td>{{ file.row_count }}</td>
+              <td>{{ file.first_date }}</td>
+              <td>{{ file.last_date }}</td>
+              <td><code>{{ file.path }}</code></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </section>
+{% endblock %}

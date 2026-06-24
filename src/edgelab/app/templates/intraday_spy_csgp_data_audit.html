@@ -41,6 +41,13 @@
       <p>Recent CSGP file: not found yet.</p>
     {% endif %}
     <p>Recent files overlap enough for the future study: {{ yes_no(audit.recent_pair_has_enough_overlap) }}</p>
+    {% if audit.recent_pair_has_enough_overlap %}
+      <p>
+        <a href="/ui/intraday-lab/research/spy-csgp/morning-divergence">
+          Open SPY / CSGP Morning Divergence Study
+        </a>
+      </p>
+    {% endif %}
     <table>
       <thead>
         <tr>

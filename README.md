@@ -323,6 +323,12 @@ PYTHONPATH=src python -m edgelab.intraday.marketdata_app_downloader --symbols SP
 The target files are `SPY_recent_1min.csv` and `CSGP_recent_1min.csv`. Do not commit downloaded CSV
 files, saved databases, or API tokens.
 
+The SPY/CSGP Morning Divergence Study is read-only and local. It uses ignored recent SPY and CSGP
+1-minute CSV files, compares matching morning windows, and reports both sides of the question:
+whether CSGP moved up or held stronger during weak SPY mornings, and whether CSGP moved down or
+lagged during strong SPY mornings. It does not fetch data, call MarketData.app, save outputs, create
+charts, connect to brokers, or produce recommendations. Real-money status remains Not allowed.
+
 To run a local fixture-backed backtest:
 
 ```bash

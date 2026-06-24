@@ -77,6 +77,9 @@ from edgelab.intraday.schema import IntradayBar, IntradayQualityIssue
 from edgelab.intraday.setups import IntradaySetupDetector
 from edgelab.intraday.simulator import IntradaySimulator
 from edgelab.intraday.spy_csgp_data_audit import SpyCsgpDataAuditService
+from edgelab.intraday.spy_csgp_morning_divergence import (
+    SpyCsgpMorningDivergenceStudyService,
+)
 from edgelab.intraday.variant_study import ControlledVariantStudyService
 from edgelab.intraday.variant_study_schema import VariantStudyRequest
 from edgelab.portfolios.cards import model_portfolio_to_markdown_card
@@ -109,6 +112,9 @@ experiment_ledger = ExperimentLedger.with_samples()
 intraday_fixture_provider = LocalIntradayFixtureProvider()
 historical_intraday_provider = LocalCSVHistoricalIntradayProvider()
 firstrate_historical_provider = FirstRateLocalCSVHistoricalProvider()
+firstrate_discovery_provider = FirstRateLocalCSVHistoricalProvider(
+    excluded_filename_suffixes=("_recent_1min.csv",)
+)
 _firstrate_cached_provider_source: FirstRateLocalCSVHistoricalProvider | None = None
 _firstrate_cached_replay_provider: CachedFirstRateHistoricalDataProvider | None = None
 future_historical_provider = FuturePaidHistoricalProvider()
@@ -160,9 +166,10 @@ out_of_sample_gate_service = OutOfSampleGateService(
     provider=firstrate_historical_provider,
     setup_detector=intraday_setup_detector,
 )
-discovery_sprint_service = DiscoverySprintService(provider=firstrate_historical_provider)
+discovery_sprint_service = DiscoverySprintService(provider=firstrate_discovery_provider)
 idea_batch_runner = IdeaBatchRunner(provider=firstrate_historical_provider)
 spy_csgp_data_audit_service = SpyCsgpDataAuditService(provider=firstrate_historical_provider)
+spy_csgp_morning_divergence_service = SpyCsgpMorningDivergenceStudyService()
 
 
 @dataclass(frozen=True)
@@ -1272,6 +1279,13 @@ def read_spy_csgp_data_audit() -> dict[str, object]:
     return spy_csgp_data_audit_service.run().model_dump(mode="json")
 
 
+@app.get("/intraday/research/spy-csgp/morning-divergence")
+def read_spy_csgp_morning_divergence() -> dict[str, object]:
+    """Return the local SPY/CSGP morning divergence study."""
+
+    return spy_csgp_morning_divergence_service.run().model_dump(mode="json")
+
+
 async def _read_pasted_json(request: Request) -> tuple[object | None, list[str] | None]:
     body = await request.body()
     if not body.strip():
@@ -1916,6 +1930,18 @@ def read_ui_spy_csgp_data_audit(request: Request) -> Response:
         request=request,
         name="intraday_spy_csgp_data_audit.html",
         context={"audit": audit},
+    )
+
+
+@app.get("/ui/intraday-lab/research/spy-csgp/morning-divergence", response_class=HTMLResponse)
+def read_ui_spy_csgp_morning_divergence(request: Request) -> Response:
+    """Render the local SPY/CSGP morning divergence study."""
+
+    study = spy_csgp_morning_divergence_service.run()
+    return templates.TemplateResponse(
+        request=request,
+        name="intraday_spy_csgp_morning_divergence.html",
+        context={"study": study},
     )
 
 

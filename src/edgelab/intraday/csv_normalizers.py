@@ -539,9 +539,11 @@ class FirstRateLocalCSVHistoricalProvider:
         self,
         data_dir: Path | None = None,
         normalizer: FirstRateHistoricalCSVNormalizer | None = None,
+        excluded_filename_suffixes: tuple[str, ...] = (),
     ) -> None:
         self.data_dir = data_dir or _default_firstrate_data_dir()
         self.normalizer = normalizer or FirstRateHistoricalCSVNormalizer()
+        self.excluded_filename_suffixes = excluded_filename_suffixes
         self._normalization_cache: dict[
             tuple[
                 tuple[FirstRateFileCacheSignature, ...],
@@ -786,7 +788,11 @@ class FirstRateLocalCSVHistoricalProvider:
     def _csv_paths(self) -> list[Path]:
         if not self.data_dir.exists():
             return []
-        return sorted(self.data_dir.glob("*.csv"))
+        return [
+            path
+            for path in sorted(self.data_dir.glob("*.csv"))
+            if not path.name.endswith(self.excluded_filename_suffixes)
+        ]
 
     def file_cache_signature(self) -> tuple[FirstRateFileCacheSignature, ...]:
         """Return cache keys that refresh when local CSV files change."""
